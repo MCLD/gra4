@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GRA.Controllers
 {
-    public class HomeController : GRABaseController
+    public class HomeController : BaseController
     {
-        public HomeController(Domain.GRAService service) : base(service) { }
+        public HomeController(Domain.Service service) : base(service) { }
 
-        public IActionResult Index()
+        public IActionResult Index(string site = null)
         {
+            var siteList = service.GetSitePaths();
             return View();
         }
 

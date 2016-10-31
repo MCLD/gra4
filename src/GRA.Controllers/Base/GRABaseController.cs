@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace GRA.Controllers
 {
-    public class GRABaseController : Controller
+    public class BaseController : Controller
     {
-        private readonly Domain.GRAService srv;
+        protected readonly Domain.Service service;
 
-        public GRABaseController(Domain.GRAService service)
+        public BaseController(Domain.Service service)
         {
             if (service == null)
             {
                 throw new ArgumentNullException("service");
             }
-            this.srv = service;
+            this.service = service;
         }
     }
 }

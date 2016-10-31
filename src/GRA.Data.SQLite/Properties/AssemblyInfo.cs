@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GRA.Data.Model")]
+[assembly: AssemblyProduct("GRA.Data.SQLite")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c4044cd7-bbc2-4504-a9d0-0087d5637420")]
+[assembly: Guid("ec468258-8b51-4cb2-9077-9ca9acc6c330")]

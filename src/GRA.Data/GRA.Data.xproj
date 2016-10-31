@@ -7,8 +7,8 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>f428384e-d728-4026-9efb-097c5ee09792</ProjectGuid>
-    <RootNamespace>GRA.Data.SqlServer</RootNamespace>
+    <ProjectGuid>e6f2731c-50a5-49db-8e8b-7990b9ecb901</ProjectGuid>
+    <RootNamespace>GRA.Data</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>

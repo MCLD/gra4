@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GRA.Data.SqlServer
+namespace GRA.Domain.Model
 {
-    public class GRARepositorySqlServer : Domain.GRARepository
+    public class Site
     {
+        public string Path { get; set; }
     }
 }

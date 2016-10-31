@@ -19,7 +19,13 @@ namespace GRA.Web
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
             Configuration = builder.Build();
+            if (env.IsDevelopment())
+            {
+                Configuration["ConnectionStrings:DefaultConnection"] = @"Server=(localdb)\mssqllocaldb;Database=gra4;Trusted_Connection=True;MultipleActiveResultSets=true";
+                //Configuration["ConnectionStrings:DefaultConnection"] = @"Filename=./gra4.db";
+            }
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -28,13 +34,18 @@ namespace GRA.Web
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
+            services.AddSingleton(_ => Configuration);
             services.AddMvc();
-            services.AddScoped<Domain.GRARepository, Data.SqlServer.GRARepositorySqlServer>();
-            services.AddScoped<Domain.GRAService, Domain.GRAService>();
+            services.AddScoped<Data.Context, Data.SqlServer.SqlServerContext>();
+            //services.AddScoped<Data.Context, Data.SQLite.SQLiteContext>();
+            services.AddScoped<Domain.IRepository, Data.Repository>();
+            services.AddScoped<Domain.Service, Domain.Service>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app,
+            IHostingEnvironment env,
+            ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -54,7 +65,12 @@ namespace GRA.Web
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                    name: "default",
+                    name: null,
+                    template: "{sitePath}/{controller}/{action}/{id?}",
+                    defaults: new { controller = "Home", action = "Index" },
+                    constraints: new { site = new RouteConstraints.SiteRouteConstraint() });
+                routes.MapRoute(
+                    name: null,
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
