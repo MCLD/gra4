@@ -19,7 +19,6 @@ namespace GRA.Data
         private readonly AutoMapper.IMapper mapper;
 
         private DbSet<DbEntity> dbSet;
-        private DbSet<AuditLog> auditSet;
 
         internal GenericRepository(Context context,
             ILogger logger,
