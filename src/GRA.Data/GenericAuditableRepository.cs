@@ -28,17 +28,17 @@ namespace GRA.Data
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
             this.context = context;
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
             this.logger = logger;
             if (mapper == null)
             {
-                throw new ArgumentNullException("mapper");
+                throw new ArgumentNullException(nameof(mapper));
             }
             this.mapper = mapper;
         }

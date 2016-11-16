@@ -68,6 +68,8 @@ namespace GRA.Web
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.ApplicationServices.GetService<Data.Context>().Migrate();
+
             app.UseStaticFiles();
 
             app.UseSession();

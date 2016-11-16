@@ -13,13 +13,18 @@ namespace GRA.Data
         {
             if (config == null)
             {
-                throw new ArgumentNullException("config");
+                throw new ArgumentNullException(nameof(config));
             }
             this.config = config;
             devConnectionString = null;
         }
         protected internal Context(string connectionString) {
             devConnectionString = connectionString;
+        }
+
+        public void Migrate()
+        {
+            Database.Migrate();
         }
 
         public DbSet<Model.AuditLog> AuditLogs { get; set; }

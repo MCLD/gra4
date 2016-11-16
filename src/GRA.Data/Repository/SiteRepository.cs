@@ -13,12 +13,12 @@ namespace GRA.Data.Repository
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
             this.context = context;
             if (mapper == null)
             {
-                throw new ArgumentNullException("mapper");
+                throw new ArgumentNullException(nameof(mapper));
             }
             this.mapper = mapper;
         }

@@ -20,17 +20,17 @@ namespace GRA.Controllers.ServiceFacade
         {
             if (config == null)
             {
-                throw new ArgumentNullException("config");
+                throw new ArgumentNullException(nameof(config));
             }
             this.config = config;
             if (service == null)
             {
-                throw new ArgumentNullException("service");
+                throw new ArgumentNullException(nameof(service));
             }
             this.service = service;
             if(userManager == null)
             {
-                throw new ArgumentNullException("userManager");
+                throw new ArgumentNullException(nameof(userManager));
             }
             this.userManager = userManager;
         }
