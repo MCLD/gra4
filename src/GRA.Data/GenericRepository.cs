@@ -5,13 +5,12 @@ using GRA.Data.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 
 namespace GRA.Data
 {
-    internal class GenericAuditableRepository<DbEntity, DomainEntity>
+    internal class GenericRepository<DbEntity, DomainEntity>
         where DbEntity : BaseDbEntity
         where DomainEntity : class
     {
@@ -22,7 +21,7 @@ namespace GRA.Data
         private DbSet<DbEntity> dbSet;
         private DbSet<AuditLog> auditSet;
 
-        internal GenericAuditableRepository(Context context,
+        internal GenericRepository(Context context,
             ILogger logger,
            AutoMapper.IMapper mapper)
         {
@@ -43,41 +42,6 @@ namespace GRA.Data
             this.mapper = mapper;
         }
 
-        private void AuditLog(int userId,
-            BaseDbEntity newObject,
-            BaseDbEntity priorObject = null)
-        {
-            var audit = new Data.Model.AuditLog
-            {
-                EntityType = newObject.GetType().ToString(),
-                EntityId = newObject.Id,
-                UpdatedBy = userId,
-                UpdatedAt = DateTime.Now,
-                CurrentValue = JsonConvert.SerializeObject(newObject)
-            };
-            if (priorObject != null)
-            {
-                audit.PreviousValue = JsonConvert.SerializeObject(priorObject);
-            }
-            AuditSet.Add(audit);
-            try
-            {
-                if (context.SaveChanges() != 1)
-                {
-                    logger.LogError($"Error writing audit log for {newObject.GetType()} id {newObject.Id}");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(null, ex, $"Error writing audit log for {newObject.GetType()} id {newObject.Id}");
-            }
-        }
-
-        protected DbSet<AuditLog> AuditSet {
-            get {
-                return auditSet ?? (auditSet = context.Set<AuditLog>());
-            }
-        }
         public DbSet<DbEntity> DbSet {
             get {
                 return dbSet ?? (dbSet = context.Set<DbEntity>());
@@ -109,7 +73,7 @@ namespace GRA.Data
                 DbSet.Add(entity);
             }
         }
-        public virtual void Update(int userId, DomainEntity domainEntity)
+        public virtual void Update(DomainEntity domainEntity)
         {
             DbEntity entity = mapper.Map<DomainEntity, DbEntity>(domainEntity);
             var original = DbSet.Find(entity.Id);
@@ -119,10 +83,9 @@ namespace GRA.Data
                 DbSet.Attach(entity);
             }
             dbEntityEntry.State = EntityState.Modified;
-            AuditLog(userId, entity, original);
         }
 
-        public void Remove(int userId, DomainEntity domainEntity)
+        public void Remove(DomainEntity domainEntity)
         {
             DbEntity entity = mapper.Map<DomainEntity, DbEntity>(domainEntity);
             EntityEntry<DbEntity> dbEntityEntry = context.Entry(entity);
@@ -135,7 +98,6 @@ namespace GRA.Data
                 DbSet.Attach(entity);
                 DbSet.Remove(entity);
             }
-            AuditLog(userId, null, entity);
         }
 
         public void Remove(int userId, int id)
@@ -143,7 +105,7 @@ namespace GRA.Data
             var entity = GetById(id);
             if (entity == null) return;
 
-            Remove(userId, entity);
+            Remove(entity);
         }
 
         public void Save()

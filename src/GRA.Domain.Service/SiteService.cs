@@ -9,20 +9,14 @@ namespace GRA.Domain.Service
 
     using Microsoft.Extensions.Logging;
 
-    public class SiteService
+    public class SiteService : Abstract.BaseService<SiteService>
     {
-        private readonly ILogger<SiteService> logger;
-
         private readonly ISiteRepository siteRepository;
 
-        public SiteService(ILogger<SiteService> logger, ISiteRepository siteRepository)
+        public SiteService(ILogger<SiteService> logger,
+            ISiteRepository siteRepository)
+            : base(logger)
         {
-            if (logger == null)
-            {
-                // Use nameof so strings don't get out of sync over time
-                throw new ArgumentNullException(nameof(logger));
-            }
-            this.logger = logger;
             if (siteRepository == null)
             {
                 throw new ArgumentNullException(nameof(siteRepository));
@@ -30,22 +24,9 @@ namespace GRA.Domain.Service
             this.siteRepository = siteRepository;
         }
 
-        public IEnumerable<Site> GetSitePaths()
+        public IEnumerable<Site> GetAllSites()
         {
-            
             return siteRepository.GetAll();
-        }
-
-        public void InitialSetup(User user)
-        {
-            // todo verify paritipcant is admin?
-
-            // create default site
-            siteRepository.Add(0, new Model.Site
-            {
-                Name = "Default Site",
-                Path = "default"
-            });
         }
     }
 }

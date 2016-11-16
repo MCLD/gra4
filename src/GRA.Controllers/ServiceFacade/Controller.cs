@@ -8,14 +8,10 @@ namespace GRA.Controllers.ServiceFacade
     public class Controller
     {
         public readonly IConfigurationRoot config;
-
-        public readonly SiteService service;
-
         public readonly UserManager<Domain.Model.User> userManager;
 
         public Controller(
             IConfigurationRoot config, 
-            SiteService service,
             UserManager<Domain.Model.User> userManager)
         {
             if (config == null)
@@ -23,11 +19,6 @@ namespace GRA.Controllers.ServiceFacade
                 throw new ArgumentNullException(nameof(config));
             }
             this.config = config;
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-            this.service = service;
             if(userManager == null)
             {
                 throw new ArgumentNullException(nameof(userManager));

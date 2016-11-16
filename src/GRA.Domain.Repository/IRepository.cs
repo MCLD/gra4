@@ -4,8 +4,6 @@ namespace GRA.Domain.Repository
 {
     public interface IRepository<DomainEntity>
     {
-        IQueryable<DomainEntity> GetAll();
-
         IQueryable<DomainEntity> PageAll(int skip, int take);
 
         DomainEntity GetById(int id);
@@ -17,5 +15,7 @@ namespace GRA.Domain.Repository
         void Remove(DomainEntity entity);
 
         void Remove(int id);
+
+        void Save();
     }
 }

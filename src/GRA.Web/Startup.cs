@@ -36,10 +36,21 @@ namespace GRA.Web
             services.AddSingleton(_ => Configuration);
             services.AddMvc();
             services.AddScoped<Controllers.ServiceFacade.Controller, Controllers.ServiceFacade.Controller>();
+
+            // database
             services.AddScoped<Data.Context, Data.SqlServer.SqlServerContext>();
             //services.AddScoped<Data.Context, Data.SQLite.SQLiteContext>();
+
+            // services
+            services.AddScoped<Domain.Service.ConfigurationService, Domain.Service.ConfigurationService>();
             services.AddScoped<Domain.Service.SiteService, Domain.Service.SiteService>();
+
+            // repositories
+            services.AddScoped<Domain.Repository.IBranchRepository, Data.Repository.AuditableBranchRepository>();
+            services.AddScoped<Domain.Repository.IProgramRepository, Data.Repository.AuditableProgramRepository>();
             services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.AuditableSiteRepository>();
+            services.AddScoped<Domain.Repository.ISystemRepository, Data.Repository.AuditableSystemRepository>();
+
             services.AddIdentity<Domain.Model.User, IdentityRole>()
                 .AddEntityFrameworkStores<Data.Context>();
             services.AddAutoMapper();

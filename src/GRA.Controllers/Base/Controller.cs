@@ -11,7 +11,6 @@ namespace GRA.Controllers.Base
     public abstract class Controller : Microsoft.AspNetCore.Mvc.Controller
     {
         protected readonly IConfigurationRoot config;
-        protected readonly SiteService service;
         protected readonly UserManager<Domain.Model.User> userManager;
         public Controller(ServiceFacade.Controller context)
         {
@@ -20,7 +19,6 @@ namespace GRA.Controllers.Base
                 throw new ArgumentNullException(nameof(context));
             }
             this.config = context.config;
-            this.service = context.service;
             this.userManager = context.userManager;
 
             // sensible default

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Linq;
 
 namespace GRA.Data
 {
@@ -25,6 +26,11 @@ namespace GRA.Data
         public void Migrate()
         {
             Database.Migrate();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
         }
 
         public DbSet<Model.AuditLog> AuditLogs { get; set; }

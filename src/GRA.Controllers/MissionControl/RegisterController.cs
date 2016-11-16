@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using GRA.Domain.Service;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,15 +16,18 @@ namespace GRA.Controllers.MissionControl
         private readonly ILogger<RegisterController> logger;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly SignInManager<Domain.Model.User> signInManager;
+        private readonly ConfigurationService configurationService;
         public RegisterController(ILogger<RegisterController> logger,
             ServiceFacade.Controller context,
             RoleManager<IdentityRole> roleManager,
-            SignInManager<Domain.Model.User> signInManager)
+            SignInManager<Domain.Model.User> signInManager,
+            ConfigurationService configurationService)
             : base(context)
         {
             this.logger = logger;
             this.roleManager = roleManager;
             this.signInManager = signInManager;
+            this.configurationService = configurationService;
         }
 
         public IActionResult Index()
@@ -35,7 +39,7 @@ namespace GRA.Controllers.MissionControl
         [HttpPost]
         public async Task<IActionResult> Register(Domain.Model.MissionControl.Register registerResponse)
         {
-            bool initialSetup = service.GetSitePaths().Count() == 0;
+            bool initialSetup = configurationService.NeedsInitialSetup();
 
             var user = new Domain.Model.User
             {
@@ -53,7 +57,7 @@ namespace GRA.Controllers.MissionControl
                 if (initialSetup)
                 {
                     logger.LogInformation("Site list from database is empty, initial setup");
-                    service.InitialSetup(user);
+                    configurationService.InitialSetup(user);
 
                     // todo move identity out of aspnet
                     // possibly following http://timschreiber.com/2015/01/14/persistence-ignorant-asp-net-identity-with-patterns-part-1/
@@ -91,7 +95,7 @@ namespace GRA.Controllers.MissionControl
                 }
                 AlertDanger = $"Unable to register your account:{errors}";
                 PageTitle = "Register";
-                return View();
+                return View("Index");
             }
         }
     }
