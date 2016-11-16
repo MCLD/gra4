@@ -7,8 +7,8 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>293bc215-8191-4dc8-8906-557f93fc1605</ProjectGuid>
-    <RootNamespace>GRA.Domain</RootNamespace>
+    <ProjectGuid>94881b74-b873-49c5-93eb-0a4e1da8f821</ProjectGuid>
+    <RootNamespace>GRA.Domain.Repository</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>

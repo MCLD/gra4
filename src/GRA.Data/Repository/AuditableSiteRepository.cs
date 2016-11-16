@@ -1,35 +1,24 @@
-﻿using GRA.Domain.Abstract;
+﻿using GRA.Domain.Repository;
 using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace GRA.Data.Repository
 {
-    public class AuditableSiteRepository : IAuditableRepository<Domain.Model.Site>, ISiteRepository
+    public class AuditableSiteRepository : BaseRepository<AuditableSiteRepository>, ISiteRepository
     {
-        private readonly Context context;
-        private readonly AutoMapper.IMapper mapper;
-        private readonly ILogger logger;
         private readonly GenericAuditableRepository<Model.Site, Domain.Model.Site> genericAuditableRepository;
-        public AuditableSiteRepository(Context context, ILogger<AuditableSiteRepository> logger, AutoMapper.IMapper mapper)
+
+        public AuditableSiteRepository(
+            Context context, 
+            ILogger<AuditableSiteRepository> logger, 
+            AutoMapper.IMapper mapper)
+            : base(context, logger, mapper)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-            this.context = context;
-            if (mapper == null)
-            {
-                throw new ArgumentNullException("mapper");
-            }
-            this.mapper = mapper;
-            if(logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
-            this.logger = logger;
-            genericAuditableRepository = new GenericAuditableRepository<Model.Site, Domain.Model.Site>(context, logger, mapper);
+            genericAuditableRepository = 
+                new GenericAuditableRepository<Model.Site, Domain.Model.Site>(context, logger, mapper);
         }
+
         public void Add(int userId, Domain.Model.Site entity)
         {
             genericAuditableRepository.Add(userId, entity);

@@ -1,4 +1,4 @@
-﻿using GRA.Domain.Abstract;
+﻿using GRA.Domain.Repository;
 using System;
 using System.Linq;
 using AutoMapper.QueryableExtensions;

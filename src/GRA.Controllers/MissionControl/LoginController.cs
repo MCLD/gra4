@@ -31,7 +31,7 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(Domain.MissionControl.Login model)
+        public async Task<IActionResult> Login(Domain.Model.MissionControl.Login model)
         {
             var result = await signInManager.PasswordSignInAsync(model.Username,
                 model.Password,

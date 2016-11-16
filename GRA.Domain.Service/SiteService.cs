@@ -1,25 +1,31 @@
-﻿using GRA.Domain.Abstract;
-using GRA.Domain.Model;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-
-namespace GRA.Domain
+﻿
+namespace GRA.Domain.Service
 {
-    public class Service
+    using System;
+    using System.Collections.Generic;
+
+    using GRA.Domain.Model;
+    using GRA.Domain.Repository;
+
+    using Microsoft.Extensions.Logging;
+
+    public class SiteService
     {
-        private readonly ILogger<Service> logger;
+        private readonly ILogger<SiteService> logger;
+
         private readonly ISiteRepository siteRepository;
-        public Service(ILogger<Service> logger, ISiteRepository siteRepository)
+
+        public SiteService(ILogger<SiteService> logger, ISiteRepository siteRepository)
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                // Use nameof so strings don't get out of sync over time
+                throw new ArgumentNullException(nameof(logger));
             }
             this.logger = logger;
             if (siteRepository == null)
             {
-                throw new ArgumentNullException("repository");
+                throw new ArgumentNullException(nameof(siteRepository));
             }
             this.siteRepository = siteRepository;
         }

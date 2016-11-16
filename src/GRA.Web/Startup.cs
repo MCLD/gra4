@@ -38,8 +38,8 @@ namespace GRA.Web
             services.AddScoped<Controllers.ServiceFacade.Controller, Controllers.ServiceFacade.Controller>();
             services.AddScoped<Data.Context, Data.SqlServer.SqlServerContext>();
             //services.AddScoped<Data.Context, Data.SQLite.SQLiteContext>();
-            services.AddScoped<Domain.Service, Domain.Service>();
-            services.AddScoped<Domain.Abstract.ISiteRepository, Data.Repository.AuditableSiteRepository>();
+            services.AddScoped<Domain.Service.SiteService, Domain.Service.SiteService>();
+            services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.AuditableSiteRepository>();
             services.AddIdentity<Domain.Model.User, IdentityRole>()
                 .AddEntityFrameworkStores<Data.Context>();
             services.AddAutoMapper();

@@ -33,7 +33,7 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(Domain.MissionControl.Register registerResponse)
+        public async Task<IActionResult> Register(Domain.Model.MissionControl.Register registerResponse)
         {
             bool initialSetup = service.GetSitePaths().Count() == 0;
 
