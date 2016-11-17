@@ -42,6 +42,7 @@ namespace GRA.Web
             //services.AddScoped<Data.Context, Data.SQLite.SQLiteContext>();
 
             // services
+            services.AddScoped<Domain.Service.ChallengeService, Domain.Service.ChallengeService>();
             services.AddScoped<Domain.Service.ConfigurationService, Domain.Service.ConfigurationService>();
             services.AddScoped<Domain.Service.SiteService, Domain.Service.SiteService>();
 
