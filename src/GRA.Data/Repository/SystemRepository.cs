@@ -6,21 +6,26 @@ using System.Linq;
 
 namespace GRA.Data.Repository
 {
-    public class AuditableSystemRepository
-        : Abstract.BaseRepository<AuditableSystemRepository>, ISystemRepository
+    public class SystemRepository
+        : Abstract.BaseRepository<SystemRepository>, ISystemRepository
     {
-        private readonly GenericAuditableRepository<Model.System, Domain.Model.System> genericRepo;
+        private readonly GenericRepository<Model.System, Domain.Model.System> genericRepo;
 
-        public AuditableSystemRepository(Context context,
-            ILogger<AuditableSystemRepository> logger,
+        public SystemRepository(Context context,
+            ILogger<SystemRepository> logger,
             AutoMapper.IMapper mapper) : base(context, logger, mapper)
         {
             genericRepo =
-                new GenericAuditableRepository<Model.System, Domain.Model.System>(context, logger, mapper);
+                new GenericRepository<Model.System, Domain.Model.System>(context, logger, mapper, true);
         }
         public void Add(int userId, Domain.Model.System entity)
         {
             genericRepo.Add(userId, entity);
+        }
+
+        public Domain.Model.System AddSave(int userId, Domain.Model.System entity)
+        {
+            return genericRepo.AddSave(userId, entity);
         }
 
         public IQueryable<Domain.Model.System> GetAll()
@@ -43,14 +48,13 @@ namespace GRA.Data.Repository
             genericRepo.Remove(userId, id);
         }
 
-        public void Remove(int userId, Domain.Model.System entity)
-        {
-            genericRepo.Remove(userId, entity.Id);
-        }
-
         public void Update(int userId, Domain.Model.System entity)
         {
             genericRepo.Update(userId, entity);
+        }
+        public Domain.Model.System UpdateSave(int userId, Domain.Model.System entity)
+        {
+            return genericRepo.UpdateSave(userId, entity);
         }
 
         public void Save()

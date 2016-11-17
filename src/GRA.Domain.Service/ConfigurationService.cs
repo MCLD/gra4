@@ -73,10 +73,7 @@ namespace GRA.Domain.Service
                 Path = "default"
             };
             // create default site
-            siteRepository.Add(creatorUserId, site);
-            siteRepository.Save();
-
-            site = siteRepository.GetAll().SingleOrDefault();
+            site = siteRepository.AddSave(creatorUserId, site);
 
             if (site == null)
             {
@@ -88,10 +85,7 @@ namespace GRA.Domain.Service
                 SiteId = site.Id,
                 Name = "Maricopa County Library District"
             };
-            systemRepository.Add(creatorUserId, system);
-            systemRepository.Save();
-
-            system = systemRepository.GetAll().SingleOrDefault();
+            system = systemRepository.AddSave(creatorUserId, system);
 
             if (system == null)
             {
@@ -108,9 +102,7 @@ namespace GRA.Domain.Service
                 Url = "http://mcldaz.org/"
             };
 
-            branchRepository.Add(creatorUserId, branch);
-            branchRepository.Save();
-            branch = branchRepository.GetAll().SingleOrDefault();
+            branch = branchRepository.AddSave(creatorUserId, branch);
 
             var program = new Model.Program
             {
@@ -119,8 +111,7 @@ namespace GRA.Domain.Service
                 Name = "Winter Reading Program"
             };
 
-            programRepository.Add(creatorUserId, program);
-            programRepository.Save();
+            program = programRepository.AddSave(creatorUserId, program);
 
             foreach (var value in Enum.GetValues(typeof(Model.ChallengeTaskType)))
             {
@@ -161,8 +152,7 @@ namespace GRA.Domain.Service
                 ChallengeTaskType = Model.ChallengeTaskType.Book
             });
 
-            challengeRepository.Add(creatorUserId, challenge);
-            challengeRepository.Save();
+            challengeRepository.AddSave(creatorUserId, challenge);
         }
     }
 }

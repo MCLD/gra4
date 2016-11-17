@@ -46,11 +46,11 @@ namespace GRA.Web
             services.AddScoped<Domain.Service.SiteService, Domain.Service.SiteService>();
 
             // repositories
-            services.AddScoped<Domain.Repository.IBranchRepository, Data.Repository.AuditableBranchRepository>();
-            services.AddScoped<Domain.Repository.IChallengeRepository, Data.Repository.AuditableChallengeRepository>();
-            services.AddScoped<Domain.Repository.IProgramRepository, Data.Repository.AuditableProgramRepository>();
-            services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.AuditableSiteRepository>();
-            services.AddScoped<Domain.Repository.ISystemRepository, Data.Repository.AuditableSystemRepository>();
+            services.AddScoped<Domain.Repository.IBranchRepository, Data.Repository.BranchRepository>();
+            services.AddScoped<Domain.Repository.IChallengeRepository, Data.Repository.ChallengeRepository>();
+            services.AddScoped<Domain.Repository.IProgramRepository, Data.Repository.ProgramRepository>();
+            services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.SiteRepository>();
+            services.AddScoped<Domain.Repository.ISystemRepository, Data.Repository.SystemRepository>();
 
             services.AddIdentity<Domain.Model.User, IdentityRole>()
                 .AddEntityFrameworkStores<Data.Context>();

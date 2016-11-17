@@ -22,6 +22,8 @@ namespace GRA.Domain.Model
         public bool IsActive { get; set; }
         [Required]
         public bool IsDeleted { get; set; }
+        [Required]
+        public bool IsValid { get; set; }
 
 
         [Required]

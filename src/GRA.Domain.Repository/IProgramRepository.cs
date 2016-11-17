@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GRA.Domain.Repository
 {
-    public interface IProgramRepository : IAuditableRepository<Model.Program>
+    public interface IProgramRepository : IRepository<Model.Program>
     {
         IQueryable<Model.Program> GetAll();
     }

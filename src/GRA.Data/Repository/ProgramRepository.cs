@@ -6,25 +6,30 @@ using System.Linq;
 
 namespace GRA.Data.Repository
 {
-    public class AuditableProgramRepository
-        : Abstract.BaseRepository<AuditableProgramRepository>, IProgramRepository
+    public class ProgramRepository
+        : Abstract.BaseRepository<ProgramRepository>, IProgramRepository
     {
-        private readonly GenericAuditableRepository<Model.Program, Domain.Model.Program> genericRepo;
+        private readonly GenericRepository<Model.Program, Domain.Model.Program> genericRepo;
 
-        public AuditableProgramRepository(
+        public ProgramRepository(
             Context context,
-            ILogger<AuditableProgramRepository> logger,
+            ILogger<ProgramRepository> logger,
             AutoMapper.IMapper mapper)
             : base(context, logger, mapper)
         {
             genericRepo =
-                new GenericAuditableRepository<Model.Program, Domain.Model.Program>(context, logger, mapper);
+                new GenericRepository<Model.Program, Domain.Model.Program>(context, logger, mapper, true);
         }
 
         public void Add(int userId, Domain.Model.Program entity)
         {
             genericRepo.Add(userId, entity);
         }
+        public Domain.Model.Program AddSave(int userId, Domain.Model.Program entity)
+        {
+            return genericRepo.AddSave(userId, entity);
+        }
+
 
         public IQueryable<Domain.Model.Program> GetAll()
         {
@@ -46,16 +51,14 @@ namespace GRA.Data.Repository
             genericRepo.Remove(userId, id);
         }
 
-        public void Remove(int userId, Domain.Model.Program entity)
-        {
-            genericRepo.Remove(userId, entity.Id);
-        }
-
         public void Update(int userId, Domain.Model.Program entity)
         {
             genericRepo.Update(userId, entity);
         }
-
+        public Domain.Model.Program UpdateSave(int userId, Domain.Model.Program entity)
+        {
+            return genericRepo.UpdateSave(userId, entity);
+        }
         public void Save()
         {
             genericRepo.Save();

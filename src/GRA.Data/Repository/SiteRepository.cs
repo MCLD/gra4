@@ -6,24 +6,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GRA.Data.Repository
 {
-    public class AuditableSiteRepository
-        : Abstract.BaseRepository<AuditableSiteRepository>, ISiteRepository
+    public class SiteRepository
+        : Abstract.BaseRepository<SiteRepository>, ISiteRepository
     {
-        private readonly GenericAuditableRepository<Model.Site, Domain.Model.Site> genericRepo;
+        private readonly GenericRepository<Model.Site, Domain.Model.Site> genericRepo;
 
-        public AuditableSiteRepository(
+        public SiteRepository(
             Context context,
-            ILogger<AuditableSiteRepository> logger,
+            ILogger<SiteRepository> logger,
             AutoMapper.IMapper mapper)
             : base(context, logger, mapper)
         {
             genericRepo =
-                new GenericAuditableRepository<Model.Site, Domain.Model.Site>(context, logger, mapper);
+                new GenericRepository<Model.Site, Domain.Model.Site>(context, logger, mapper, true);
         }
 
         public void Add(int userId, Domain.Model.Site entity)
         {
             genericRepo.Add(userId, entity);
+        }
+
+        public Domain.Model.Site AddSave(int userId, Domain.Model.Site entity)
+        {
+            return genericRepo.AddSave(userId, entity);
         }
 
         public IQueryable<Domain.Model.Site> GetAll()
@@ -46,14 +51,13 @@ namespace GRA.Data.Repository
             genericRepo.Remove(userId, id);
         }
 
-        public void Remove(int userId, Domain.Model.Site entity)
-        {
-            genericRepo.Remove(userId, entity.Id);
-        }
-
         public void Update(int userId, Domain.Model.Site entity)
         {
             genericRepo.Update(userId, entity);
+        }
+        public Domain.Model.Site UpdateSave(int userId, Domain.Model.Site entity)
+        {
+            return genericRepo.UpdateSave(userId, entity);
         }
 
         public void Save()

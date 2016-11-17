@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using GRA.Domain.Model;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace GRA.Domain.Repository
 {
-    public interface IChallengeRepository : IAuditableRepository<Model.Challenge>
+    public interface IChallengeRepository : IRepository<Model.Challenge>
     {
         void AddChallengeTaskType(int userId, string name);
+        IQueryable<Challenge> GetPagedChallengeList(int userId, int skip, int take);
     }
 }

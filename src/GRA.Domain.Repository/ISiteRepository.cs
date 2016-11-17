@@ -2,7 +2,7 @@
 
 namespace GRA.Domain.Repository
 {
-    public interface ISiteRepository : IAuditableRepository<Model.Site>
+    public interface ISiteRepository : IRepository<Model.Site>
     {
         IQueryable<Model.Site> GetAll();
     }

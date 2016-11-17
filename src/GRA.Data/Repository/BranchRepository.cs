@@ -6,22 +6,28 @@ using System.Linq;
 
 namespace GRA.Data.Repository
 {
-    public class AuditableBranchRepository
-        : Abstract.BaseRepository<AuditableBranchRepository>, IBranchRepository
+    public class BranchRepository
+        : Abstract.BaseRepository<BranchRepository>, IBranchRepository
     {
-        private readonly GenericAuditableRepository<Model.Branch, Domain.Model.Branch> genericRepo;
+        private readonly GenericRepository<Model.Branch, Domain.Model.Branch> genericRepo;
 
-        public AuditableBranchRepository(Context context,
-            ILogger<AuditableBranchRepository> logger,
+        public BranchRepository(Context context,
+            ILogger<BranchRepository> logger,
             AutoMapper.IMapper mapper) : base(context, logger, mapper)
         {
             genericRepo =
-                new GenericAuditableRepository<Model.Branch, Domain.Model.Branch>(context, logger, mapper);
+                new GenericRepository<Model.Branch, Domain.Model.Branch>(context, logger, mapper, true);
         }
         public void Add(int userId, Domain.Model.Branch entity)
         {
             genericRepo.Add(userId, entity);
         }
+
+        public Domain.Model.Branch AddSave(int userId, Domain.Model.Branch entity)
+        {
+            return genericRepo.AddSave(userId, entity);
+        }
+
 
         public IQueryable<Domain.Model.Branch> GetAll()
         {
@@ -51,6 +57,11 @@ namespace GRA.Data.Repository
         public void Update(int userId, Domain.Model.Branch entity)
         {
             genericRepo.Update(userId, entity);
+        }
+
+        public Domain.Model.Branch UpdateSave(int userId, Domain.Model.Branch entity)
+        {
+            return genericRepo.UpdateSave(userId, entity);
         }
 
         public void Save()
