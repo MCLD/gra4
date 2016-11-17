@@ -47,7 +47,7 @@ namespace GRA.Data
             BaseDbEntity newObject,
             BaseDbEntity priorObject = null)
         {
-            var audit = new Data.Model.AuditLog
+            var audit = new AuditLog
             {
                 EntityType = newObject.GetType().ToString(),
                 EntityId = newObject.Id,
@@ -96,19 +96,24 @@ namespace GRA.Data
 
         public virtual void Add(int userId, DomainEntity domainEntity)
         {
-            DbEntity entity = mapper.Map<DomainEntity, DbEntity>(domainEntity);
-            entity.CreatedBy = userId;
-            entity.CreatedAt = DateTime.Now;
-            EntityEntry<DbEntity> dbEntityEntry = context.Entry(entity);
+            Add(userId, Map(domainEntity));
+        }
+
+        public virtual void Add(int userId, DbEntity dbEntity)
+        {
+            dbEntity.CreatedBy = userId;
+            dbEntity.CreatedAt = DateTime.Now;
+            EntityEntry<DbEntity> dbEntityEntry = context.Entry(dbEntity);
             if (dbEntityEntry.State != (EntityState)EntityState.Detached)
             {
                 dbEntityEntry.State = EntityState.Added;
             }
             else
             {
-                DbSet.Add(entity);
+                DbSet.Add(dbEntity);
             }
         }
+
         public virtual void Update(int userId, DomainEntity domainEntity)
         {
             DbEntity entity = mapper.Map<DomainEntity, DbEntity>(domainEntity);
@@ -149,6 +154,11 @@ namespace GRA.Data
         public void Save()
         {
             context.SaveChanges();
+        }
+
+        public DbEntity Map(DomainEntity domainEntity)
+        {
+            return mapper.Map<DomainEntity, DbEntity>(domainEntity);
         }
     }
 }

@@ -1,14 +1,11 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using GRA.Domain.Model;
+using GRA.Domain.Repository;
+using Microsoft.Extensions.Logging;
+
 namespace GRA.Domain.Service
 {
-    using System;
-    using System.Collections.Generic;
-
-    using GRA.Domain.Model;
-    using GRA.Domain.Repository;
-
-    using Microsoft.Extensions.Logging;
-
     public class SiteService : Abstract.BaseService<SiteService>
     {
         private readonly ISiteRepository siteRepository;

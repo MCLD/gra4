@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace GRA.Data.Model
+namespace GRA.Domain.Model
 {
-    public class Challenge : Abstract.BaseDbEntity
+    public class Challenge
     {
+        private ICollection<ChallengeTask> tasks { get; set; }
+
+        public int Id { get; set; }
         [Required]
         public int SiteId { get; set; }
         [Required]
@@ -17,6 +23,7 @@ namespace GRA.Data.Model
         [Required]
         public bool IsDeleted { get; set; }
 
+
         [Required]
         [MaxLength(255)]
         public string Name { get; set; }
@@ -27,6 +34,18 @@ namespace GRA.Data.Model
         public int PointsAwarded { get; set; }
         public int TasksToComplete { get; set; }
 
-        public virtual ICollection<ChallengeTask> Tasks { get; set; }
+        public void AddTask(int userId, ChallengeTask task)
+        {
+            if (tasks == null)
+            {
+                tasks = new List<ChallengeTask>();
+            }
+            tasks.Add(task);
+        }
+
+        public ICollection<ChallengeTask> GetTasks()
+        {
+            return tasks;
+        }
     }
 }

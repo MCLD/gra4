@@ -47,6 +47,7 @@ namespace GRA.Web
 
             // repositories
             services.AddScoped<Domain.Repository.IBranchRepository, Data.Repository.AuditableBranchRepository>();
+            services.AddScoped<Domain.Repository.IChallengeRepository, Data.Repository.AuditableChallengeRepository>();
             services.AddScoped<Domain.Repository.IProgramRepository, Data.Repository.AuditableProgramRepository>();
             services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.AuditableSiteRepository>();
             services.AddScoped<Domain.Repository.ISystemRepository, Data.Repository.AuditableSystemRepository>();

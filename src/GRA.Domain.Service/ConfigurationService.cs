@@ -13,11 +13,13 @@ namespace GRA.Domain.Service
         private readonly ISystemRepository systemRepository;
         private readonly IBranchRepository branchRepository;
         private readonly IProgramRepository programRepository;
+        private readonly IChallengeRepository challengeRepository;
         public ConfigurationService(ILogger<ConfigurationService> logger,
             ISiteRepository siteRepository,
             ISystemRepository systemRepository,
             IBranchRepository branchRepository,
-            IProgramRepository programRepository) : base(logger)
+            IProgramRepository programRepository,
+            IChallengeRepository challengeRepository) : base(logger)
         {
             if (siteRepository == null)
             {
@@ -42,6 +44,12 @@ namespace GRA.Domain.Service
                 throw new ArgumentNullException(nameof(programRepository));
             }
             this.programRepository = programRepository;
+
+            if (challengeRepository == null)
+            {
+                throw new ArgumentNullException(nameof(challengeRepository));
+            }
+            this.challengeRepository = challengeRepository;
         }
 
         public bool NeedsInitialSetup()
@@ -102,6 +110,7 @@ namespace GRA.Domain.Service
 
             branchRepository.Add(creatorUserId, branch);
             branchRepository.Save();
+            branch = branchRepository.GetAll().SingleOrDefault();
 
             var program = new Model.Program
             {
@@ -112,6 +121,48 @@ namespace GRA.Domain.Service
 
             programRepository.Add(creatorUserId, program);
             programRepository.Save();
+
+            foreach (var value in Enum.GetValues(typeof(Model.ChallengeTaskType)))
+            {
+                challengeRepository.AddChallengeTaskType(creatorUserId, value.ToString());
+            }
+            challengeRepository.Save();
+
+            // sample challenge
+
+            var challenge = new Model.Challenge
+            {
+                SiteId = site.Id,
+                RelatedSystemId = system.Id,
+                Name = "Test challenge",
+                Description = "This is a test challenge!",
+                IsActive = false,
+                IsDeleted = false,
+                PointsAwarded = 10,
+                TasksToComplete = 2,
+                RelatedBranchId = branch.Id
+            };
+
+            challenge.AddTask(creatorUserId, new Model.ChallengeTask
+            {
+                Title = "Be excellent to each other",
+                ChallengeTaskType = Model.ChallengeTaskType.Action
+            });
+            challenge.AddTask(creatorUserId, new Model.ChallengeTask
+            {
+                Title = "Party on, dudes!",
+                ChallengeTaskType = Model.ChallengeTaskType.Action
+            });
+            challenge.AddTask(creatorUserId, new Model.ChallengeTask
+            {
+                Title = "Slaughterhouse-Five, or The Children's Crusade: A Duty-Dance with Death",
+                Author = "Kurt Vonnegut",
+                Isbn = "978-0385333849",
+                ChallengeTaskType = Model.ChallengeTaskType.Book
+            });
+
+            challengeRepository.Add(creatorUserId, challenge);
+            challengeRepository.Save();
         }
     }
 }

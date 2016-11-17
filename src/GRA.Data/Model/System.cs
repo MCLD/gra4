@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace GRA.Data.Model
 {
@@ -10,5 +11,7 @@ namespace GRA.Data.Model
         [Required]
         [MaxLength(255)]
         public string Name { get; set; }
+
+        public virtual ICollection<Branch> Branches { get; set; }
     }
 }

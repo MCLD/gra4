@@ -36,6 +36,8 @@ namespace GRA.Data
         public DbSet<Model.AuditLog> AuditLogs { get; set; }
         public DbSet<Model.Branch> Branches { get; set; }
         public DbSet<Model.Challenge> Challenges { get; set; }
+        public DbSet<Model.ChallengeTask> ChallengeTasks { get; set; }
+        public DbSet<Model.ChallengeTaskType> ChallengeTaskTypes { get; set; }
         public DbSet<Model.Program> Programs { get; set; }
         public DbSet<Model.Site> Sites { get; set; }
         public DbSet<Model.System> Systems { get; set; }
