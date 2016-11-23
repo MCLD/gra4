@@ -167,6 +167,10 @@ namespace GRA.Domain.Service
             challengeTaskRepository.IncreasePosition(taskId);
         }
 
+        public IEnumerable<ChallengeTask> GetChallengeTasks(int challengeId)
+        {
+            return challengeRepository.GetChallengeTasks(challengeId);
+        }
 
     }
 }

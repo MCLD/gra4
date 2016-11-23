@@ -52,12 +52,15 @@
 @section scripts {
     <script>
         $('#Submit').on("click", function(e) {
-            e.preventDefault();
-            if (!$(this).hasClass('disabled'))
+            if ($(this).parents('form:first').valid())
             {
-                $(this).addClass('disabled');
-                $(this).children('.fa-spinner').removeClass('hidden');
-                $(this).parents('form:first').submit();
+                e.preventDefault();
+                if (!$(this).hasClass('disabled'))
+                {
+                    $(this).addClass('disabled');
+                    $(this).children('.fa-spinner').removeClass('hidden');
+                    $(this).parents('form:first').submit();
+                }
             }
         });
     </script>
