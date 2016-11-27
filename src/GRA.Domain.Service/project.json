@@ -2,6 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "GRA": "1.0.0-*",
     "GRA.Domain.Model": "1.0.0-*",
     "GRA.Domain.Repository": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
