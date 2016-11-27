@@ -29,14 +29,18 @@ namespace GRA.Domain.Service
             IPointTranslationRepository pointTranslationRepository) : base(logger)
         {
             this.branchRepository = Require.IsNotNull(branchRepository, nameof(branchRepository));
-            this.challengeRepository = Require.IsNotNull(challengeRepository, nameof(challengeRepository));
-            this.challengeTaskRepository = Require.IsNotNull(challengeTaskRepository, nameof(challengeTaskRepository));
-            this.programRepository = Require.IsNotNull(programRepository, nameof(programRepository));
+            this.challengeRepository = Require.IsNotNull(challengeRepository,
+                nameof(challengeRepository));
+            this.challengeTaskRepository = Require.IsNotNull(challengeTaskRepository,
+                nameof(challengeTaskRepository));
+            this.programRepository = Require.IsNotNull(programRepository,
+                nameof(programRepository));
             this.roleRepository = Require.IsNotNull(roleRepository, nameof(roleRepository));
             this.siteRepository = Require.IsNotNull(siteRepository, nameof(siteRepository));
             this.systemRepository = Require.IsNotNull(systemRepository, nameof(systemRepository));
             this.userRepository = Require.IsNotNull(userRepository, nameof(userRepository));
-            this.pointTranslationRepository = Require.IsNotNull(pointTranslationRepository, nameof(pointTranslationRepository));
+            this.pointTranslationRepository = Require.IsNotNull(pointTranslationRepository,
+                nameof(pointTranslationRepository));
         }
 
         public async Task<bool> NeedsInitialSetupAsync()
@@ -88,7 +92,7 @@ namespace GRA.Domain.Service
             var program = new Model.Program
             {
                 SiteId = site.Id,
-                Achiever = 1000,
+                AchieverPointAmount = 1000,
                 Name = "Winter Reading Program"
             };
             program = await programRepository.AddSaveAsync(-1, program);
@@ -140,13 +144,16 @@ namespace GRA.Domain.Service
 
             foreach (var value in Enum.GetValues(typeof(Model.Permission)))
             {
-                await roleRepository.AddPermissionToRoleAsync(creatorUserId, adminRole.Id, value.ToString());
+                await roleRepository.AddPermissionToRoleAsync(creatorUserId,
+                    adminRole.Id,
+                    value.ToString());
             }
             await roleRepository.SaveAsync();
 
             foreach (var value in Enum.GetValues(typeof(Model.ChallengeTaskType)))
             {
-                await challengeTaskRepository.AddChallengeTaskTypeAsync(creatorUserId, value.ToString());
+                await challengeTaskRepository.AddChallengeTaskTypeAsync(creatorUserId,
+                    value.ToString());
             }
             await challengeRepository.SaveAsync();
 

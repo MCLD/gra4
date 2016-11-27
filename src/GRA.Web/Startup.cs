@@ -59,6 +59,7 @@ namespace GRA.Web
             services.AddScoped<Security.Abstract.IPasswordHasher, Security.PasswordHasher>();
 
             // services
+            services.AddScoped<Domain.Service.ActivityService, Domain.Service.ActivityService>();
             services.AddScoped<Domain.Service.ChallengeService, Domain.Service.ChallengeService>();
             services.AddScoped<Domain.Service.ConfigurationService, Domain.Service.ConfigurationService>();
             services.AddScoped<Domain.Service.SiteService, Domain.Service.SiteService>();
@@ -73,6 +74,7 @@ namespace GRA.Web
             services.AddScoped<Domain.Repository.IRoleRepository, Data.Repository.RoleRepository>();
             services.AddScoped<Domain.Repository.ISiteRepository, Data.Repository.SiteRepository>();
             services.AddScoped<Domain.Repository.ISystemRepository, Data.Repository.SystemRepository>();
+            services.AddScoped<Domain.Repository.IUserLogRepository, Data.Repository.UserLogRepository>();
             services.AddScoped<Domain.Repository.IUserRepository, Data.Repository.UserRepository>();
 
             services.AddAutoMapper();
