@@ -4,18 +4,19 @@ namespace GRA.Domain.Model
 {
     public class Mail : Abstract.BaseDomainEntity
     {
+        public int SiteId { get; set; }
         [Required]
-        int SiteId { get; set; }
+        public int ToUserId { get; set; }
         [Required]
-        int ToUserId { get; set; }
-        [Required]
-        int FromUserId { get; set; }
+        public int FromUserId { get; set; }
 
         [Required]
-        string Subject { get; set; }
+        public string Subject { get; set; }
         [Required]
-        string Body { get; set; }
+        public string Body { get; set; }
         [Required]
-        bool IsNew { get; set; }
+        public bool IsNew { get; set; }
+        [Required]
+        public bool IsDeleted { get; set; }
     }
 }
