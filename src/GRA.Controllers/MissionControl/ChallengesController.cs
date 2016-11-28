@@ -75,9 +75,6 @@ namespace GRA.Controllers.MissionControl
         {
             if (ModelState.IsValid)
             {
-                challenge.SiteId = int.Parse(UserClaim(ClaimType.SiteId));
-                challenge.RelatedBranchId = int.Parse(UserClaim(ClaimType.BranchId));
-                challenge.RelatedSystemId = int.Parse(UserClaim(ClaimType.SystemId));
                 challenge = await challengeService.AddChallengeAsync(CurrentUser, challenge);
                 AlertSuccess = $"Challenge '{challenge.Name}' was successfully created";
                 return RedirectToAction("Edit", new { id = challenge.Id });
