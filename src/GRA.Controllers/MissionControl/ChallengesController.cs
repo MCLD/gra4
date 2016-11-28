@@ -1,4 +1,4 @@
-﻿using GRA.Controllers.ViewModel.Challenge;
+﻿using GRA.Controllers.ViewModel.Challenges;
 using GRA.Controllers.ViewModel.Shared;
 using GRA.Domain.Model;
 using GRA.Domain.Service;
@@ -40,7 +40,7 @@ namespace GRA.Controllers.MissionControl
             var challengeList = await challengeService
                 .GetPaginatedChallengeListAsync(CurrentUser, skip, take);
 
-            ChallengeListViewModel viewModel = new ChallengeListViewModel();
+            ChallengesListViewModel viewModel = new ChallengesListViewModel();
 
             viewModel.Challenges = challengeList.Data;
 
@@ -106,7 +106,7 @@ namespace GRA.Controllers.MissionControl
                 AlertDanger = "The requested challenge could not be accessed or does not exist";
                 return RedirectToAction("Index");
             }
-            ChallengeDetailViewModel viewModel = new ChallengeDetailViewModel()
+            ChallengesDetailViewModel viewModel = new ChallengesDetailViewModel()
             {
                 Challenge = challenge,
                 TaskTypes = Enum.GetNames(typeof(ChallengeTaskType))
@@ -128,7 +128,7 @@ namespace GRA.Controllers.MissionControl
         }
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> Edit(ChallengeDetailViewModel viewModel)
+        public async Task<IActionResult> Edit(ChallengesDetailViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -155,7 +155,7 @@ namespace GRA.Controllers.MissionControl
 
         #region Task methods
         [HttpPost]
-        public IActionResult CloseTask(ChallengeDetailViewModel viewModel)
+        public IActionResult CloseTask(ChallengesDetailViewModel viewModel)
         {
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
                 .SerializeObject(viewModel.Challenge);
@@ -164,7 +164,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public IActionResult OpenAddTask(ChallengeDetailViewModel viewModel)
+        public IActionResult OpenAddTask(ChallengesDetailViewModel viewModel)
         {
             TempData[NewTask] = true;
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
@@ -174,7 +174,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> AddTask(ChallengeDetailViewModel viewModel)
+        public async Task<IActionResult> AddTask(ChallengesDetailViewModel viewModel)
         {
             foreach (string key in ModelState.Keys.Where(m => m.StartsWith("Challenge.")).ToList())
             {
@@ -198,7 +198,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public IActionResult OpenModifyTask(ChallengeDetailViewModel viewModel, int taskId)
+        public IActionResult OpenModifyTask(ChallengesDetailViewModel viewModel, int taskId)
         {
             TempData[EditTask] = taskId;
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
@@ -208,7 +208,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> ModifyTask(ChallengeDetailViewModel viewModel)
+        public async Task<IActionResult> ModifyTask(ChallengesDetailViewModel viewModel)
         {
             foreach (string key in ModelState.Keys.Where(m => m.StartsWith("Challenge.")).ToList())
             {
@@ -231,7 +231,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> DeleteTask(ChallengeDetailViewModel viewModel, int id)
+        public async Task<IActionResult> DeleteTask(ChallengesDetailViewModel viewModel, int id)
         {
             await challengeService.RemoveTaskAsync(CurrentUser, id);
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
@@ -242,7 +242,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> DecreaseTaskSort(ChallengeDetailViewModel viewModel, int id)
+        public async Task<IActionResult> DecreaseTaskSort(ChallengesDetailViewModel viewModel, int id)
         {
             await challengeService.DecreaseTaskPositionAsync(CurrentUser, id);
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
@@ -253,7 +253,7 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.EditChallenges)]
-        public async Task<IActionResult> IncreaseTaskSort(ChallengeDetailViewModel viewModel, int id)
+        public async Task<IActionResult> IncreaseTaskSort(ChallengesDetailViewModel viewModel, int id)
         {
             await challengeService.IncreaseTaskPositionAsync(CurrentUser, id);
             TempData[TempEditChallenge] = Newtonsoft.Json.JsonConvert
