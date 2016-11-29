@@ -1,7 +1,8 @@
-﻿@model GRA.Controllers.ViewModel.Participants.ParticipantsListViewModel
+﻿@model GRA.Controllers.ViewModel.Participants.MailListViewModel
 
+@Html.Partial("_ParticipantPartial")
 
-@if (Model.CanRemoveParticipant)
+@if (Model.CanRemoveMail)
 {
     <div class="row">
         <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
@@ -9,7 +10,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="deleteModalLabel">Delete participant</h4>
+                        <h4 class="modal-title" id="deleteModalLabel">Delete mail</h4>
                     </div>
                     <div class="modal-body">
                         <span class="fa fa-exclamation-triangle" aria-hidden="true"></span>
@@ -17,7 +18,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-right: 1em;">Cancel</button>
-                        <form asp-controller="Participants" asp-action="Delete" method="post" role="form" style="display:inline">
+                        <form asp-controller="Participants" asp-action="DeleteMail" method="post" role="form" style="display:inline">
                             <input id="Id" name="Id" type="hidden" />
                             <button type="submit" class="btn btn-danger pull-right" aria-label="Confirm">
                                 <span class="fa fa-remove" aria-hidden="true"></span>
@@ -31,22 +32,11 @@
     </div>
 }
 
-<form asp-controller="Participants" asp-action="Index" method="get" role="form">
-    <div class="row" style="padding: 10px 0;">
-        <div class="col-xs-10">
-            <input asp-for="Search" class="form-control" />
-        </div>
-        <div class="col-xs-2">
-            <input type="submit" value="Search" class="btn btn-default" />
-        </div>
-    </div>
-</form>
-
 <div class="row" style="padding: 10px 0;">
     <div class="col-xs-12">
-        @if (Model.Users.Count() == 0)
+        @if (Model.Mail.Count() == 0)
         {
-            <div class="alert alert-warning">No Users</div>
+            <div class="alert alert-warning">No Mail</div>
         }
         else
         {
@@ -54,48 +44,37 @@
                 <table class="table table-condensed table-bordered link-table">
                     <thead>
                         <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>UserName</th>
-                            <th>EmailAddress</th>
-                            <th>Branch</th>
-                            <th>Program</th>
-                            @if (Model.CanRemoveParticipant)
+                            <th>To/From User</th>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Unread</th>
+                            @if (Model.CanRemoveMail)
                             {
                                 <th>&nbsp;</th>
                             }
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var user in Model.Users)
+                        @foreach (var mail in Model.Mail)
                         {
                             <tr>
                                 <td class="td-class">
-                                    @if (Model.CanViewDetails)
-                                    {
-                                        <a asp-action="Detail" asp-route-id="@user.Id" class="rowlink">
-                                            @user.FirstName
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        @user.FirstName
-                                    }
+                                    <a asp-action="MailDetail" asp-route-id="@mail.Id" class="rowlink">
+                                        @(mail.FromUserId == Model.Id ? "From" : "To")
+                                    </a>
                                 </td>
-                                <td>@user.LastName</td>
-                                <td>@user.Username</td>
-                                <td>@user.Email</td>
-                                <td>@user.BranchId</td>
-                                <td>@user.ProgramId</td>
-                                @if (Model.CanRemoveParticipant)
+                                <td>@mail.CreatedAt.ToString("d")</td>
+                                <td>@mail.Subject</td>
+                                <td>@(mail.IsNew ? "Yes" : "No")</td>
+                                @if (Model.CanRemoveMail)
                                 {
                                     <td class="on-top">
                                         <button type="button"
                                                 class="btn btn-danger btn-xs"
                                                 data-toggle="modal"
                                                 data-target="#deleteModal"
-                                                data-id="@user.Id"
-                                                data-name="@user.Username">
+                                                data-id="@mail.Id"
+                                                data-name="@mail.Subject">
                                             <span class="fa fa-remove" aria-hidden="true"></span>
                                         </button>
                                     </td>
@@ -110,11 +89,13 @@
     </div>
 </div>
 
+<div class="form-group">
+    <a asp-action="Index" class="btn btn-default">Return to Participants</a>
+</div>
+
 @section scripts
 {
     <script>
-        @if (Model.CanViewDetails) {
-        <text>
         $(document).ready(function() {
             $('.td-class').each(function() {
                 $(this).children('a.rowlink').height($(this).height() + 11);
@@ -125,17 +106,15 @@
                 $(this).children('a.rowlink').height($(this).height() + 11);
             });
         });
-        </text>
-        }
 
-        @if (Model.CanRemoveParticipant) {
+        @if (Model.CanRemoveMail) {
         <text>
         $('#deleteModal').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget);
             var id = button.data('id');
             var name = button.data('name');
             var modal = $(this);
-            modal.find('#modal-text').text('Are you sure you wish to delete the user "' + name + '" ?');
+            modal.find('#modal-text').text('Are you sure you wish to delete the mail "' + name + '" ?');
             modal.find('#Id').val(id);
         })
         </text>

@@ -1,0 +1,14 @@
+﻿<div class="row">
+    <div class="col-xs-12">
+        <ul class="nav nav-pills" style="padding: 10px 0;">
+            <li ActiveBy routeKey="Action" value="Detail"><a asp-action="Detail" asp-route-id="@Model.Id">Details</a></li>
+            <li ActiveBy routeKey="Action" value="Family"><a asp-action="Family" asp-route-id="@Model.Id">Family</a></li>
+            <li ActiveBy routeKey="Action" value="Books"><a asp-action="Books" asp-route-id="@Model.Id">Books</a></li>
+            <li ActiveBy routeKey="Action" value="Points"><a asp-action="Points" asp-route-id="@Model.Id">Points</a></li>
+            @if (Context.User.HasClaim(GRA.ClaimType.Permission, GRA.Domain.Model.Permission.ReadAllMail.ToString()))
+            {
+                <li ActiveBy routeKey="Action" value="Mail"><a asp-action="Mail" asp-route-id="@Model.Id">Mail</a></li>
+            }
+        </ul>
+    </div>
+</div>
