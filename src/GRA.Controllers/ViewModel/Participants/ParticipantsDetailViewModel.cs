@@ -8,6 +8,7 @@ namespace GRA.Controllers.ViewModel.Participants
         public int Id { get; set; }
         public int HouseholdCount { get; set; }
         public int? HeadOfHouseholdId { get; set; }
+        public bool HasAccount { get; set; }
         public bool CanEditDetails { get; set; }
         public SelectList BranchList { get; set; }
         public SelectList ProgramList { get; set; }

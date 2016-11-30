@@ -10,6 +10,7 @@ namespace GRA.Controllers.ViewModel.Participants
         public int Id { get; set; }
         public int HouseholdCount { get; set; }
         public int? HeadOfHouseholdId { get; set; }
+        public bool HasAccount { get; set; }
         public bool CanRemoveMail { get; set; }
     }
 }

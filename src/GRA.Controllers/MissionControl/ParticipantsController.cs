@@ -79,6 +79,7 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> Delete(int id)
         {
             await _userService.Remove(CurrentUser, id);
+            AlertSuccess = "Participant deleted";
             return RedirectToAction("Index");
         }
         #endregion
@@ -101,6 +102,7 @@ namespace GRA.Controllers.MissionControl
                 Id = user.Id,
                 HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanEditDetails = UserHasPermission(Permission.EditParticipants),
                 BranchList = new SelectList(branchList.Result.ToList(), "Id", "Name"),
                 ProgramList = new SelectList(programList.Result.ToList(), "Id", "Name"),
@@ -116,7 +118,7 @@ namespace GRA.Controllers.MissionControl
             if (ModelState.IsValid)
             {
                 await _userService.Update(CurrentUser, model.User);
-                AlertSuccess = "Participant infomation was updated";
+                AlertSuccess = "Participant infomation updated";
                 return RedirectToAction("Detail", new { id = model.User.Id });
             }
             else
@@ -174,6 +176,7 @@ namespace GRA.Controllers.MissionControl
                 Id = id,
                 HouseholdCount = household.Count,
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 Head = headOfHousehold
             };
 
@@ -216,6 +219,7 @@ namespace GRA.Controllers.MissionControl
                 HouseholdCount = await _userService
                 .FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanModifyBooks = UserHasPermission(Permission.LogActivityForAny)
             };
 
@@ -235,6 +239,7 @@ namespace GRA.Controllers.MissionControl
             if (ModelState.IsValid)
             {
                 await _activityService.UpdateBook(CurrentUser, model.Id, model.Books[listId]);
+                AlertSuccess = $"'{model.Books[listId].Title}' updated";
             }
             else
             {
@@ -256,7 +261,7 @@ namespace GRA.Controllers.MissionControl
             return View(viewModel);
         }
 
-        
+
         [Authorize(Policy = Policy.LogActivityForAny)]
         [HttpPost]
         public async Task<IActionResult> AddBook(BookAddViewModel model)
@@ -264,6 +269,7 @@ namespace GRA.Controllers.MissionControl
             if (ModelState.IsValid)
             {
                 await _activityService.AddBook(CurrentUser, model.Id, model.Book);
+                AlertSuccess = $"Added book '{model.Book.Title}'";
                 return RedirectToAction("Books", new { id = model.Id });
             }
             else
@@ -280,6 +286,7 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> DeleteBook(int id, int userId)
         {
             await _activityService.RemoveBook(CurrentUser, userId, id);
+            AlertSuccess = "Book deleted";
             return RedirectToAction("Books", new { id = userId });
         }
         #endregion
@@ -318,6 +325,7 @@ namespace GRA.Controllers.MissionControl
                 Id = id,
                 HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanRemoveHistory = UserHasPermission(Permission.LogActivityForAny)
             };
 
@@ -366,6 +374,7 @@ namespace GRA.Controllers.MissionControl
                 Id = id,
                 HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanRemoveMail = UserHasPermission(Permission.DeleteAnyMail)
             };
             return View(viewModel);
@@ -395,12 +404,48 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> DeleteMail(int id, int userId)
         {
             await _mailService.RemoveAsync(CurrentUser, id);
-
+            AlertSuccess = "Mail deleted";
             return RedirectToAction("Mail", new { id = userId });
         }
         #endregion
 
         #region PasswordReset
+        [Authorize(Policy = Policy.EditParticipants)]
+        public async Task<IActionResult> PasswordReset(int id)
+        {
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
+
+            PasswordResetViewModel viewModel = new PasswordResetViewModel()
+            {
+                Id = id,
+                HouseholdCount = await _userService
+                .FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username)
+            };
+
+            return View(viewModel);
+        }
+
+        [Authorize(Policy = Policy.EditParticipants)]
+        [HttpPost]
+        public async Task<IActionResult> PasswordReset(PasswordResetViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _userService.ResetPassword(CurrentUser, model.Id, model.NewPassword);
+                AlertSuccess = "Password reset";
+                return RedirectToAction("PasswordReset", new { id = model.Id });
+            }
+            else
+            {
+                var user = await _userService.GetDetails(CurrentUser, model.Id);
+                SetPageTitle(user);
+
+                return View(model);
+            }
+        }
         #endregion
 
         private void SetPageTitle(User user, bool addBook = false, bool? mailTo = null)
@@ -419,7 +464,8 @@ namespace GRA.Controllers.MissionControl
             {
                 PageTitle = $"{(mailTo.Value ? "To" : "From")} - {name}";
             }
-            else { 
+            else
+            {
                 PageTitle = $"Participant - {name}";
             }
         }
