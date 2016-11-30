@@ -210,7 +210,7 @@ namespace GRA.Controllers.MissionControl
 
             BookListViewModel viewModel = new BookListViewModel()
             {
-                Books = books.Data,
+                Books = books.Data.ToList(),
                 PaginateModel = paginateModel,
                 Id = id,
                 HouseholdCount = await _userService
@@ -221,8 +221,63 @@ namespace GRA.Controllers.MissionControl
 
             return View(viewModel);
         }
+
         [Authorize(Policy = Policy.LogActivityForAny)]
-        public async Task<IActionResult> DeleteBook (int id, int userId)
+        [HttpPost]
+        public async Task<IActionResult> EditBook(BookListViewModel model, int listId)
+        {
+            foreach (string key in ModelState.Keys
+                .Where(m => !m.StartsWith($"Books[{listId}].")).ToList())
+            {
+                ModelState.Remove(key);
+            }
+
+            if (ModelState.IsValid)
+            {
+                await _activityService.UpdateBook(CurrentUser, model.Id, model.Books[listId]);
+            }
+            else
+            {
+                AlertDanger = "Missing required fields";
+            }
+            return RedirectToAction("Books", new { id = model.Id });
+        }
+
+        [Authorize(Policy = Policy.LogActivityForAny)]
+        public async Task<IActionResult> AddBook(int id)
+        {
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user, addBook: true);
+
+            BookAddViewModel viewModel = new BookAddViewModel()
+            {
+                Id = id
+            };
+            return View(viewModel);
+        }
+
+        
+        [Authorize(Policy = Policy.LogActivityForAny)]
+        [HttpPost]
+        public async Task<IActionResult> AddBook(BookAddViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _activityService.AddBook(CurrentUser, model.Id, model.Book);
+                return RedirectToAction("Books", new { id = model.Id });
+            }
+            else
+            {
+                var user = await _userService.GetDetails(CurrentUser, model.Id);
+                SetPageTitle(user, addBook: true);
+
+                return View(model);
+            }
+        }
+
+        [Authorize(Policy = Policy.LogActivityForAny)]
+        [HttpPost]
+        public async Task<IActionResult> DeleteBook(int id, int userId)
         {
             await _activityService.RemoveBook(CurrentUser, userId, id);
             return RedirectToAction("Books", new { id = userId });
@@ -323,7 +378,7 @@ namespace GRA.Controllers.MissionControl
             var userId = mail.ToUserId ?? mail.FromUserId;
 
             var user = await _userService.GetDetails(CurrentUser, userId);
-            SetPageTitle(user, mail.ToUserId.HasValue);
+            SetPageTitle(user, mailTo: mail.ToUserId.HasValue);
 
             MailDetailViewModel viewModel = new MailDetailViewModel
             {
@@ -336,6 +391,7 @@ namespace GRA.Controllers.MissionControl
         }
 
         [Authorize(Policy = Policy.DeleteAnyMail)]
+        [HttpPost]
         public async Task<IActionResult> DeleteMail(int id, int userId)
         {
             await _mailService.RemoveAsync(CurrentUser, id);
@@ -347,20 +403,24 @@ namespace GRA.Controllers.MissionControl
         #region PasswordReset
         #endregion
 
-        private void SetPageTitle(User user, bool? mailTo = null)
+        private void SetPageTitle(User user, bool addBook = false, bool? mailTo = null)
         {
             var name = user.FirstName + " " + user.LastName;
             if (!string.IsNullOrEmpty(user.Username))
             {
                 name += $"({user.Username})";
             }
-            if (mailTo == null)
+
+            if (addBook == true)
             {
-                PageTitle = $"Participant - {name}";
+                PageTitle = $"Add Book - {name}";
             }
-            else
+            else if (mailTo != null)
             {
                 PageTitle = $"{(mailTo.Value ? "To" : "From")} - {name}";
+            }
+            else { 
+                PageTitle = $"Participant - {name}";
             }
         }
     }

@@ -5,7 +5,7 @@ namespace GRA.Controllers.ViewModel.Participants
 {
     public class BookListViewModel
     {
-        public IEnumerable<GRA.Domain.Model.Book> Books { get; set; }
+        public List<GRA.Domain.Model.Book> Books { get; set; }
         public PaginateViewModel PaginateModel { get; set; }
         public int Id { get; set; }
         public int HouseholdCount { get; set; }
