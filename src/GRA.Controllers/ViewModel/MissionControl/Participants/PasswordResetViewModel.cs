@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GRA.Controllers.ViewModel.Participants
+namespace GRA.Controllers.ViewModel.MissionControl.Participants
 {
     public class PasswordResetViewModel
     {

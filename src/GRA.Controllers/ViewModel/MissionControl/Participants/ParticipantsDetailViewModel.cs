@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace GRA.Controllers.ViewModel.Participants
+namespace GRA.Controllers.ViewModel.MissionControl.Participants
 {
     public class ParticipantsDetailViewModel
     {

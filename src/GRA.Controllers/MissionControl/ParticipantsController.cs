@@ -1,4 +1,4 @@
-﻿using GRA.Controllers.ViewModel.Participants;
+﻿using GRA.Controllers.ViewModel.MissionControl.Participants;
 using GRA.Controllers.ViewModel.Shared;
 using GRA.Domain.Model;
 using GRA.Domain.Service;
