@@ -17,15 +17,18 @@ namespace GRA.Controllers.MissionControl
     public class ParticipantsController : Base.Controller
     {
         private readonly ILogger<ParticipantsController> _logger;
+        private readonly ActivityService _activityService;
         private readonly MailService _mailService;
         private readonly UserService _userService;
         public ParticipantsController(ILogger<ParticipantsController> logger,
             ServiceFacade.Controller context,
+            ActivityService activityService,
             MailService mailService,
             UserService userService)
             : base(context)
         {
             this._logger = Require.IsNotNull(logger, nameof(logger));
+            this._activityService = Require.IsNotNull(activityService, nameof(activityService));
             this._mailService = Require.IsNotNull(mailService, nameof(mailService));
             this._userService = Require.IsNotNull(userService, nameof(userService));
             PageTitle = "Participants";
@@ -81,13 +84,15 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> Detail(int id)
         {
             var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
             ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
             {
                 User = user,
                 Id = user.Id,
+                HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
                 CanEditDetails = UserHasPermission(Permission.EditParticipants)
             };
-            PageTitle = $"Participant - {user.Username}";
             return View(viewModel);
         }
 
@@ -103,52 +108,159 @@ namespace GRA.Controllers.MissionControl
             }
             else
             {
-                PageTitle = $"Participant - {model.User.Username}";
+                SetPageTitle(model.User);
                 return View(model);
             }
         }
         #endregion
 
-        #region Family
+        #region Household
         [Authorize(Policy = Policy.ViewParticipantDetails)]
-        public async Task<IActionResult> Family(int id)
+        public async Task<IActionResult> Household(int id, int page = 1)
         {
-            PageTitle = "Participant Family";
-            await _userService.GetDetails(User, id);
-            ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
+            int take = 15;
+            int skip = take * (page - 1);
+
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
+
+            User headOfHousehold = new User();
+
+            if (user.HouseholdHeadUserId.HasValue)
             {
-                Id = id
+                headOfHousehold = await _userService
+                    .GetDetails(CurrentUser, user.HouseholdHeadUserId.Value);
+            }
+            else
+            {
+                headOfHousehold = user;
+            }
+
+            var household = await _userService
+                .GetPaginatedFamilyListAsync(CurrentUser, headOfHousehold.Id, skip, take);
+
+            PaginateViewModel paginateModel = new PaginateViewModel()
+            {
+                ItemCount = household.Count,
+                CurrentPage = page,
+                ItemsPerPage = take
             };
-            return View("Family", viewModel);
+            if (paginateModel.MaxPage > 0 && paginateModel.CurrentPage > paginateModel.MaxPage)
+            {
+                return RedirectToRoute(
+                    new
+                    {
+                        page = paginateModel.LastPage ?? 1
+                    });
+            }
+
+            HouseholdListViewModel viewModel = new HouseholdListViewModel()
+            {
+                Users = household.Data,
+                PaginateModel = paginateModel,
+                Id = id,
+                HouseholdCount = household.Count,
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
+                Head = headOfHousehold
+            };
+
+            return View(viewModel);
         }
         #endregion
 
         #region Books
         [Authorize(Policy = Policy.ViewParticipantDetails)]
-        public async Task<IActionResult> Books(int id)
+        public async Task<IActionResult> Books(int id, int page = 1)
         {
-            PageTitle = "Books Read";
-            await _userService.GetDetails(User, id);
-            ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
+            int take = 15;
+            int skip = take * (page - 1);
+
+            var books = await _userService.GetPaginatedUserBookListAsync(CurrentUser, id, skip, take);
+
+            PaginateViewModel paginateModel = new PaginateViewModel()
             {
-                Id = id
+                ItemCount = books.Count,
+                CurrentPage = page,
+                ItemsPerPage = take
             };
+            if (paginateModel.MaxPage > 0 && paginateModel.CurrentPage > paginateModel.MaxPage)
+            {
+                return RedirectToRoute(
+                    new
+                    {
+                        page = paginateModel.LastPage ?? 1
+                    });
+            }
+
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
+
+            BookListViewModel viewModel = new BookListViewModel()
+            {
+                Books = books.Data,
+                PaginateModel = paginateModel,
+                Id = id,
+                HouseholdCount = await _userService
+                .FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
+                CanModifyBooks = UserHasPermission(Permission.LogActivityForAny)
+            };
+
             return View(viewModel);
+        }
+        [Authorize(Policy = Policy.LogActivityForAny)]
+        public async Task<IActionResult> DeleteBook (int id, int userId)
+        {
+            await _activityService.RemoveBook(CurrentUser, userId, id);
+            return RedirectToAction("Books", new { id = userId });
         }
         #endregion
 
-        #region Points
+        #region History
         [Authorize(Policy = Policy.ViewParticipantDetails)]
-        public async Task<IActionResult> Points(int id)
+        public async Task<IActionResult> History(int id, int page = 1)
         {
-            var user = await _userService.GetDetails(CurrentUser, id);
-            PageTitle = $"Participant - {user.Username}";
+            int take = 15;
+            int skip = take * (page - 1);
+            var history = await _userService
+                .GetPaginatedUserHistoryAsync(CurrentUser, id, skip, take);
 
-            ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
+            PaginateViewModel paginateModel = new PaginateViewModel()
             {
-                Id = id
+                ItemCount = history.Count,
+                CurrentPage = page,
+                ItemsPerPage = take
             };
+            if (paginateModel.MaxPage > 0 && paginateModel.CurrentPage > paginateModel.MaxPage)
+            {
+                return RedirectToRoute(
+                    new
+                    {
+                        page = paginateModel.LastPage ?? 1
+                    });
+            }
+
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
+
+            HistoryListViewModel viewModel = new HistoryListViewModel()
+            {
+                Historys = history.Data,
+                PaginateModel = paginateModel,
+                Id = id,
+                HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
+                CanRemoveHistory = UserHasPermission(Permission.LogActivityForAny)
+            };
+
             return View(viewModel);
+        }
+
+        [Authorize(Policy = Policy.LogActivityForAny)]
+        public async Task<IActionResult> DeleteHistory(int id, int userId)
+        {
+            await _activityService.RemoveActivityAsync(CurrentUser, userId, id);
+            return RedirectToAction("History", new { id = userId });
         }
         #endregion
 
@@ -156,9 +268,6 @@ namespace GRA.Controllers.MissionControl
         [Authorize(Policy = Policy.ReadAllMail)]
         public async Task<IActionResult> Mail(int id, int page = 1)
         {
-            var user = await _userService.GetDetails(CurrentUser, id);
-            PageTitle = $"Participant - {user.Username}";
-
             int take = 15;
             int skip = take * (page - 1);
 
@@ -179,11 +288,16 @@ namespace GRA.Controllers.MissionControl
                     });
             }
 
+            var user = await _userService.GetDetails(CurrentUser, id);
+            SetPageTitle(user);
+
             MailListViewModel viewModel = new MailListViewModel()
             {
-                Mail = mail.Data,
+                Mails = mail.Data,
                 PaginateModel = paginateModel,
                 Id = id,
+                HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
+                HeadOfHouseholdId = user.HouseholdHeadUserId,
                 CanRemoveMail = UserHasPermission(Permission.DeleteAnyMail)
             };
             return View(viewModel);
@@ -196,8 +310,7 @@ namespace GRA.Controllers.MissionControl
             var userId = mail.ToUserId ?? mail.FromUserId;
 
             var user = await _userService.GetDetails(CurrentUser, userId);
-
-            PageTitle = $"{(mail.ToUserId.HasValue ? "To" : "From")}: {user.Username}";
+            SetPageTitle(user, mail.ToUserId.HasValue);
 
             MailDetailViewModel viewModel = new MailDetailViewModel
             {
@@ -210,11 +323,8 @@ namespace GRA.Controllers.MissionControl
         }
 
         [Authorize(Policy = Policy.DeleteAnyMail)]
-        public async Task<IActionResult> DeleteMail(int id)
+        public async Task<IActionResult> DeleteMail(int id, int userId)
         {
-            var mail = await _mailService.GetDetails(CurrentUser, id);
-            var userId = mail.ToUserId ?? mail.FromUserId;
-
             await _mailService.RemoveAsync(CurrentUser, id);
 
             return RedirectToAction("Mail", new { id = userId });
@@ -223,5 +333,22 @@ namespace GRA.Controllers.MissionControl
 
         #region PasswordReset
         #endregion
+
+        private void SetPageTitle(User user, bool? mailTo = null)
+        {
+            var name = user.FirstName + " " + user.LastName;
+            if (!string.IsNullOrEmpty(user.Username))
+            {
+                name += $"({user.Username})";
+            }
+            if (mailTo == null)
+            {
+                PageTitle = $"Participant - {name}";
+            }
+            else
+            {
+                PageTitle = $"{(mailTo.Value ? "To" : "From")} - {name}";
+            }
+        }
     }
 }

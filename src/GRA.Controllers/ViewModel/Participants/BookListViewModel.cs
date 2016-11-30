@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace GRA.Controllers.ViewModel.Participants
 {
-    public class MailListViewModel
+    public class BookListViewModel
     {
-        public IEnumerable<GRA.Domain.Model.Mail> Mails { get; set; }
+        public IEnumerable<GRA.Domain.Model.Book> Books { get; set; }
         public PaginateViewModel PaginateModel { get; set; }
         public int Id { get; set; }
         public int HouseholdCount { get; set; }
         public int? HeadOfHouseholdId { get; set; }
-        public bool CanRemoveMail { get; set; }
+        public bool CanModifyBooks { get; set; }
     }
 }

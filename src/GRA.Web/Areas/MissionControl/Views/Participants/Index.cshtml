@@ -51,7 +51,7 @@
         else
         {
             <div>
-                <table class="table table-condensed table-bordered link-table">
+                <table class="table table-condensed table-bordered @(Model.CanViewDetails ? "link-table" : "table-striped")">
                     <thead>
                         <tr>
                             <th>First Name</th>
@@ -105,7 +105,10 @@
                     </tbody>
                 </table>
             </div>
-            <paginate paginateModel="@Model.PaginateModel"></paginate>
+            @if (Model.PaginateModel.MaxPage > 1)
+            {
+                <paginate paginateModel="@Model.PaginateModel"></paginate>
+            }
         }
     </div>
 </div>
