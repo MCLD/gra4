@@ -4,6 +4,7 @@ using GRA.Domain.Model;
 using GRA.Domain.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,17 +20,20 @@ namespace GRA.Controllers.MissionControl
         private readonly ILogger<ParticipantsController> _logger;
         private readonly ActivityService _activityService;
         private readonly MailService _mailService;
+        private readonly SiteService _siteService;
         private readonly UserService _userService;
         public ParticipantsController(ILogger<ParticipantsController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
             MailService mailService,
+            SiteService siteService,
             UserService userService)
             : base(context)
         {
             this._logger = Require.IsNotNull(logger, nameof(logger));
             this._activityService = Require.IsNotNull(activityService, nameof(activityService));
             this._mailService = Require.IsNotNull(mailService, nameof(mailService));
+            this._siteService = Require.IsNotNull(siteService, nameof(siteService));
             this._userService = Require.IsNotNull(userService, nameof(userService));
             PageTitle = "Participants";
         }
@@ -85,13 +89,22 @@ namespace GRA.Controllers.MissionControl
         {
             var user = await _userService.GetDetails(CurrentUser, id);
             SetPageTitle(user);
+
+            var branchList = _siteService.GetBranches(CurrentUser, user.SystemId);
+            var programList = _siteService.GetProgramList(CurrentUser);
+            var systemList = _siteService.GetSystemList(CurrentUser);
+            await Task.WhenAll(branchList, programList, systemList);
+
             ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
             {
                 User = user,
                 Id = user.Id,
                 HouseholdCount = await _userService.FamilyMemberCountAsync(CurrentUser, user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
-                CanEditDetails = UserHasPermission(Permission.EditParticipants)
+                CanEditDetails = UserHasPermission(Permission.EditParticipants),
+                BranchList = new SelectList(branchList.Result.ToList(), "Id", "Name"),
+                ProgramList = new SelectList(programList.Result.ToList(), "Id", "Name"),
+                SystemList = new SelectList(systemList.Result.ToList(), "Id", "Name")
             };
             return View(viewModel);
         }

@@ -40,7 +40,7 @@
     <div class="row row-spacing">
         <div class="col-xs-12">
             <label asp-for="User.BranchId" class="control-label"></label>
-            <input asp-for="User.BranchId" class="form-control" />
+            <select asp-for="User.BranchId" asp-items="Model.BranchList" class="form-control"></select>
             <span asp-validation-for="User.BranchId" class="text-danger"></span>
         </div>
     </div>
@@ -48,7 +48,7 @@
     <div class="row row-spacing">
         <div class="col-xs-12">
             <label asp-for="User.ProgramId" class="control-label"></label>
-            <input asp-for="User.ProgramId" class="form-control" />
+            <select asp-for="User.ProgramId" asp-items="Model.ProgramList" class="form-control"></select>
             <span asp-validation-for="User.ProgramId" class="text-danger"></span>
         </div>
     </div>
@@ -56,7 +56,7 @@
     <div class="row row-spacing">
         <div class="col-xs-12">
             <label asp-for="User.SystemId" class="control-label"></label>
-            <input asp-for="User.SystemId" class="form-control" />
+            <select asp-for="User.SystemId" asp-items="Model.SystemList" class="form-control"></select>
             <span asp-validation-for="User.SystemId" class="text-danger"></span>
         </div>
     </div>
@@ -80,7 +80,10 @@
     <script>
         @if (!Model.CanEditDetails)
         {
-            <text>$("input").prop('readonly', true);</text>
+        <text>
+        $("input").prop('readonly', true);
+        $("select").prop('disabled', true);
+        </text>
         }
     </script>
 }

@@ -1,4 +1,6 @@
-﻿namespace GRA.Controllers.ViewModel.Participants
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace GRA.Controllers.ViewModel.Participants
 {
     public class ParticipantsDetailViewModel
     {
@@ -7,5 +9,8 @@
         public int HouseholdCount { get; set; }
         public int? HeadOfHouseholdId { get; set; }
         public bool CanEditDetails { get; set; }
+        public SelectList BranchList { get; set; }
+        public SelectList ProgramList { get; set; }
+        public SelectList SystemList { get; set; }
     }
 }
