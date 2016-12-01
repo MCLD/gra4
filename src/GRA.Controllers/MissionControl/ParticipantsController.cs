@@ -20,20 +20,17 @@ namespace GRA.Controllers.MissionControl
         private readonly ILogger<ParticipantsController> _logger;
         private readonly ActivityService _activityService;
         private readonly MailService _mailService;
-        private readonly SiteService _siteService;
         private readonly UserService _userService;
         public ParticipantsController(ILogger<ParticipantsController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
             MailService mailService,
-            SiteService siteService,
             UserService userService)
             : base(context)
         {
             this._logger = Require.IsNotNull(logger, nameof(logger));
             this._activityService = Require.IsNotNull(activityService, nameof(activityService));
             this._mailService = Require.IsNotNull(mailService, nameof(mailService));
-            this._siteService = Require.IsNotNull(siteService, nameof(siteService));
             this._userService = Require.IsNotNull(userService, nameof(userService));
             PageTitle = "Participants";
         }
