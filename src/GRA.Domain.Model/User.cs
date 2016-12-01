@@ -16,11 +16,14 @@ namespace GRA.Domain.Model
         [MaxLength(36)]
         public string Username { get; set; }
 
+        [DisplayName("First Name")]
         [Required]
         [MaxLength(255)]
         public string FirstName { get; set; }
+        [DisplayName("Last Name")]
         [MaxLength(255)]
         public string LastName { get; set; }
+        [DisplayName("Phone Number")]
         [MaxLength(15)]
         public string PhoneNumber { get; set; }
         [MaxLength(32)]
