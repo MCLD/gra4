@@ -23,16 +23,16 @@ namespace GRA.Controllers
             UserService userService)
                 : base(context)
         {
-            this._logger = Require.IsNotNull(logger, nameof(logger));
-            this._mapper = context.Mapper;
-            this._userService = Require.IsNotNull(userService, nameof(userService));
+            _logger = Require.IsNotNull(logger, nameof(logger));
+            _mapper = context.Mapper;
+            _userService = Require.IsNotNull(userService, nameof(userService));
             PageTitle = "Join";
         }
 
         public async Task<IActionResult> Index(string sitePath = null)
         {
             var site = await GetCurrentSite(sitePath);
-            PageTitle = $"{site.Name} - join now!";
+            PageTitle = $"{site.Name} - Join Now!";
 
             var branchList = await _siteService.GetBranches(CurrentUser, site.Id);
 
@@ -58,11 +58,14 @@ namespace GRA.Controllers
                 User user = _mapper.Map<User>(model);
 
                 await _userService.RegisterUserAsync(user, model.Password);
+                await LoginUserAsync(await _userService
+                    .AuthenticateUserAsync(user.Username, model.Password));
+
                 return RedirectToAction("Index", "Home");
             }
             else
             {
-                PageTitle = $"{site.Name} - join now!";
+                PageTitle = $"{site.Name} - Join Now!";
 
                 var branchList = await _siteService.GetBranches(CurrentUser, site.Id);
                 model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
