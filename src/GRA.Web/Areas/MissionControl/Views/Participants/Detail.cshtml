@@ -3,19 +3,9 @@
 @Html.Partial("_ParticipantPartial")
 
 <form asp-controller="Participants" method="post" role="form">
-    <input asp-for="User.Id" type="hidden" />
-    <input asp-for="User.AvatarId" type="hidden" />
-    <input asp-for="User.CardNumber" type="hidden" />
-    <input asp-for="User.CreatedAt" type="hidden" />
-    <input asp-for="User.CreatedBy" type="hidden" />
-    <input asp-for="User.HouseholdHeadUserId" type="hidden" />
-    <input asp-for="User.IsAchiever" type="hidden" />
-    <input asp-for="User.IsDeleted" type="hidden" />
-    <input asp-for="User.IsLockedOut" type="hidden" />
-    <input asp-for="User.LastAccess" type="hidden" />
-    <input asp-for="User.PointsEarned" type="hidden" />
-    <input asp-for="User.PostalCode" type="hidden" />
-    <input asp-for="User.Username" type="hidden" />
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="HouseholdCount" type="hidden" />
+    <input asp-for="HasAccount" type="hidden" />
 
     <div class="row" style="padding: 10px 0;">
         <div class="col-xs-12">
@@ -82,6 +72,21 @@
         <a asp-action="Index" class="btn btn-default">Return to Participants</a>
         @if (Model.CanEditDetails)
         {
+            <input asp-for="CanEditDetails" type="hidden" />
+            <input asp-for="User.Id" type="hidden" />
+            <input asp-for="User.AvatarId" type="hidden" />
+            <input asp-for="User.CardNumber" type="hidden" />
+            <input asp-for="User.CreatedAt" type="hidden" />
+            <input asp-for="User.CreatedBy" type="hidden" />
+            <input asp-for="User.HouseholdHeadUserId" type="hidden" />
+            <input asp-for="User.IsAchiever" type="hidden" />
+            <input asp-for="User.IsDeleted" type="hidden" />
+            <input asp-for="User.IsLockedOut" type="hidden" />
+            <input asp-for="User.LastAccess" type="hidden" />
+            <input asp-for="User.PointsEarned" type="hidden" />
+            <input asp-for="User.PostalCode" type="hidden" />
+            <input asp-for="User.Username" type="hidden" />
+
             <button type="submit" asp-action="Detail" id="Submit" name="Submit" value="Submit" class="btn btn-primary btn-spinner">
                 <span class="buttonText">Save Changes</span>
                 <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>

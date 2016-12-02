@@ -114,7 +114,7 @@ namespace GRA.Controllers.MissionControl
         {
             if (ModelState.IsValid)
             {
-                await _userService.Update(model.User);
+                await _userService.MCUpdate(model.User);
                 AlertSuccess = "Participant infomation updated";
                 return RedirectToAction("Detail", new { id = model.User.Id });
             }
