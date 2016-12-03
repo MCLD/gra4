@@ -84,6 +84,7 @@ namespace GRA.Controllers
             var user = await _userService.GetDetails((int)HttpContext.Session.GetInt32(SessionKey.ActiveUserId));
 
             User headOfHousehold = new User();
+            bool isHead = false;
             if (user.HouseholdHeadUserId.HasValue)
             {
                 headOfHousehold = await _userService
@@ -92,6 +93,7 @@ namespace GRA.Controllers
             else
             {
                 headOfHousehold = user;
+                isHead = true;
             }
 
             var household = await _userService
@@ -118,10 +120,18 @@ namespace GRA.Controllers
                 PaginateModel = paginateModel,
                 HouseholdCount = household.Count,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
-                Head = headOfHousehold
+                Head = headOfHousehold,
+                IsHead = isHead
             };
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult LoginAs(int id)
+        {
+            HttpContext.Session.SetInt32(SessionKey.ActiveUserId, id);
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Books(int page = 1)

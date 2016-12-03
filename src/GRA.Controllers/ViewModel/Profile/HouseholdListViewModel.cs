@@ -10,5 +10,6 @@ namespace GRA.Controllers.ViewModel.Profile
         public int HouseholdCount { get; set; }
         public bool HasAccount { get; set; }
         public GRA.Domain.Model.User Head { get; set; }
+        public bool IsHead { get; set; }
     }
 }
