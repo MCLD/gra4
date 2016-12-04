@@ -17,12 +17,14 @@ namespace GRA.Controllers.MissionControl
     {
         private readonly ILogger<ParticipantsController> _logger;
         private readonly ActivityService _activityService;
+        private readonly AuthenticationService _authenticationService;
         private readonly MailService _mailService;
         private readonly SiteService _siteService;
         private readonly UserService _userService;
         public ParticipantsController(ILogger<ParticipantsController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
+            AuthenticationService authenticationService,
             MailService mailService,
             SiteService siteService,
             UserService userService)
@@ -30,6 +32,8 @@ namespace GRA.Controllers.MissionControl
         {
             _logger = Require.IsNotNull(logger, nameof(logger));
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
+            _authenticationService = Require.IsNotNull(authenticationService,
+                nameof(authenticationService));
             _mailService = Require.IsNotNull(mailService, nameof(mailService));
             _siteService = Require.IsNotNull(siteService, nameof(siteService));
             _userService = Require.IsNotNull(userService, nameof(userService));
@@ -97,7 +101,7 @@ namespace GRA.Controllers.MissionControl
             {
                 User = user,
                 Id = user.Id,
-                HouseholdCount = await _userService.FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
+                HouseholdCount = await _userService.FamilyMemberCountAsync(GetId(ClaimType.UserId)),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanEditDetails = UserHasPermission(Permission.EditParticipants),
@@ -440,7 +444,7 @@ namespace GRA.Controllers.MissionControl
         {
             if (ModelState.IsValid)
             {
-                await _userService.ResetPassword(model.Id, model.NewPassword);
+                await _authenticationService.ResetPassword(model.Id, model.NewPassword);
                 AlertSuccess = "Password reset";
                 return RedirectToAction("PasswordReset", new { id = model.Id });
             }

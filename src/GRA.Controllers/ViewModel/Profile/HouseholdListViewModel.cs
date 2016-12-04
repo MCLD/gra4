@@ -11,5 +11,6 @@ namespace GRA.Controllers.ViewModel.Profile
         public bool HasAccount { get; set; }
         public GRA.Domain.Model.User Head { get; set; }
         public bool IsHead { get; set; }
+        public int ActiveUser { get; set; }
     }
 }
