@@ -46,6 +46,18 @@ namespace GRA.Domain.Service
             }
             return authResult;
         }
+
+        public async Task<AuthenticationResult> RevalidateUserAsync(int userId)
+        {
+            return new AuthenticationResult
+            {
+                FoundUser = true,
+                PasswordIsValid = true,
+                PermissionNames = await _roleRepository.GetPermisisonNamesForUserAsync(userId),
+                User = await _userRepository.GetByIdAsync(userId)
+            };
+        }
+
         public async Task ResetPassword(int userIdToReset, string password)
         {
             int userId = await GetClaimId(ClaimType.UserId);
