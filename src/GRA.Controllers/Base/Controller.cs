@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using GRA.Domain.Service;
 using GRA.Domain.Service.Abstract;
-using GRA.Web.Filter;
+using GRA.Controllers.Filter;
 
 namespace GRA.Controllers.Base
 {
+    [ServiceFilter(typeof(SiteFilter))]
     [SessionTimeoutFilter]
     public abstract class Controller : Microsoft.AspNetCore.Mvc.Controller
     {
@@ -128,15 +129,15 @@ namespace GRA.Controllers.Base
             return new UserClaimLookup(AuthUser).GetId(claimType);
         }
 
-        protected async Task<int> GetCurrentSiteId(string sitePath)
+        protected int GetCurrentSiteId(string sitePath)
         {
-            var context = await _userContextProvider.GetContext();
+            var context = _userContextProvider.GetContext();
             return context.SiteId;
         }
 
         protected async Task<Site> GetCurrentSite(string sitePath)
         {
-            return await _siteLookupService.GetById(await GetCurrentSiteId(sitePath));
+            return await _siteLookupService.GetById(GetCurrentSiteId(sitePath));
         }
 
         protected int GetActiveUserId()
