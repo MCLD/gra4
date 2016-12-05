@@ -78,9 +78,11 @@ namespace GRA.Domain.Service
             int skip,
             int take)
         {
-            int requestingUserId = GetClaimId(ClaimType.UserId);
+            int requestingUserId = await GetClaimId(ClaimType.UserId);
+            var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
             if (requestingUserId == householdHeadUserId
-                || HasPermission(Permission.ViewParticipantList))
+                || requestingUser.HouseholdHeadUserId == householdHeadUserId
+                || await HasPermission(Permission.ViewParticipantList))
             {
                 var dataTask = _userRepository.PageHouseholdAsync(householdHeadUserId, skip, take);
                 var countTask = _userRepository.GetHouseholdCountAsync(householdHeadUserId);
@@ -101,9 +103,11 @@ namespace GRA.Domain.Service
         public async Task<int>
             FamilyMemberCountAsync(int householdHeadUserId)
         {
-            int requestingUserId = GetClaimId(ClaimType.UserId);
+            int requestingUserId = await GetClaimId(ClaimType.UserId);
+            var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
             if (requestingUserId == householdHeadUserId
-                || HasPermission(Permission.ViewParticipantList))
+                || requestingUser.HouseholdHeadUserId == householdHeadUserId
+                || await HasPermission(Permission.ViewParticipantList))
             {
                 return await _userRepository.GetHouseholdCountAsync(householdHeadUserId);
             }
@@ -116,13 +120,13 @@ namespace GRA.Domain.Service
 
         public async Task<User> GetDetails(int userId)
         {
-            int requestingUserId = GetActiveUserId();
+            int requestingUserId = await GetClaimId(ClaimType.UserId);
             var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
-            int authUserId = GetClaimId(ClaimType.UserId);
-
+            var requestedUser = await _userRepository.GetByIdAsync(userId);
             if (requestingUserId == userId
-                || requestingUser.HouseholdHeadUserId == authUserId
-                || HasPermission(Permission.ViewParticipantDetails))
+                || requestedUser.HouseholdHeadUserId == requestingUserId
+                || requestingUser.HouseholdHeadUserId == userId
+                || await HasPermission(Permission.ViewParticipantDetails))
             {
                 return await _userRepository.GetByIdAsync(userId);
             }
@@ -276,6 +280,33 @@ namespace GRA.Domain.Service
             }
 
             return authCode.RoleName;
+        }
+
+        public async Task AddHouseholdMemberAsync(int householdHeadUserId, User memberToAdd)
+        {
+            int requestedByUserId = await GetClaimId(ClaimType.UserId);
+            var householdHead = await GetDetails(householdHeadUserId);
+
+            if (householdHead.HouseholdHeadUserId != null)
+            {
+                _logger.LogError($"User {requestedByUserId} cannot add a household member for {householdHeadUserId} who isn't a head of household.");
+                throw new Exception("Cannot add a household member to someone who isn't a head of household.");
+            }
+
+            if (requestedByUserId == householdHeadUserId
+               || await HasPermission(Permission.EditParticipants))
+            {
+                memberToAdd.HouseholdHeadUserId = householdHeadUserId;
+                memberToAdd.SiteId = householdHead.SiteId;
+                memberToAdd.CanBeDeleted = true;
+                memberToAdd.IsLockedOut = false;
+                var registeredUser = await _userRepository.AddSaveAsync(requestedByUserId, memberToAdd);
+            }
+            else
+            {
+                _logger.LogError($"User {requestedByUserId} doesn't have permission to add a household member to {householdHeadUserId}.");
+                throw new Exception("Permission denied.");
+            }
         }
     }
 }
