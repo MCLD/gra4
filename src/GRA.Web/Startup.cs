@@ -111,7 +111,7 @@ namespace GRA.Web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() && false)
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();

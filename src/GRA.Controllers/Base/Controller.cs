@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using GRA.Domain.Service;
 using GRA.Domain.Service.Abstract;
+using GRA.Web.Filter;
 
 namespace GRA.Controllers.Base
 {
+    [SessionTimeoutFilter]
     public abstract class Controller : Microsoft.AspNetCore.Mvc.Controller
     {
         protected readonly IConfigurationRoot _config;
@@ -99,7 +101,7 @@ namespace GRA.Controllers.Base
             }
         }
 
-        protected async Task LogoutUserAsync()
+        public async Task LogoutUserAsync()
         {
             HttpContext.Session.Clear();
             await HttpContext.Authentication.SignOutAsync(Authentication.SchemeGRACookie);
