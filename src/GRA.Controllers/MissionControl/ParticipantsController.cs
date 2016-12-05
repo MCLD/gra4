@@ -101,7 +101,8 @@ namespace GRA.Controllers.MissionControl
             {
                 User = user,
                 Id = user.Id,
-                HouseholdCount = await _userService.FamilyMemberCountAsync(GetId(ClaimType.UserId)),
+                HouseholdCount = await _userService
+                    .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanEditDetails = UserHasPermission(Permission.EditParticipants),
@@ -227,7 +228,7 @@ namespace GRA.Controllers.MissionControl
                 PaginateModel = paginateModel,
                 Id = id,
                 HouseholdCount = await _userService
-                .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
+                    .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanModifyBooks = UserHasPermission(Permission.LogActivityForAny)
@@ -333,7 +334,8 @@ namespace GRA.Controllers.MissionControl
                 Historys = history.Data,
                 PaginateModel = paginateModel,
                 Id = id,
-                HouseholdCount = await _userService.FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
+                HouseholdCount = await _userService
+                    .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                 CanRemoveHistory = UserHasPermission(Permission.LogActivityForAny)
@@ -430,7 +432,7 @@ namespace GRA.Controllers.MissionControl
             {
                 Id = id,
                 HouseholdCount = await _userService
-                .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
+                    .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
                 HeadOfHouseholdId = user.HouseholdHeadUserId,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username)
             };
@@ -445,7 +447,8 @@ namespace GRA.Controllers.MissionControl
             if (ModelState.IsValid)
             {
                 await _authenticationService.ResetPassword(model.Id, model.NewPassword);
-                AlertSuccess = "Password reset";
+                var user = await _userService.GetDetails(model.Id);
+                AlertSuccess = $"Password reset for <strong>{user.FullName} ('{user.Username}')</strong>.";
                 return RedirectToAction("PasswordReset", new { id = model.Id });
             }
             else
@@ -460,7 +463,7 @@ namespace GRA.Controllers.MissionControl
 
         private void SetPageTitle(User user, bool addBook = false, bool? mailTo = null)
         {
-            var name = user.FirstName + " " + user.LastName;
+            var name = user.FullName;
             if (!string.IsNullOrEmpty(user.Username))
             {
                 name += $"({user.Username})";

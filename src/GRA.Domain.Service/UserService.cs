@@ -44,7 +44,8 @@ namespace GRA.Domain.Service
             user.CanBeDeleted = true;
             user.IsLockedOut = false;
             var registeredUser = await _userRepository.AddSaveAsync(0, user);
-            await _userRepository.SetUserPasswordAsync(registeredUser.Id, registeredUser.Id, password);
+            await _userRepository
+                .SetUserPasswordAsync(registeredUser.Id, registeredUser.Id, password);
             return registeredUser;
         }
 
@@ -81,8 +82,8 @@ namespace GRA.Domain.Service
             if (requestingUserId == householdHeadUserId
                 || await HasPermission(Permission.ViewParticipantList))
             {
-                var dataTask = _userRepository.PageFamilyAsync(householdHeadUserId, skip, take);
-                var countTask = _userRepository.GetFamilyCountAsync(householdHeadUserId);
+                var dataTask = _userRepository.PageHouseholdAsync(householdHeadUserId, skip, take);
+                var countTask = _userRepository.GetHouseholdCountAsync(householdHeadUserId);
                 await Task.WhenAll(dataTask, countTask);
                 return new DataWithCount<IEnumerable<User>>
                 {
@@ -104,7 +105,7 @@ namespace GRA.Domain.Service
             if (requestingUserId == householdHeadUserId
                 || await HasPermission(Permission.ViewParticipantList))
             {
-                return await _userRepository.GetFamilyCountAsync(householdHeadUserId);
+                return await _userRepository.GetHouseholdCountAsync(householdHeadUserId);
             }
             else
             {
@@ -192,7 +193,7 @@ namespace GRA.Domain.Service
                 {
                     throw new Exception($"User {userIdToRemove} cannot be deleted.");
                 }
-                var familyCount = await _userRepository.GetFamilyCountAsync(userIdToRemove);
+                var familyCount = await _userRepository.GetHouseholdCountAsync(userIdToRemove);
                 if (familyCount > 0)
                 {
                     throw new Exception($"User {userIdToRemove} is the head of a family. Please remove all family members first.");

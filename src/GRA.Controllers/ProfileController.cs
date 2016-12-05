@@ -85,13 +85,15 @@ namespace GRA.Controllers
             int take = 15;
             int skip = take * (page - 1);
 
-            var headOfHousehold = await _userService.GetDetails(GetId(ClaimType.UserId));
-            User user = await _userService.GetDetails(GetActiveUserId());
-
-            bool isHead = headOfHousehold.Id == user.Id;
+            var authUser = await _userService.GetDetails(GetId(ClaimType.UserId));
+            User activeUser = await _userService.GetDetails(GetActiveUserId());
 
             var household = await _userService
-                .GetPaginatedFamilyListAsync(headOfHousehold.Id, skip, take);
+                .GetPaginatedFamilyListAsync(authUser.Id, skip, take);
+
+            // authUser is the head of the family
+            bool authUserIsHead = 
+                authUser.Id == household.Data.FirstOrDefault()?.HouseholdHeadUserId;
 
             PaginateViewModel paginateModel = new PaginateViewModel()
             {
@@ -113,9 +115,9 @@ namespace GRA.Controllers
                 Users = household.Data,
                 PaginateModel = paginateModel,
                 HouseholdCount = household.Count,
-                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
-                Head = headOfHousehold,
-                IsHead = isHead,
+                HasAccount = !string.IsNullOrWhiteSpace(activeUser.Username),
+                Head = authUser,
+                AuthUserIsHead = authUserIsHead,
                 ActiveUser = GetActiveUserId()
             };
 
@@ -127,7 +129,7 @@ namespace GRA.Controllers
         {
             HttpContext.Session.SetInt32(SessionKey.ActiveUserId, id);
             var user = await _userService.GetDetails(id);
-            AlertSuccess = $"<span class=\"fa fa-user\"></span> You are now signed in as <strong>{user.FirstName}</strong>.";
+            AlertSuccess = $"<span class=\"fa fa-user\"></span> You are now signed in as <strong>{user.FullName}</strong>.";
             return RedirectToRoute(new { controller = "Home", action = "Index" });
         }
 
@@ -214,7 +216,7 @@ namespace GRA.Controllers
 
             ChangePasswordViewModel viewModel = new ChangePasswordViewModel()
             {
-                HouseholdCount = await _userService.FamilyMemberCountAsync(GetActiveUserId()),
+                HouseholdCount = await _userService.FamilyMemberCountAsync(GetId(ClaimType.UserId)),
                 HasAccount = true
             };
 

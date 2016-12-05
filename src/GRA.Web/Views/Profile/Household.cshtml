@@ -35,13 +35,13 @@
                                     {
                                         <span class="fa fa-user"></span>
                                     }
-                                    @Model.Head.FirstName
+                                    <strong>@Model.Head.FirstName</strong>
                                 </td>
-                                <td>@Model.Head.LastName</td>
-                                <td>@Model.Head.Username</td>
-                                <td>@Model.Head.Email</td>
-                                <td>@Model.Head.BranchName</td>
-                                <td>@Model.Head.ProgramName</td>
+                                <td><strong>@Model.Head.LastName</strong></td>
+                                <td><strong>@Model.Head.Username</strong></td>
+                                <td><strong>@Model.Head.Email</strong></td>
+                                <td><strong>@Model.Head.BranchName</strong></td>
+                                <td><strong>@Model.Head.ProgramName</strong></td>
                                 @if (Model.ActiveUser != Model.Head.Id)
                                 {
                                     <td>
