@@ -60,9 +60,9 @@ namespace GRA.Domain.Service
 
         public async Task ResetPassword(int userIdToReset, string password)
         {
-            int activeUserId = await GetActiveUserId();
+            int activeUserId = GetActiveUserId();
             if (activeUserId == userIdToReset
-                || await HasPermission(Permission.EditParticipants))
+                || HasPermission(Permission.EditParticipants))
             {
                 await _userRepository.SetUserPasswordAsync(activeUserId, userIdToReset, password);
             }
