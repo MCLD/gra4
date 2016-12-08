@@ -38,6 +38,8 @@ namespace GRA.Data
             // https://docs.microsoft.com/en-us/ef/core/modeling/keys
             modelBuilder.Entity<Model.RolePermission>()
                 .HasKey(_ => new { _.RoleId, _.PermissionId });
+            modelBuilder.Entity<Model.UserBadge>()
+                .HasKey(_ => new { _.UserId, _.BadgeId });
             modelBuilder.Entity<Model.UserBook>()
                 .HasKey(_ => new { _.UserId, _.BookId });
             modelBuilder.Entity<Model.UserRole>()
@@ -64,6 +66,7 @@ namespace GRA.Data
 
         public DbSet<Model.AuditLog> AuditLogs { get; set; }
         public DbSet<Model.AuthorizationCode> AuthorizationCodes { get; set; }
+        public DbSet<Model.Badge> Badges { get; set; }
         public DbSet<Model.Book> Books { get; set; }
         public DbSet<Model.Branch> Branches { get; set; }
         public DbSet<Model.Challenge> Challenges { get; set; }
@@ -77,9 +80,11 @@ namespace GRA.Data
         public DbSet<Model.Role> Roles { get; set; }
         public DbSet<Model.RolePermission> RolePermissions { get; set; }
         public DbSet<Model.Site> Sites { get; set; }
+        public DbSet<Model.StaticAvatar> StaticAvatars { get; set; }
         public DbSet<Model.System> Systems { get; set; }
         public DbSet<Model.UserLog> UserLogs { get; set; }
         public DbSet<Model.User> Users { get; set; }
+        public DbSet<Model.UserBadge> UserBadges { get; set; }
         public DbSet<Model.UserBook> UserBooks { get; set; }
         public DbSet<Model.UserRole> UserRoles { get; set; }
     }

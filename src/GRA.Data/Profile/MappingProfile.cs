@@ -5,6 +5,7 @@
         public MappingProfile()
         {
             CreateMap<Model.AuthorizationCode, Domain.Model.AuthorizationCode>().ReverseMap();
+            CreateMap<Model.Badge, Domain.Model.Badge>().ReverseMap();
             CreateMap<Model.Book, Domain.Model.Book>().ReverseMap();
             CreateMap<Model.Branch, Domain.Model.Branch>().ReverseMap();
             CreateMap<Model.Challenge, Domain.Model.Challenge>().ReverseMap();
@@ -15,6 +16,7 @@
             CreateMap<Model.RecoveryToken, Domain.Model.RecoveryToken>().ReverseMap();
             CreateMap<Model.Role, Domain.Model.Role>().ReverseMap();
             CreateMap<Model.Site, Domain.Model.Site>().ReverseMap();
+            CreateMap<Model.StaticAvatar, Domain.Model.StaticAvatar>().ReverseMap();
             CreateMap<Model.System, Domain.Model.System>().ReverseMap();
             CreateMap<Model.User, Domain.Model.User>().ReverseMap();
             CreateMap<Model.UserLog, Domain.Model.UserLog>().ReverseMap();
