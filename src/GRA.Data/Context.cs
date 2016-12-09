@@ -42,11 +42,15 @@ namespace GRA.Data
                 .HasKey(_ => new { _.UserId, _.BadgeId });
             modelBuilder.Entity<Model.UserBook>()
                 .HasKey(_ => new { _.UserId, _.BookId });
+            modelBuilder.Entity<Model.UserChallengeTask>()
+                .HasKey(_ => new { _.UserId, _.ChallengeTaskId });
             modelBuilder.Entity<Model.UserRole>()
                 .HasKey(_ => new { _.UserId, _.RoleId });
 
             // add indexing as needed
             // https://docs.microsoft.com/en-us/ef/core/modeling/indexes
+            modelBuilder.Entity<Model.Notification>()
+                .HasIndex(_ => _.UserId);
             modelBuilder.Entity<Model.User>()
                 .HasIndex(_ => new { _.SiteId, _.Username })
                 .IsUnique();
@@ -73,6 +77,7 @@ namespace GRA.Data
         public DbSet<Model.ChallengeTask> ChallengeTasks { get; set; }
         public DbSet<Model.ChallengeTaskType> ChallengeTaskTypes { get; set; }
         public DbSet<Model.Mail> Mails { get; set; }
+        public DbSet<Model.Notification> Notifications { get; set; }
         public DbSet<Model.Permission> Permissions { get; set; }
         public DbSet<Model.PointTranslation> PointTranslations { get; set; }
         public DbSet<Model.Program> Programs { get; set; }
@@ -84,6 +89,7 @@ namespace GRA.Data
         public DbSet<Model.System> Systems { get; set; }
         public DbSet<Model.UserLog> UserLogs { get; set; }
         public DbSet<Model.User> Users { get; set; }
+        public DbSet<Model.UserChallengeTask> UserChallengeTasks { get; set; }
         public DbSet<Model.UserBadge> UserBadges { get; set; }
         public DbSet<Model.UserBook> UserBooks { get; set; }
         public DbSet<Model.UserRole> UserRoles { get; set; }

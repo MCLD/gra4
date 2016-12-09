@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GRA.Domain.Service.Abstract;
+﻿using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
 
 namespace GRA.Domain.Service
