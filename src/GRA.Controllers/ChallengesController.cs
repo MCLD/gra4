@@ -80,10 +80,8 @@ namespace GRA.Controllers
 
             ChallengeDetailViewModel viewModel = new ChallengeDetailViewModel()
             {
+                Challenge = challenge,
                 IsAuthenticated = AuthUser.Identity.IsAuthenticated,
-                Id = challenge.Id,
-                Name = challenge.Name,
-                Description = challenge.Description,
                 BadgePath = "/favicon-96x96.png",
                 Tasks = new List<TaskDetailViewModel>()
             };
@@ -126,8 +124,15 @@ namespace GRA.Controllers
         public async Task<IActionResult> CompleteTasks(ChallengeDetailViewModel model)
         {
             List<ChallengeTask> tasks = _mapper.Map<List<ChallengeTask>>(model.Tasks);
-            await _activityService.UpdateChallengeTasks(model.Id, tasks);
-            return RedirectToAction("Detail", new { id = model.Id });
+            try
+            {
+                await _activityService.UpdateChallengeTasks(model.Challenge.Id, tasks);
+            }
+            catch (GraException gex)
+            {
+                AlertInfo = gex.Message;
+            }
+            return RedirectToAction("Detail", new { id = model.Challenge.Id });
         }
     }
 }

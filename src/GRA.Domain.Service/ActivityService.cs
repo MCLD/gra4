@@ -191,6 +191,16 @@ namespace GRA.Domain.Service
         {
             int activeUserId = GetActiveUserId();
             int authUserId = GetClaimId(ClaimType.UserId);
+
+            var challengeAlreadyCompleted = 
+                await _challengeRepository.GetByIdAsync(challengeId, activeUserId);
+
+            if (challengeAlreadyCompleted.IsCompleted == true)
+            {
+                _logger.LogError($"User {authUserId} cannot make changes to a completed challenge {challengeId}.");
+                throw new GraException("Challenge is already completed.");
+            }
+
             await _challengeRepository.UpdateUserChallengeTask(activeUserId, challengeTasks);
             // check if the challenge was completed
             var challenge = await _challengeRepository.GetByIdAsync(challengeId);
