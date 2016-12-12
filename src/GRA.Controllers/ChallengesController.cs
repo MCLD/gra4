@@ -126,7 +126,11 @@ namespace GRA.Controllers
             List<ChallengeTask> tasks = _mapper.Map<List<ChallengeTask>>(model.Tasks);
             try
             {
-                await _activityService.UpdateChallengeTasks(model.Challenge.Id, tasks);
+                var completed = await _activityService.UpdateChallengeTasks(model.Challenge.Id, tasks);
+                if (!completed)
+                {
+                    AlertSuccess = "Saved tasks";
+                }
             }
             catch (GraException gex)
             {

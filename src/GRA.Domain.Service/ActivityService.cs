@@ -186,7 +186,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task UpdateChallengeTasks(int challengeId,
+        public async Task<bool> UpdateChallengeTasks(int challengeId,
             IEnumerable<ChallengeTask> challengeTasks)
         {
             int activeUserId = GetActiveUserId();
@@ -246,6 +246,12 @@ namespace GRA.Domain.Service
                 };
 
                 await _notificationRepository.AddSaveAsync(authUserId, notification);
+
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }
