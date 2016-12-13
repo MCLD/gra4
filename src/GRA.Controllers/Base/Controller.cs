@@ -13,7 +13,6 @@ using System.Security.Principal;
 
 namespace GRA.Controllers.Base
 {
-    [ServiceFilter(typeof(NotificationFilter))]
     [ServiceFilter(typeof(SiteFilter))]
     [SessionTimeoutFilter]
     public abstract class Controller : Microsoft.AspNetCore.Mvc.Controller
