@@ -3,22 +3,16 @@
 <div class="row">
     <div class="col-xs-12 col-sm-6 col-sm-offset-3">
         <div class="alert alert-success">
-            
-                @foreach (var notification in Model.Notifications)
-                {
-                    @Html.Raw(notification.Text)
-                    <br />
-                }
-                
-            
-            @if (Model.TruncatedList)
-            {
-                <span>and more</span>
 
-            }
-            @if (Model.Notifications.Count > 1)
+            @foreach (var notification in Model.Notifications)
             {
-                <span>for a total of <strong>@Model.TotalPointsEarned points earned!</strong></span>
+                @Html.Raw(notification.Text)
+                <br />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.SummaryText))
+            {
+                <span>@Html.Raw(Model.SummaryText)</span>
             }
         </div>
     </div>

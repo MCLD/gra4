@@ -18,45 +18,65 @@ namespace GRA.Controllers.ViewComponents
         {
             _userService = Require.IsNotNull(userService, nameof(userService));
         }
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
-            var notifications = await _userService.GetNotificationsForUser();
+            var notifications =
+                (List<GRA.Domain.Model.Notification>)HttpContext.Items[ItemKey.NotificicationsList];
 
-            var notificationList = new List<GRA.Domain.Model.Notification>();
+            var notificationDisplayList = new List<GRA.Domain.Model.Notification>();
             int? totalPointsEarned = 0;
+            bool earnedBadge = false;
 
             foreach (var notification in notifications.Where(m => m.BadgeId != null)
                 .OrderByDescending(m => m.PointsEarned).ThenByDescending(m => m.CreatedAt))
             {
+                earnedBadge = true;
                 totalPointsEarned += notification.PointsEarned;
-                if (notificationList.Count < MaxNotifications)
+                if (notificationDisplayList.Count < MaxNotifications)
                 {
-                    notificationList.Add(notification);
+                    notificationDisplayList.Add(notification);
                 }
             }
 
-            if (notificationList.Count < MaxNotifications)
+            if (notificationDisplayList.Count < MaxNotifications)
             {
                 foreach (var notification in notifications.Where(m => m.BadgeId == null)
                     .OrderByDescending(m => m.PointsEarned).ThenByDescending(m => m.CreatedAt))
                 {
                     totalPointsEarned += notification.PointsEarned;
-                    if (notificationList.Count < MaxNotifications)
+                    if (notificationDisplayList.Count < MaxNotifications)
                     {
-                        notificationList.Add(notification);
+                        notificationDisplayList.Add(notification);
                     }
                 }
             }
 
+            string summaryText = "";
+            if (notifications.Count() > 1)
+            {
+                if (notifications.Count() > MaxNotifications)
+                {
+                    summaryText = $"and <a href='{Url.Action("History", "Profile")}'>other activities</a> ";
+                }
+
+                summaryText += $"for a total of <strong>{totalPointsEarned} points!</strong>";
+            }
+
             DisplayNotificationsViewModel viewModel = new DisplayNotificationsViewModel()
             {
-                Notifications = notificationList,
-                TotalPointsEarned = totalPointsEarned ?? 0,
-                TruncatedList = (notifications.Count() > MaxNotifications ? true : false)
+                Notifications = notificationDisplayList,
+                SummaryText = summaryText
             };
 
-            //HttpContext.Items[ItemKey.NotificationsDisplayed] = true;
-            return View("Alert", viewModel);
+            HttpContext.Items[ItemKey.NotificationsDisplayed] = true;
+            if (earnedBadge == true && false)
+            {
+                return View("Modal", viewModel);
+            }
+            else
+            {
+                return View("Alert", viewModel);
+            }
         }
     }
 }
