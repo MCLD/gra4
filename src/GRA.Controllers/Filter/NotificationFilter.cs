@@ -1,5 +1,4 @@
 ﻿using GRA.Domain.Service;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
@@ -24,34 +23,10 @@ namespace GRA.Controllers.Filter
             if (httpContext.User.Identity.IsAuthenticated)
             {
                 var notifications = await _userService.GetNotificationsForUser();
-                var notificationList = new List<GRA.Domain.Model.Notification>();
-
-                foreach(var notification in notifications.Where(m => m.BadgeId != null)
-                    .OrderByDescending(m => m.PointsEarned).ThenByDescending(m => m.CreatedAt))
+                if (notifications.Any())
                 {
-                    notificationList.Add(notification);
-                    if (notificationList.Count >= MaxNotifications)
-                    {
-                        break;
-                    }
+                    httpContext.Items[ItemKey.NotificicationsList] = true;
                 }
-
-                if (notificationList.Count < MaxNotifications)
-                {
-                    foreach(var notification in notifications.Where(m => m.BadgeId == null)
-                        .OrderByDescending(m => m.PointsEarned).ThenByDescending(m => m.CreatedAt))
-                    {
-                        notificationList.Add(notification);
-                        if (notificationList.Count >= MaxNotifications)
-                        {
-                            break;
-                        }
-                    }
-                }
-                
-                httpContext.Items[ItemKey.NotificicationsList] = 
-                    notificationList.OrderByDescending(m => m.PointsEarned).ToList();
-
                 await next();
 
                 if (httpContext.Items[ItemKey.NotificationsDisplayed] != null
