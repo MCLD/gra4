@@ -2,10 +2,10 @@
 using GRA.Controllers.ViewModel.Home;
 using GRA.Domain.Service;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GRA.Controllers
@@ -17,11 +17,13 @@ namespace GRA.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ActivityService _activityService;
         private readonly EmailReminderService _emailReminderService;
+        private readonly SiteService _siteService;
         private readonly UserService _userService;
         public HomeController(ILogger<HomeController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
             EmailReminderService emailReminderService,
+            SiteService siteService,
             UserService userService)
             : base(context)
         {
@@ -29,6 +31,7 @@ namespace GRA.Controllers
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _emailReminderService = Require.IsNotNull(emailReminderService,
                 nameof(emailReminderService));
+            _siteService = Require.IsNotNull(siteService, nameof(siteService));
             _userService = Require.IsNotNull(userService, nameof(userService));
         }
 
@@ -132,6 +135,7 @@ namespace GRA.Controllers
             }
         }
 
+        [HttpPost]
         public async Task<IActionResult> AddReminder(NotOpenYetViewModel viewModel)
         {
             if (!string.IsNullOrEmpty(viewModel.Email))
@@ -141,6 +145,16 @@ namespace GRA.Controllers
             }
             AlertInfo = "<span class=\"fa fa-envelope\"></span> Thanks! We'll let you know when you can join the program.";
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetIcs()
+        {
+            var site = await GetCurrentSiteAsync();
+            var filename = new string(site.Name.Where(_ => char.IsLetterOrDigit(_)).ToArray());
+            var siteUrl = await _siteService.GetBaseUrl(Request.Scheme, Request.Host.Value);
+            var calendarBytes = await _siteService.GetIcsFile(siteUrl);
+            return File(calendarBytes, "text/calendar", $"{filename}.ics");
         }
 
         public async Task<IActionResult> Signout()
