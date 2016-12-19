@@ -68,6 +68,17 @@
                     {
                         <li ActiveBy routeKey="Controller" value="Challenges"><a asp-controller="Challenges" asp-action="Index">Challenges</a></li>
                     }
+                    @if (Context.User.HasClaim(GRA.ClaimType.Permission, GRA.Domain.Model.Permission.ReadAllMail.ToString()))
+                    {
+                        <li ActiveBy routeKey="Controller" value="Mail">
+                            <a asp-controller="Mail" asp-action="Index">
+                                Mail
+                                <span class="label label-default label-as-badge">
+                                    @Context.Items[GRA.Controllers.ItemKey.UnreadCount]
+                                </span>
+                            </a>
+                        </li>
+                    }
                     @if (Context.User.HasClaim(GRA.ClaimType.Permission, GRA.Domain.Model.Permission.ViewUnpublishedPages.ToString()))
                     {
                         <li ActiveBy routeKey="Controller" value="Pages"><a asp-controller="Pages" asp-action="Index">Pages</a></li>
@@ -154,7 +165,7 @@
     </environment>
     @RenderSection("scripts", required: false)
     <script>
-        $(function () {
+        $(function() {
             $('[data-toggle="tooltip"]').tooltip()
         })
     </script>

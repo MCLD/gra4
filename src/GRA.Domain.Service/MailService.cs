@@ -95,6 +95,7 @@ namespace GRA.Domain.Service
         {
             if (HasPermission(Permission.ReadAllMail))
             {
+                int siteId = GetClaimId(ClaimType.SiteId);
                 return new DataWithCount<IEnumerable<Mail>>
                 {
                     Data = await _mailRepository.PageAdminUnrepliedAsync(siteId, skip, take),
@@ -105,6 +106,21 @@ namespace GRA.Domain.Service
             {
                 var userId = GetClaimId(ClaimType.UserId);
                 _logger.LogError($"User {userId} doesn't have permission to get all unread mails.");
+                throw new Exception("Permission denied.");
+            }
+        }
+
+        public async Task<int> GetAdminUnreadCountAsync()
+        {
+            if (HasPermission(Permission.ReadAllMail))
+            {
+                int siteId = GetClaimId(ClaimType.SiteId);
+                return await _mailRepository.GetAdminUnreadCountAsync(siteId);
+            }
+            else
+            {
+                var userId = GetClaimId(ClaimType.UserId);
+                _logger.LogError($"User {userId} doesn't have permission to get unread mail count.");
                 throw new Exception("Permission denied.");
             }
         }
