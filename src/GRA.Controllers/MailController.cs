@@ -41,13 +41,41 @@ namespace GRA.Controllers
 
             MailListViewModel viewModel = new MailListViewModel()
             {
-                Mail = mailList.Data,
+                Mail = new List<MailItemViewModel>(),
                 PaginateModel = paginateModel
             };
+
+            foreach (var item in mailList.Data)
+            {
+                string toFrom;
+                bool isNew = false;
+                if (item.ToUserId != null)
+                {
+                    toFrom = "To you";
+                    if (item.IsNew == true)
+                    {
+                        isNew = true;
+                    }
+                }
+                else
+                {
+                    toFrom = "From you";
+                }
+                MailItemViewModel mailItem = new MailItemViewModel()
+                {
+                    Id = item.Id,
+                    Date = item.CreatedAt.ToString("d"),
+                    ToFrom = toFrom,
+                    Subject = item.Subject,
+                    IsNew = isNew
+                };
+                viewModel.Mail.Add(mailItem);
+            }
 
             return View(viewModel);
         }
 
+        [HttpPost]
         public async Task<IActionResult> Read(int id)
         {
             var mail = await _mailService.GetDetails(id);

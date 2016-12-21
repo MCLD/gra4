@@ -25,6 +25,5 @@ namespace GRA.Controllers.Filter
 
             await next();
         }
-
     }
 }
