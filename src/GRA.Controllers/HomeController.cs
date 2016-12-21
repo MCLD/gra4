@@ -14,17 +14,20 @@ namespace GRA.Controllers
     public class HomeController : Base.UserController
     {
         private const string AuthorMissingTitle = "AuthorMissingTitle";
+        private const int BadgesToDisplay = 6;
 
         private readonly ILogger<HomeController> _logger;
         private readonly ActivityService _activityService;
         private readonly EmailReminderService _emailReminderService;
         private readonly SiteService _siteService;
+        private readonly StaticAvatarService _staticAvatarService;
         private readonly UserService _userService;
         public HomeController(ILogger<HomeController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
             EmailReminderService emailReminderService,
             SiteService siteService,
+            StaticAvatarService staticAvatarService,
             UserService userService)
             : base(context)
         {
@@ -32,6 +35,8 @@ namespace GRA.Controllers
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _emailReminderService = Require.IsNotNull(emailReminderService,
                 nameof(emailReminderService));
+            _staticAvatarService = Require.IsNotNull(staticAvatarService,
+                nameof(staticAvatarService));
             _siteService = Require.IsNotNull(siteService, nameof(siteService));
             _userService = Require.IsNotNull(userService, nameof(userService));
         }
@@ -47,10 +52,23 @@ namespace GRA.Controllers
             {
                 // signed-in users can view the dashboard
                 var user = await _userService.GetDetails(GetActiveUserId());
+                StaticAvatar avatar = new StaticAvatar();
+                if (user.AvatarId != null)
+                {
+                    avatar = await _staticAvatarService.GetByIdAsync(user.AvatarId.Value);
+                    avatar.Filename = ResolveContentPath(avatar.Filename);
+                }
+                var badges = await _userService.GetPaginatedBadges(user.Id, 0, BadgesToDisplay);
+                foreach (var badge in badges.Data)
+                {
+                    badge.Filename = ResolveContentPath(badge.Filename);
+                }
                 DashboardViewModel viewModel = new DashboardViewModel()
                 {
                     FirstName = user.FirstName,
-                    CurrentPointTotal = user.PointsEarned
+                    CurrentPointTotal = user.PointsEarned,
+                    AvatarPath = avatar.Filename,
+                    Badges = badges.Data
                 };
                 if (TempData.ContainsKey(AuthorMissingTitle))
                 {
