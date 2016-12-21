@@ -1,6 +1,7 @@
 ﻿using GRA.Domain.Model;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,27 +12,38 @@ namespace GRA.Domain.Service
     public class MailService : Abstract.BaseUserService<MailService>
     {
         private IMailRepository _mailRepository;
+        private IMemoryCache _memoryCache;
         public MailService(ILogger<MailService> logger,
             IUserContextProvider userContextProvider,
-            IMailRepository mailRepository) : base(logger, userContextProvider)
+            IMailRepository mailRepository, 
+            IMemoryCache memoryCache) : base(logger, userContextProvider)
         {
             _mailRepository = Require.IsNotNull(mailRepository, nameof(mailRepository));
+            _memoryCache = Require.IsNotNull(memoryCache, nameof(memoryCache));
         }
 
         public async Task<int> GetUserUnreadCountAsync()
         {
-            var userId = GetClaimId(ClaimType.UserId);
-            return await _mailRepository.GetUserUnreadCountAsync(userId);
+            var activeUserId = GetActiveUserId();
+            var cacheKey = $"{CacheKey.UserUnreadMailCount}?userId={activeUserId}";
+            int unreadCount;
+            if (!_memoryCache.TryGetValue(cacheKey, out unreadCount))
+            {
+                unreadCount = await _mailRepository.GetUserUnreadCountAsync(activeUserId);
+                _memoryCache.Set(cacheKey, unreadCount, new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+            }
+            return unreadCount;
         }
 
         public async Task<DataWithCount<IEnumerable<Mail>>> GetUserPaginatedAsync(int skip,
             int take)
         {
-            var userId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
             return new DataWithCount<IEnumerable<Mail>>
             {
-                Data = await _mailRepository.PageUserAsync(userId, skip, take),
-                Count = await _mailRepository.GetUserCountAsync(userId)
+                Data = await _mailRepository.PageUserAsync(activeUserId, skip, take),
+                Count = await _mailRepository.GetUserCountAsync(activeUserId)
             };
         }
 
@@ -58,14 +70,14 @@ namespace GRA.Domain.Service
 
         public async Task<Mail> GetDetails(int mailId)
         {
-            var userId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
             bool canReadAll = HasPermission(Permission.ReadAllMail);
             var mail = await _mailRepository.GetByIdAsync(mailId);
-            if (mail.FromUserId == userId || mail.ToUserId == userId || canReadAll)
+            if (mail.FromUserId == activeUserId || mail.ToUserId == activeUserId || canReadAll)
             {
                 return mail;
             }
-            _logger.LogError($"User {userId} doesn't have permission to view details for message {mailId}.");
+            _logger.LogError($"User {activeUserId} doesn't have permission to view details for message {mailId}.");
             throw new Exception("Permission denied.");
         }
 
@@ -115,7 +127,15 @@ namespace GRA.Domain.Service
             if (HasPermission(Permission.ReadAllMail))
             {
                 int siteId = GetClaimId(ClaimType.SiteId);
-                return await _mailRepository.GetAdminUnreadCountAsync(siteId);
+                var cacheKey = $"{CacheKey.UnhandledMailCount}?siteId={siteId}";
+                int unhandledCount;
+                if (!_memoryCache.TryGetValue(cacheKey, out unhandledCount))
+                {
+                    unhandledCount = await _mailRepository.GetAdminUnreadCountAsync(siteId);
+                    _memoryCache.Set(cacheKey, unhandledCount, new MemoryCacheEntryOptions()
+                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+                }
+                return unhandledCount;
             }
             else
             {
@@ -127,14 +147,14 @@ namespace GRA.Domain.Service
 
         public async Task MarkAsReadAsync(int mailId)
         {
-            var userId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
             var mail = await _mailRepository.GetByIdAsync(mailId);
-            if (mail.FromUserId == userId || mail.ToUserId == userId)
+            if (mail.FromUserId == activeUserId || mail.ToUserId == activeUserId)
             {
                 await _mailRepository.MarkAsReadAsync(mailId);
                 return;
             }
-            _logger.LogError($"User {userId} doesn't have permission mark mail {mailId} as read.");
+            _logger.LogError($"User {activeUserId} doesn't have permission mark mail {mailId} as read.");
             throw new Exception("Permission denied.");
         }
 
