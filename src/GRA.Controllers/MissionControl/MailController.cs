@@ -29,7 +29,7 @@ namespace GRA.Controllers.MissionControl
         {
             int take = 15;
             int skip = take * (page - 1);
-            var mailList = await _mailService.GetAllUnreadPaginatedAsync(skip, take);
+            var mailList = await _mailService.GetAllUnrepliedPaginatedAsync(skip, take);
 
             PaginateViewModel paginateModel = new PaginateViewModel()
             {
