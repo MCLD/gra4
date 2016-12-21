@@ -101,8 +101,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<DataWithCount<IEnumerable<Mail>>> GetAllUnrepliedPaginatedAsync(int siteId,
-            int skip,
+        public async Task<DataWithCount<IEnumerable<Mail>>> GetAllUnrepliedPaginatedAsync(int skip,
             int take)
         {
             if (HasPermission(Permission.ReadAllMail))
@@ -131,7 +130,7 @@ namespace GRA.Domain.Service
                 int unhandledCount;
                 if (!_memoryCache.TryGetValue(cacheKey, out unhandledCount))
                 {
-                    unhandledCount = await _mailRepository.GetAdminUnreadCountAsync(siteId);
+                    unhandledCount = await _mailRepository.GetAdminUnrepliedCountAsync(siteId);
                     _memoryCache.Set(cacheKey, unhandledCount, new MemoryCacheEntryOptions()
                         .SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
                 }
