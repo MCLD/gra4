@@ -1,12 +1,10 @@
 ﻿using GRA.Controllers.ViewModel.Mail;
 using GRA.Controllers.ViewModel.Shared;
+using GRA.Domain.Model;
 using GRA.Domain.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GRA.Controllers
@@ -41,50 +39,54 @@ namespace GRA.Controllers
 
             MailListViewModel viewModel = new MailListViewModel()
             {
-                Mail = new List<MailItemViewModel>(),
+                Mail = mailList.Data,
                 PaginateModel = paginateModel
             };
 
-            foreach (var item in mailList.Data)
-            {
-                string toFrom;
-                bool isNew = false;
-                if (item.ToUserId != null)
-                {
-                    toFrom = "To you";
-                    if (item.IsNew == true)
-                    {
-                        isNew = true;
-                    }
-                }
-                else
-                {
-                    toFrom = "From you";
-                }
-                MailItemViewModel mailItem = new MailItemViewModel()
-                {
-                    Id = item.Id,
-                    Date = item.CreatedAt.ToString("d"),
-                    ToFrom = toFrom,
-                    Subject = item.Subject,
-                    IsNew = isNew
-                };
-                viewModel.Mail.Add(mailItem);
-            }
-
             return View(viewModel);
+        }
+
+        public IActionResult Read()
+        {
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
         public async Task<IActionResult> Read(int id)
         {
             var mail = await _mailService.GetDetails(id);
+            if (mail.IsNew)
+            {
+                await _mailService.MarkAsReadAsync(id);
+                HttpContext.Items[ItemKey.UnreadCount] =
+                    (int)HttpContext.Items[ItemKey.UnreadCount] - 1;
+            }
             return View(mail);
+        }
+
+        [HttpPost]
+        public IActionResult Reply()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult SendReply(Mail mail)
+        {
+            if (ModelState.IsValid)
+            {
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("Reply");
+            }
         }
 
         public IActionResult Create()
         {
             return View();
         }
+
     }
 }

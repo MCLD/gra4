@@ -45,8 +45,8 @@
                 <table class="table table-condensed table-bordered link-table">
                     <thead>
                         <tr>
-                            <th>To/From User</th>
                             <th>Date</th>
+                            <th>Sent</th>
                             <th>Subject</th>
                             <th>Unread</th>
                             @if (Model.CanRemoveMail)
@@ -61,10 +61,10 @@
                             <tr>
                                 <td class="td-class">
                                     <a asp-action="MailDetail" asp-route-id="@mail.Id" class="rowlink">
-                                        @(mail.FromUserId == Model.Id ? "From" : "To")
+                                        @mail.CreatedAt.ToString("d")
                                     </a>
                                 </td>
-                                <td>@mail.CreatedAt.ToString("d")</td>
+                                <td>@(mail.FromUserId == Model.Id ? "From" : "To")</td>
                                 <td>@mail.Subject</td>
                                 <td>@(mail.IsNew ? "Yes" : "No")</td>
                                 @if (Model.CanRemoveMail)
