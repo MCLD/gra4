@@ -9,6 +9,7 @@ namespace GRA.Domain.Repository
         Task<int> GetAllCountAsync(int siteId);
         Task<int> GetAdminUnrepliedCountAsync(int siteId);
         Task<IEnumerable<Mail>> PageAdminUnrepliedAsync(int siteId, int skip, int take);
+        Task MarkAdminReplied(int mailId);
         Task<int> GetUserCountAsync(int userId);
         Task<int> GetUserInboxCountAsync(int userId);
         Task<IEnumerable<Mail>> PageAllAsync(int siteId, int skip, int take);

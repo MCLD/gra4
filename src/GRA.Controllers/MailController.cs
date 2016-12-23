@@ -72,7 +72,7 @@ namespace GRA.Controllers
                 var mail = await _mailService.GetParticipantMailAsync(id);
                 MailCreateViewModel viewModel = new MailCreateViewModel()
                 {
-                    Subject = $"Reply to: {mail.Subject}",
+                    Subject = $"Re: {mail.Subject}",
                     InReplyToId = mail.Id,
                     InReplyToSubject = mail.Subject,
                 };
@@ -93,23 +93,15 @@ namespace GRA.Controllers
             }
             if (ModelState.IsValid)
             {
-                try
+                Mail mail = new Mail()
                 {
-                    Mail mail = new Mail()
-                    {
-                        Subject = model.Subject,
-                        Body = model.Body,
-                        InReplyToId = model.InReplyToId
-                    };
-                    await _mailService.SendReplyAsync(mail);
-                    AlertSuccess = $"Reply \"<strong>{mail.Subject}</strong>\" sent";
-                    return RedirectToAction("Read", new { id = mail.InReplyToId });
-                }
-                catch (GraException gex)
-                {
-                    AlertInfo = gex.Message;
-                    return RedirectToAction("Index");
-                }
+                    Subject = model.Subject,
+                    Body = model.Body,
+                    InReplyToId = model.InReplyToId
+                };
+                await _mailService.SendReplyAsync(mail);
+                AlertSuccess = $"Reply \"<strong>{mail.Subject}</strong>\" sent";
+                return RedirectToAction("Index");
             }
             else
             {

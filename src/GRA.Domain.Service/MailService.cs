@@ -153,7 +153,7 @@ namespace GRA.Domain.Service
                 {
                     unhandledCount = await _mailRepository.GetAdminUnrepliedCountAsync(siteId);
                     _memoryCache.Set(cacheKey, unhandledCount, new MemoryCacheEntryOptions()
-                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(5)));
                 }
                 return unhandledCount;
             }
@@ -181,6 +181,7 @@ namespace GRA.Domain.Service
 
         public async Task<Mail> SendAsync(Mail mail)
         {
+            var siteId = GetClaimId(ClaimType.SiteId);
             var authId = GetClaimId(ClaimType.UserId);
             var activeUserId = GetActiveUserId();
             if (mail.ToUserId == null)
@@ -188,7 +189,10 @@ namespace GRA.Domain.Service
                 mail.FromUserId = activeUserId;
                 mail.IsNew = true;
                 mail.IsDeleted = false;
-                mail.SiteId = GetClaimId(ClaimType.SiteId);
+                mail.SiteId = siteId;
+
+                _memoryCache.Remove($"{CacheKey.UnhandledMailCount}?siteId={siteId}");
+
                 return await _mailRepository.AddSaveAsync(authId, mail);
             }
             else
@@ -200,6 +204,7 @@ namespace GRA.Domain.Service
 
         public async Task<Mail> SendReplyAsync(Mail mail)
         {
+            var siteId = GetClaimId(ClaimType.SiteId);
             var authId = GetClaimId(ClaimType.UserId);
             var activeUserId = GetActiveUserId();
             var inReplyToMail = await _mailRepository.GetByIdAsync(mail.InReplyToId.Value);
@@ -210,19 +215,38 @@ namespace GRA.Domain.Service
                 mail.ToUserId = null;
                 mail.IsNew = true;
                 mail.IsDeleted = false;
-                mail.SiteId = GetClaimId(ClaimType.SiteId);
+                mail.SiteId = siteId;
                 if (inReplyToMail.IsRepliedTo == false)
                 {
                     inReplyToMail.IsRepliedTo = true;
                     await _mailRepository.UpdateAsync(authId, inReplyToMail);
                 }
+
+                _memoryCache.Remove($"{CacheKey.UnhandledMailCount}?siteId={siteId}");
+
                 return await _mailRepository.AddSaveAsync(authId, mail);
             }
             else
             {
                 _logger.LogError($"User {activeUserId} doesn't have permission to reply to a mail sent to {mail.ToUserId}.");
-                throw new GraException("Permission Denied");
+                throw new Exception("Permission Denied");
             }
+        }
+
+        public async Task MCMarkAsReadAsync(int mailId)
+        {
+            if (HasPermission(Permission.ReadAllMail))
+            {
+                var mail = await _mailRepository.GetByIdAsync(mailId);
+                if (mail.ToUserId == null)
+                {
+                    await _mailRepository.MarkAsReadAsync(mailId);
+                    return;
+                }
+            }
+            var authId = GetClaimId(ClaimType.UserId);
+            _logger.LogError($"User {authId} doesn't have permission mark mail {mailId} as read.");
+            throw new Exception("Permission denied.");
         }
 
         public async Task<Mail> MCSendAsync(Mail mail)
@@ -244,24 +268,56 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<Mail> MCSendReplyAsync(Mail mail, int inReplyToId)
+        public async Task<Mail> MCSendReplyAsync(Mail mail)
         {
-            if (mail.ToUserId == null
-               || HasPermission(Permission.MailParticipants))
+            if (mail.InReplyToId != null
+               && HasPermission(Permission.MailParticipants))
             {
-                var inReplyToMail = await _mailRepository.GetByIdAsync(inReplyToId);
-                mail.InReplyToId = inReplyToId;
-                mail.ThreadId = inReplyToMail.ThreadId ?? inReplyToId;
-                mail.FromUserId = GetClaimId(ClaimType.UserId);
+                var inReplyToMail = await _mailRepository.GetByIdAsync(mail.InReplyToId.Value);
+                mail.ThreadId = inReplyToMail.ThreadId ?? mail.InReplyToId.Value;
+                mail.FromUserId = 0;
+                mail.ToUserId = inReplyToMail.FromUserId;
+                mail.CanParticipantDelete = true;
                 mail.IsNew = true;
                 mail.IsDeleted = false;
                 mail.SiteId = GetClaimId(ClaimType.SiteId);
+                if (inReplyToMail.IsRepliedTo == false)
+                {
+                    var siteId = GetCurrentSiteId();
+                    await _mailRepository.MarkAdminReplied(inReplyToMail.Id);
+                    _memoryCache.Remove($"{CacheKey.UnhandledMailCount}?siteId={siteId}");
+                }
                 return await _mailRepository.AddSaveAsync(mail.FromUserId, mail);
             }
             else
             {
-                var userId = GetClaimId(ClaimType.UserId);
-                _logger.LogError($"User {userId} doesn't have permission to send a mail to {mail.ToUserId}.");
+                var authId = GetClaimId(ClaimType.UserId);
+                _logger.LogError($"User {authId} doesn't have permission to reply to mail {mail.InReplyToId}.");
+                throw new Exception("Permission denied");
+            }
+        }
+
+        public async Task MarkHandled(int mailId)
+        {
+            var authId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.MailParticipants))
+            {
+                var mail = await _mailRepository.GetByIdAsync(mailId);
+                if (mail.ToUserId == null)
+                {
+                    await _mailRepository.MarkAdminReplied(mailId);
+                    var siteId = GetCurrentSiteId();
+                    _memoryCache.Remove($"{CacheKey.UnhandledMailCount}?siteId={siteId}");
+                    return;
+                }
+                else
+                {
+                    throw new GraException("Cannot mark participant mail as handled");
+                }
+            }
+            else
+            {
+                _logger.LogError($"User {authId} doesn't have permission to mark mail as handled.");
                 throw new Exception("Permission denied");
             }
         }
@@ -274,6 +330,15 @@ namespace GRA.Domain.Service
             var mail = await _mailRepository.GetByIdAsync(mailId);
             if (mail.ToUserId == activeId || canDeleteAll)
             {
+                if (mail.ToUserId != null)
+                {
+                    _memoryCache.Remove($"{CacheKey.UserUnreadMailCount}?userId={mail.ToUserId}");
+                }
+                else
+                {
+                    var siteId = GetCurrentSiteId();
+                    _memoryCache.Remove($"{CacheKey.UnhandledMailCount}?siteId={siteId}");
+                }
                 await _mailRepository.RemoveSaveAsync(authId, mailId);
                 return;
             }
