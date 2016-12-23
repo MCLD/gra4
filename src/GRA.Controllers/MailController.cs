@@ -142,5 +142,11 @@ namespace GRA.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _mailService.RemoveAsync(id);
+            return RedirectToAction("Index");
+        }
     }
 }

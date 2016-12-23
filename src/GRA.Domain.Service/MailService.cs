@@ -211,6 +211,11 @@ namespace GRA.Domain.Service
                 mail.IsNew = true;
                 mail.IsDeleted = false;
                 mail.SiteId = GetClaimId(ClaimType.SiteId);
+                if (inReplyToMail.IsRepliedTo == false)
+                {
+                    inReplyToMail.IsRepliedTo = true;
+                    await _mailRepository.UpdateAsync(authId, inReplyToMail);
+                }
                 return await _mailRepository.AddSaveAsync(authId, mail);
             }
             else
@@ -263,15 +268,16 @@ namespace GRA.Domain.Service
 
         public async Task RemoveAsync(int mailId)
         {
-            var userId = GetClaimId(ClaimType.UserId);
+            var authId = GetClaimId(ClaimType.UserId);
+            var activeId = GetActiveUserId();
             bool canDeleteAll = HasPermission(Permission.DeleteAnyMail);
             var mail = await _mailRepository.GetByIdAsync(mailId);
-            if (mail.FromUserId == userId || mail.ToUserId == userId || canDeleteAll)
+            if (mail.ToUserId == activeId || canDeleteAll)
             {
-                await _mailRepository.RemoveSaveAsync(userId, mailId);
+                await _mailRepository.RemoveSaveAsync(authId, mailId);
                 return;
             }
-            _logger.LogError($"User {userId} doesn't have permission remove mail {mailId}.");
+            _logger.LogError($"User {activeId} doesn't have permission remove mail {mailId}.");
             throw new Exception("Permission denied.");
         }
     }

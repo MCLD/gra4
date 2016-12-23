@@ -16,8 +16,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-right: 1em;">Cancel</button>
-                        <form asp-controller="Participants" asp-action="Delete" method="post" role="form" style="display:inline">
-                            <input id="Id" name="Id" type="hidden" />
+                        <form asp-controller="Mail" asp-action="Delete" method="post" role="form" style="display:inline">
+                            <input asp-for="Id" type="hidden" />
                             <button type="submit" class="btn btn-danger pull-right" aria-label="Confirm">
                                 <span class="fa fa-remove" aria-hidden="true"></span>
                                 Delete
@@ -29,7 +29,6 @@
         </div>
     </div>
 }
-
 
 <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
@@ -52,12 +51,14 @@
                 <div class="pull-right">
                     @if (Model.CanParticipantDelete)
                     {
-                        <form asp-controller="Mail" method="post" role="form">
-                            <input asp-for="Id" type="hidden" />
-                            <button type="submit" id="Delete" asp-action="Delete" class="btn btn-danger" style="margin-right: 12px;">
-                                Delete Mail
-                            </button>
-                        </form>
+                        <div style="display: inline-block">
+                            <form asp-controller="Mail" method="post" role="form">
+                                <input asp-for="Id" type="hidden" />
+                                <button type="submit" id="Delete" asp-action="Delete" class="btn btn-danger" style="margin-right: 12px;">
+                                    Delete Mail
+                                </button>
+                            </form>
+                        </div>
                     }
                     <a asp-action="Reply" asp-route-id="@Model.Id" class="btn btn-primary">
                         Reply

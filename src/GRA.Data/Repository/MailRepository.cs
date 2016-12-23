@@ -140,6 +140,15 @@ namespace GRA.Data.Repository
             await SaveAsync();
         }
 
+        public override async Task<Mail> GetByIdAsync(int id)
+        {
+            return await DbSet
+                .AsNoTracking()
+                .Where(_ => _.IsDeleted == false && _.Id == id)
+                .ProjectTo<Mail>()
+                .SingleOrDefaultAsync();
+        }
+
         public override async Task RemoveSaveAsync(int userId, int id)
         {
             var entity = await DbSet
