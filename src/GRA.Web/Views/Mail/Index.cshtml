@@ -24,12 +24,9 @@
                                 <td>@mail.CreatedAt.ToString("d")</td>
                                 <td>@mail.Subject</td>
                                 <td>
-                                    <form asp-controller="Mail" asp-action="Read" method="post" role="form">
-                                        <input name="id" value="@mail.Id" type="hidden"/>
-                                        <button type="submit"class="btn btn-default btn-xs">
-                                            Read
-                                        </button>
-                                    </form>
+                                    <a asp-action="Read" asp-route-id="@mail.Id" class="btn btn-default btn-xs">
+                                        Read
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -41,5 +38,6 @@
                 <paginate paginateModel="@Model.PaginateModel"></paginate>
             }
         }
+        <a asp-action="Send" class="btn btn-primary">Send Mail</a>
     </div>
 </div>

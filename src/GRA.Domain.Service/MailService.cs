@@ -15,7 +15,7 @@ namespace GRA.Domain.Service
         private IMemoryCache _memoryCache;
         public MailService(ILogger<MailService> logger,
             IUserContextProvider userContextProvider,
-            IMailRepository mailRepository, 
+            IMailRepository mailRepository,
             IMemoryCache memoryCache) : base(logger, userContextProvider)
         {
             _mailRepository = Require.IsNotNull(mailRepository, nameof(mailRepository));
@@ -31,19 +31,19 @@ namespace GRA.Domain.Service
             {
                 unreadCount = await _mailRepository.GetUserUnreadCountAsync(activeUserId);
                 _memoryCache.Set(cacheKey, unreadCount, new MemoryCacheEntryOptions()
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(30)));
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5)));
             }
             return unreadCount;
         }
 
-        public async Task<DataWithCount<IEnumerable<Mail>>> GetUserPaginatedAsync(int skip,
+        public async Task<DataWithCount<IEnumerable<Mail>>> GetUserInboxPaginatedAsync(int skip,
             int take)
         {
             var activeUserId = GetActiveUserId();
             return new DataWithCount<IEnumerable<Mail>>
             {
-                Data = await _mailRepository.PageUserAsync(activeUserId, skip, take),
-                Count = await _mailRepository.GetUserCountAsync(activeUserId)
+                Data = await _mailRepository.PageUserInboxAsync(activeUserId, skip, take),
+                Count = await _mailRepository.GetUserInboxCountAsync(activeUserId)
             };
         }
 
@@ -79,6 +79,27 @@ namespace GRA.Domain.Service
             }
             _logger.LogError($"User {activeUserId} doesn't have permission to view details for message {mailId}.");
             throw new Exception("Permission denied.");
+        }
+
+        public async Task<Mail> GetParticipantMailAsync(int mailId)
+        {
+            var activeUserId = GetActiveUserId();
+            try
+            {
+                var mail = await _mailRepository.GetByIdAsync(mailId);
+                if (mail.ToUserId == activeUserId)
+                {
+                    return mail;
+                }
+                else
+                {
+                    throw new GraException("Mail belongs to someone else.");
+                }
+            }
+            catch (Exception)
+            {
+                throw new GraException("Mail doesn't exist");
+            }
         }
 
         public async Task<DataWithCount<IEnumerable<Mail>>> GetAllPaginatedAsync(int skip,
@@ -148,9 +169,10 @@ namespace GRA.Domain.Service
         {
             var activeUserId = GetActiveUserId();
             var mail = await _mailRepository.GetByIdAsync(mailId);
-            if (mail.FromUserId == activeUserId || mail.ToUserId == activeUserId)
+            if (mail.ToUserId == activeUserId)
             {
                 await _mailRepository.MarkAsReadAsync(mailId);
+                _memoryCache.Remove($"{CacheKey.UserUnreadMailCount}?userId={activeUserId}");
                 return;
             }
             _logger.LogError($"User {activeUserId} doesn't have permission mark mail {mailId} as read.");
@@ -158,6 +180,47 @@ namespace GRA.Domain.Service
         }
 
         public async Task<Mail> SendAsync(Mail mail)
+        {
+            var authId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
+            if (mail.ToUserId == null)
+            {
+                mail.FromUserId = activeUserId;
+                mail.IsNew = true;
+                mail.IsDeleted = false;
+                mail.SiteId = GetClaimId(ClaimType.SiteId);
+                return await _mailRepository.AddSaveAsync(authId, mail);
+            }
+            else
+            {
+                _logger.LogError($"User {activeUserId} doesn't have permission to send a mail to {mail.ToUserId}.");
+                throw new Exception("Permission denied");
+            }
+        }
+
+        public async Task<Mail> SendReplyAsync(Mail mail)
+        {
+            var authId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
+            var inReplyToMail = await _mailRepository.GetByIdAsync(mail.InReplyToId.Value);
+            if (inReplyToMail.ToUserId == activeUserId)
+            {
+                mail.ThreadId = inReplyToMail.ThreadId ?? mail.InReplyToId.Value;
+                mail.FromUserId = activeUserId;
+                mail.ToUserId = null;
+                mail.IsNew = true;
+                mail.IsDeleted = false;
+                mail.SiteId = GetClaimId(ClaimType.SiteId);
+                return await _mailRepository.AddSaveAsync(authId, mail);
+            }
+            else
+            {
+                _logger.LogError($"User {activeUserId} doesn't have permission to reply to a mail sent to {mail.ToUserId}.");
+                throw new GraException("Permission Denied");
+            }
+        }
+
+        public async Task<Mail> MCSendAsync(Mail mail)
         {
             if (mail.ToUserId == null
                || HasPermission(Permission.MailParticipants))
@@ -176,7 +239,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<Mail> SendReplyAsync(Mail mail, int inReplyToId)
+        public async Task<Mail> MCSendReplyAsync(Mail mail, int inReplyToId)
         {
             if (mail.ToUserId == null
                || HasPermission(Permission.MailParticipants))
@@ -197,7 +260,6 @@ namespace GRA.Domain.Service
                 throw new Exception("Permission denied");
             }
         }
-
 
         public async Task RemoveAsync(int mailId)
         {

@@ -30,42 +30,44 @@
     </div>
 }
 
-<form asp-controller="Mail" method="post" role="form">
-    <input asp-for="Id" type="hidden" />
-    <div class="row">
-        <div class="col-sm-8 col-sm-offset-2">
-            <p style="font-size:large">Sent to you on @Model.CreatedAt.ToString("d")</p>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <span class="lead">
-                        Subject: @Model.Subject
-                    </span>
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-xs-8 col-sm-9">
-                            <p>@Model.Body</p>
-                        </div>
+
+<div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+        <p style="font-size:large">Sent to you on @Model.CreatedAt.ToString("d")</p>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span class="lead">
+                    Subject: @Model.Subject
+                </span>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-8 col-sm-9">
+                        <p>@Model.Body</p>
                     </div>
                 </div>
-                <div class="panel-footer clearfix hidden-print">
-                    <a asp-action="Index" class="btn btn-default">Return to Mail List</a>
-                    <div class="pull-right">
-                        @if (Model.CanParticipantDelete)
-                        {
+            </div>
+            <div class="panel-footer clearfix hidden-print">
+                <a asp-action="Index" class="btn btn-default">Return to Mail List</a>
+                <div class="pull-right">
+                    @if (Model.CanParticipantDelete)
+                    {
+                        <form asp-controller="Mail" method="post" role="form">
+                            <input asp-for="Id" type="hidden" />
                             <button type="submit" id="Delete" asp-action="Delete" class="btn btn-danger" style="margin-right: 12px;">
                                 Delete Mail
                             </button>
-                        }
-                        <button type="submit" asp-action="Reply" class="btn btn-primary">
-                            Reply
-                        </button>
-                    </div>
+                        </form>
+                    }
+                    <a asp-action="Reply" asp-route-id="@Model.Id" class="btn btn-primary">
+                        Reply
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</form>
+</div>
+
 
 @section scripts
 {

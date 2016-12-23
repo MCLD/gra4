@@ -28,7 +28,7 @@ namespace GRA.Controllers
         {
             int take = 15;
             int skip = take * (page - 1);
-            var mailList = await _mailService.GetUserPaginatedAsync(skip, take);
+            var mailList = await _mailService.GetUserInboxPaginatedAsync(skip, take);
 
             PaginateViewModel paginateModel = new PaginateViewModel()
             {
@@ -46,46 +46,100 @@ namespace GRA.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Read()
-        {
-            return RedirectToAction("Index");
-        }
-
-        [HttpPost]
         public async Task<IActionResult> Read(int id)
         {
-            var mail = await _mailService.GetDetails(id);
-            if (mail.IsNew)
+            try
             {
-                await _mailService.MarkAsReadAsync(id);
-                HttpContext.Items[ItemKey.UnreadCount] =
-                    (int)HttpContext.Items[ItemKey.UnreadCount] - 1;
+                var mail = await _mailService.GetParticipantMailAsync(id);
+                if (mail.IsNew)
+                {
+                    await _mailService.MarkAsReadAsync(id);
+                    HttpContext.Items[ItemKey.UnreadCount] =
+                        (int)HttpContext.Items[ItemKey.UnreadCount] - 1;
+                }
+                return View(mail);
             }
-            return View(mail);
+            catch (GraException)
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
+        public async Task<IActionResult> Reply(int id)
+        {
+            try
+            {
+                var mail = await _mailService.GetParticipantMailAsync(id);
+                MailCreateViewModel viewModel = new MailCreateViewModel()
+                {
+                    Subject = $"Reply to: {mail.Subject}",
+                    InReplyToId = mail.Id,
+                    InReplyToSubject = mail.Subject,
+                };
+                return View(viewModel);
+            }
+            catch (GraException)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
-        public IActionResult Reply()
+        public async Task<IActionResult> Reply(MailCreateViewModel model)
         {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult SendReply(Mail mail)
-        {
+            if (model.InReplyToId == null)
+            {
+                return RedirectToAction("Index");
+            }
             if (ModelState.IsValid)
             {
-                return View();
+                try
+                {
+                    Mail mail = new Mail()
+                    {
+                        Subject = model.Subject,
+                        Body = model.Body,
+                        InReplyToId = model.InReplyToId
+                    };
+                    await _mailService.SendReplyAsync(mail);
+                    AlertSuccess = $"Reply \"<strong>{mail.Subject}</strong>\" sent";
+                    return RedirectToAction("Read", new { id = mail.InReplyToId });
+                }
+                catch (GraException gex)
+                {
+                    AlertInfo = gex.Message;
+                    return RedirectToAction("Index");
+                }
             }
             else
             {
-                return RedirectToAction("Reply");
+                return View(model);
             }
         }
 
-        public IActionResult Create()
+        public IActionResult Send()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Send(MailCreateViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                Mail mail = new Mail()
+                {
+                    Subject = model.Subject,
+                    Body = model.Body
+                };
+                await _mailService.SendAsync(mail);
+                AlertSuccess = $"Mail \"<strong>{mail.Subject}</strong>\" sent";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View(model);
+            }
         }
 
     }
