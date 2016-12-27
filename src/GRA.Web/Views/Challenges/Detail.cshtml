@@ -51,7 +51,7 @@
                 </table>
                 <div class="panel-footer clearfix hidden-print">
                     <div class="pull-left">
-                        <a asp-action="Index" class="btn btn-default btn-lg">Return to Challenges</a>
+                        <return asp-action="Index" class="btn btn-default btn-lg">Return to Challenges</return>
                     </div>
                     @if (Model.Challenge.IsCompleted == true && Model.ShowCompleted)
                     {
