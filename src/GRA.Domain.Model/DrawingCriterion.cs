@@ -5,7 +5,6 @@ namespace GRA.Domain.Model
 {
     public class DrawingCriterion : Abstract.BaseDomainEntity
     {
-        [Required]
         public int SiteId { get; set; }
         [MaxLength(255)]
         [Required]
