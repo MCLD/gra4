@@ -12,10 +12,10 @@ namespace GRA.Controllers
     [Authorize]
     public class MailController : Base.UserController
     {
-        private readonly ILogger<ProfileController> _logger;
+        private readonly ILogger<MailController> _logger;
         private readonly MailService _mailService;
 
-        public MailController(ILogger<ProfileController> logger,
+        public MailController(ILogger<MailController> logger,
             ServiceFacade.Controller context,
             MailService mailService) : base(context)
         {

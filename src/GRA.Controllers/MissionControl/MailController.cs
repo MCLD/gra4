@@ -14,10 +14,10 @@ namespace GRA.Controllers.MissionControl
     [Authorize(Policy = Policy.ReadAllMail)]
     public class MailController : Base.MCController
     {
-        private readonly ILogger<ParticipantsController> _logger;
+        private readonly ILogger<MailController> _logger;
         private readonly MailService _mailService;
         private readonly UserService _userService;
-        public MailController(ILogger<ParticipantsController> logger,
+        public MailController(ILogger<MailController> logger,
             ServiceFacade.Controller context,
             MailService mailService,
             UserService userService)
