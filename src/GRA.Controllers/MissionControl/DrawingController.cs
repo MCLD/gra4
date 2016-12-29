@@ -88,7 +88,7 @@ namespace GRA.Controllers.MissionControl
 
             CriterionListViewModel viewModel = new CriterionListViewModel()
             {
-               Criteria = criterionList.Data,
+                Criteria = criterionList.Data,
                 PaginateModel = paginateModel
             };
 
@@ -103,6 +103,68 @@ namespace GRA.Controllers.MissionControl
                 BranchList = new SelectList(brancList.ToList(), "Id", "Name")
             };
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CriteriaCreate(CriterionDetailViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.ReadABook)
+                {
+                    model.Criterion.PointTranslationId = 1;
+                    model.Criterion.ActivityAmount = 1;
+                }
+                var criterion = await _drawingService.AddCriterionAsync(model.Criterion);
+                AlertSuccess = ($"Criteria <strong>{criterion.Name}</strong> created");
+                return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+            }
+            else
+            {
+                var brancList = await _siteService.GetBranches(1);
+                model.BranchList = new SelectList(brancList.ToList(), "Id", "Name");
+                return View(model);
+            }
+        }
+
+        public async Task<IActionResult> CriteriaDetail(int id)
+        {
+            var criterion = await _drawingService.GetCriterionDetails(id);
+            var brancList = await _siteService.GetBranches(1);
+            CriterionDetailViewModel viewModel = new CriterionDetailViewModel()
+            {
+                Criterion = criterion,
+                BranchList = new SelectList(brancList.ToList(), "Id", "Name"),
+                ReadABook = criterion.ActivityAmount.HasValue
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CriteriaDetail(CriterionDetailViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.ReadABook)
+                {
+                    model.Criterion.PointTranslationId = 1;
+                    model.Criterion.ActivityAmount = 1;
+                }
+                else
+                {
+                    model.Criterion.PointTranslationId = null;
+                    model.Criterion.ActivityAmount = null;
+                }
+                var criterion = await _drawingService.EditCriterionAsync(model.Criterion);
+                AlertSuccess = ($"Criteria <strong>{criterion.Name}</strong> saved");
+                return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+            }
+            else
+            {
+                var brancList = await _siteService.GetBranches(1);
+                model.BranchList = new SelectList(brancList.ToList(), "Id", "Name");
+                return View(model);
+            }
         }
     }
 }

@@ -11,13 +11,13 @@ namespace GRA.Domain.Service
     {
         private readonly IDrawingRepository _drawingRepository;
         private readonly IDrawingCriterionRepository _drawingCriterionRepository;
-        public DrawingService(ILogger<DrawingService> logger, 
+        public DrawingService(ILogger<DrawingService> logger,
             IUserContextProvider userContextProvider,
             IDrawingRepository drawingRepository,
             IDrawingCriterionRepository drawingCriterionRepository) : base(logger, userContextProvider)
         {
             _drawingRepository = Require.IsNotNull(drawingRepository, nameof(drawingRepository));
-            _drawingCriterionRepository = Require.IsNotNull(drawingCriterionRepository, 
+            _drawingCriterionRepository = Require.IsNotNull(drawingCriterionRepository,
                 nameof(drawingCriterionRepository));
         }
 
@@ -30,7 +30,12 @@ namespace GRA.Domain.Service
             };
         }
 
-        public async Task<DataWithCount<IEnumerable<DrawingCriterion>>> 
+        public async Task<Drawing> GetDetails(int id)
+        {
+            return new Drawing();
+        }
+
+        public async Task<DataWithCount<IEnumerable<DrawingCriterion>>>
             GetPaginatedCriterionListAsync(int skip, int take)
         {
             return new DataWithCount<IEnumerable<DrawingCriterion>>
@@ -38,6 +43,51 @@ namespace GRA.Domain.Service
                 Data = new List<DrawingCriterion>(),
                 Count = 0
             };
+        }
+
+        public async Task<DrawingCriterion> GetCriterionDetails(int id)
+        {
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
+            {
+                return await _drawingCriterionRepository.GetByIdAsync(id);
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to view criterion {id}.");
+                throw new GraException("Permission denied.");
+            }
+        }
+
+        public async Task<DrawingCriterion> AddCriterionAsync(DrawingCriterion criterion)
+        {
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
+            {
+                criterion.SiteId = GetCurrentSiteId();
+                return await _drawingCriterionRepository.AddSaveAsync(authUserId, criterion);
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to add a criterion.");
+                throw new GraException("Permission denied.");
+            }
+        }
+
+        public async Task<DrawingCriterion> EditCriterionAsync(DrawingCriterion criterion)
+        {
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
+            {
+                var currentCriterion = await _drawingCriterionRepository.GetByIdAsync(criterion.Id);
+                criterion.SiteId = currentCriterion.SiteId;
+                return await _drawingCriterionRepository.UpdateSaveAsync(authUserId, criterion);
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to edit criterion {criterion.Id}.");
+                throw new GraException("Permission denied.");
+            }
         }
     }
 }

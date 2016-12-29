@@ -1,6 +1,8 @@
 ﻿@model GRA.Controllers.ViewModel.MissionControl.Drawing.CriterionDetailViewModel
 
-<form asp-controller="Drawing" asp-action="CriteriaCreate" method="post" role="form" enctype="multipart/form-data">
+<form asp-controller="Drawing" asp-action="CriteriaDetail" method="post" role="form" enctype="multipart/form-data">
+    <input asp-for="Criterion.Id" type="hidden" />
+
     <div class="row" style="padding: 10px 0;">
         <div class="col-xs-12">
             <label asp-for="Criterion.Name" class="control-label"></label>
@@ -71,18 +73,18 @@
     <div class="form-group">
         <a asp-action="Criteria" class="btn btn-default">Return to Criteria List</a>
         <button type="submit" id="Submit" name="Submit" value="Submit" class="btn btn-primary">
-            <span class="buttonText">Create Criteria</span>
+            <span class="buttonText">Edit Criteria</span>
             <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
         </button>
     </div>
 </form>
 
-@section scripts 
+@section scripts
 {
     <script>
-        $('[id^=picker]').datetimepicker({
-            format: 'MM/DD/YYYY h:mm a',
+        $("[id^=picker]").datetimepicker({
             allowInputToggle: true,
+            defaultDate: moment().date(),
             sideBySide: true,
             icons: {
                 time: "fa fa-clock-o",
