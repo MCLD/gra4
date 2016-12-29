@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace GRA.Domain.Model
 {
@@ -12,7 +13,9 @@ namespace GRA.Domain.Model
         [MaxLength(1000)]
         [Required]
         public string RedemptionInstructions { get; set; }
-        [Required]
+        [Range(1, Int32.MaxValue)]
         public int WinnerCount { get; set; }
+        public string NotificationSubject { get; set; }
+        public string NotificationMessage { get; set; }
     }
 }
