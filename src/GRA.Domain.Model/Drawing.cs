@@ -6,7 +6,7 @@ namespace GRA.Domain.Model
     public class Drawing : Abstract.BaseDomainEntity
     {
         [Required]
-        public int DrawingCriteriaId { get; set; }
+        public int DrawingCriterionId { get; set; }
         [MaxLength(255)]
         [Required]
         public string Name { get; set; }
@@ -17,5 +17,7 @@ namespace GRA.Domain.Model
         public int WinnerCount { get; set; }
         public string NotificationSubject { get; set; }
         public string NotificationMessage { get; set; }
+
+        public string DrawingCriterionName { get; set; }
     }
 }

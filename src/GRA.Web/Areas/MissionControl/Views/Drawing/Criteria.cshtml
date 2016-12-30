@@ -27,11 +27,11 @@
                         {
                             <tr>
                                 <td class="td-class">
-                                    <a asp-action="CriteriaCreate" asp-route-id="@criterion.Id" class="rowlink">
+                                    <a asp-action="CriteriaDetail" asp-route-id="@criterion.Id" class="rowlink">
                                         @criterion.Name
                                     </a>
                                 </td>
-                                <td>@criterion.BranchId</td>
+                                <td>@criterion.BranchName</td>
                             </tr>
                         }
                     </tbody>

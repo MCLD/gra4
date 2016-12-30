@@ -24,5 +24,7 @@ namespace GRA.Domain.Model
         public DateTime? EndOfPeriod { get; set; }
         public int? ActivityAmount { get; set; }
         public int? PointTranslationId { get; set; }
+
+        public string BranchName { get; set; }
     }
 }

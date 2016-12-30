@@ -23,26 +23,56 @@ namespace GRA.Domain.Service
 
         public async Task<DataWithCount<IEnumerable<Drawing>>> GetPaginatedDrawingListAsync(int skip, int take)
         {
-            return new DataWithCount<IEnumerable<Drawing>>
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
             {
-                Data = new List<Drawing>(),
-                Count = 0
-            };
+                int siteId = GetCurrentSiteId();
+                return new DataWithCount<IEnumerable<Drawing>>
+                {
+                    Data = await _drawingRepository.PageAllAsync(siteId, skip, take),
+                    Count = await _drawingRepository.GetCountAsync(siteId)
+                };
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to view all drawings.");
+                throw new GraException("Permission denied.");
+            }
+
         }
 
         public async Task<Drawing> GetDetails(int id)
         {
-            return new Drawing();
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
+            {
+                return await _drawingRepository.GetByIdAsync(id);
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to view drawing {id}.");
+                throw new GraException("Permission denied.");
+            }
         }
 
         public async Task<DataWithCount<IEnumerable<DrawingCriterion>>>
             GetPaginatedCriterionListAsync(int skip, int take)
         {
-            return new DataWithCount<IEnumerable<DrawingCriterion>>
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
             {
-                Data = new List<DrawingCriterion>(),
-                Count = 0
-            };
+                int siteId = GetCurrentSiteId();
+                return new DataWithCount<IEnumerable<DrawingCriterion>>
+                {
+                    Data = await _drawingCriterionRepository.PageAllAsync(siteId, skip, take),
+                    Count = await _drawingCriterionRepository.GetCountAsync(siteId)
+                };
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to view all criteria.");
+                throw new GraException("Permission denied.");
+            }
         }
 
         public async Task<DrawingCriterion> GetCriterionDetails(int id)

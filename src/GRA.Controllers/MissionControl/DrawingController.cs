@@ -97,6 +97,8 @@ namespace GRA.Controllers.MissionControl
 
         public async Task<IActionResult> CriteriaCreate()
         {
+            PageTitle = "Criteria";
+
             var brancList = await _siteService.GetBranches(1);
             CriterionDetailViewModel viewModel = new CriterionDetailViewModel()
             {
@@ -121,6 +123,7 @@ namespace GRA.Controllers.MissionControl
             }
             else
             {
+                PageTitle = "Criteria";
                 var brancList = await _siteService.GetBranches(1);
                 model.BranchList = new SelectList(brancList.ToList(), "Id", "Name");
                 return View(model);
@@ -129,6 +132,7 @@ namespace GRA.Controllers.MissionControl
 
         public async Task<IActionResult> CriteriaDetail(int id)
         {
+            PageTitle = "Criteria";
             var criterion = await _drawingService.GetCriterionDetails(id);
             var brancList = await _siteService.GetBranches(1);
             CriterionDetailViewModel viewModel = new CriterionDetailViewModel()
@@ -161,6 +165,7 @@ namespace GRA.Controllers.MissionControl
             }
             else
             {
+                PageTitle = "Criteria";
                 var brancList = await _siteService.GetBranches(1);
                 model.BranchList = new SelectList(brancList.ToList(), "Id", "Name");
                 return View(model);

@@ -13,6 +13,7 @@ namespace GRA.Data.Model
         public int? ProgramId { get; set; }
         public int? SystemId { get; set; }
         public int? BranchId { get; set; }
+        public virtual Branch Branch { get; set; }
         public int? PointsMinimum { get; set; }
         public int? PointsMaximum { get; set; }
         public DateTime? StartOfPeriod { get; set; }

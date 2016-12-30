@@ -6,7 +6,7 @@ namespace GRA.Data.Model
     public class Drawing : Abstract.BaseDbEntity
     {
         [Required]
-        public int DrawingCriteriaId { get; set; }
+        public int DrawingCriterionId { get; set; }
         public DrawingCriterion DrawingCriterion { get; set; }
 
         [MaxLength(255)]
