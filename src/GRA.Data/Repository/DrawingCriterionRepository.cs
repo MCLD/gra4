@@ -18,6 +18,17 @@ namespace GRA.Data.Repository
         {
         }
 
+        public async Task<IEnumerable<DrawingCriterion>> GetAllAsync(int siteId)
+        {
+            return await DbSet
+                    .AsNoTracking()
+                    .Where(_ => _.SiteId == siteId)
+                    .OrderBy(_ => _.Name)
+                    .ThenBy(_ => _.Id)
+                    .ProjectTo<DrawingCriterion>()
+                    .ToListAsync();
+        }
+
         public async Task<IEnumerable<DrawingCriterion>> PageAllAsync(int siteId, int skip, int take)
         {
             return await DbSet

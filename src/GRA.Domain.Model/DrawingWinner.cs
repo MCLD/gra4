@@ -8,5 +8,9 @@ namespace GRA.Domain.Model
         public int UserId { get; set; }
         public DateTime? RedeemedAt { get; set; }
         public int? MailId { get; set; }
+
+        public string UserFirstName { get; set; }
+        public string UserLastName { get; set; }
+        public string UserUsername { get; set; }
     }
 }

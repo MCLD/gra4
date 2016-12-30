@@ -62,6 +62,40 @@ namespace GRA.Controllers.MissionControl
             return View(viewModel);
         }
 
+        public async Task<IActionResult> Detail(int id)
+        {
+            var drawing = await _drawingService.GetDetails(id);
+            return View(drawing);
+        }
+
+        public async Task<IActionResult> New(int? id)
+        {
+            var criterionList = await _drawingService.GetCriterionListAsync();
+            DrawingNewViewModel viewModel = new DrawingNewViewModel()
+            {
+                CriterionList = new SelectList(criterionList.ToList(), "Id", "Name")
+            };
+            if (id.HasValue)
+            {
+                viewModel.Drawing.DrawingCriterionId = id.Value;
+            }
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> New(DrawingNewViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction("Detail", new { id = 1 });
+            }
+            else
+            {
+                var criterionList = await _drawingService.GetCriterionListAsync();
+                model.CriterionList = new SelectList(criterionList.ToList(), "Id", "Name");
+                return View(model);
+            }
+        }
+
         public async Task<IActionResult> Criteria(int page = 1)
         {
             PageTitle = "Criteria";
@@ -108,7 +142,8 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        public async Task<IActionResult> CriteriaCreate(CriterionDetailViewModel model)
+        public async Task<IActionResult> CriteriaCreate(CriterionDetailViewModel model, 
+            string Drawing)
         {
             if (ModelState.IsValid)
             {
@@ -119,7 +154,15 @@ namespace GRA.Controllers.MissionControl
                 }
                 var criterion = await _drawingService.AddCriterionAsync(model.Criterion);
                 AlertSuccess = ($"Criteria <strong>{criterion.Name}</strong> created");
-                return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+                if (string.IsNullOrWhiteSpace(Drawing))
+                {
+                    return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+                }
+                else
+                {
+                    return RedirectToAction("New", new { id = criterion.Id });
+                }
+                
             }
             else
             {
@@ -145,7 +188,8 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        public async Task<IActionResult> CriteriaDetail(CriterionDetailViewModel model)
+        public async Task<IActionResult> CriteriaDetail(CriterionDetailViewModel model, 
+            string Drawing)
         {
             if (ModelState.IsValid)
             {
@@ -161,7 +205,14 @@ namespace GRA.Controllers.MissionControl
                 }
                 var criterion = await _drawingService.EditCriterionAsync(model.Criterion);
                 AlertSuccess = ($"Criteria <strong>{criterion.Name}</strong> saved");
-                return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+                if (string.IsNullOrWhiteSpace(Drawing))
+                {
+                    return RedirectToAction("CriteriaDetail", new { id = criterion.Id });
+                }
+                else
+                {
+                    return RedirectToAction("New", new { id = criterion.Id });
+                }
             }
             else
             {

@@ -38,5 +38,29 @@ namespace GRA.Data.Repository
                 .Where(_ => _.DrawingCriterion.SiteId == siteId)
                 .CountAsync();
         }
+
+        public override async Task<Drawing> GetByIdAsync(int id)
+        {
+            var drawing = await DbSet
+                .AsNoTracking()
+                .Where(_ => _.Id == id)
+                .ProjectTo<Drawing>()
+                .SingleAsync();
+
+            if (drawing != null)
+            {
+                var winners = _context.DrawingWinners
+                    .AsNoTracking()
+                    .Include(_ => _.User)
+                    .Where(_ => _.DrawingId == id && _.User.IsDeleted == false)
+                    .OrderBy(_ => _.User.LastName)
+                    .ThenBy(_ => _.User.FirstName)
+                    .ThenBy(_ => _.UserId)
+                    .ProjectTo<DrawingWinner>()
+                    .ToList();
+            }
+
+            return drawing;
+        }
     }
 }

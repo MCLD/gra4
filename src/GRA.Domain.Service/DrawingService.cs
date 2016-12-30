@@ -55,6 +55,21 @@ namespace GRA.Domain.Service
             }
         }
 
+        public async Task<IEnumerable<DrawingCriterion>> GetCriterionListAsync()
+        {
+            int authUserId = GetClaimId(ClaimType.UserId);
+            if (HasPermission(Permission.PerformDrawing))
+            {
+                int siteId = GetCurrentSiteId();
+                return await _drawingCriterionRepository.GetAllAsync(siteId);
+            }
+            else
+            {
+                _logger.LogError($"User {authUserId} doesn't have permission to view all criteria.");
+                throw new GraException("Permission denied.");
+            }
+        }
+
         public async Task<DataWithCount<IEnumerable<DrawingCriterion>>>
             GetPaginatedCriterionListAsync(int skip, int take)
         {
