@@ -12,5 +12,7 @@ namespace GRA.Domain.Model
         public string UserFirstName { get; set; }
         public string UserLastName { get; set; }
         public string UserUsername { get; set; }
+        public string DrawingName { get; set; }
+        public string DrawingRedemptionInstructions { get; set; }
     }
 }

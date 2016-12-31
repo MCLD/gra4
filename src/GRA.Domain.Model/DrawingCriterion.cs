@@ -26,5 +26,7 @@ namespace GRA.Domain.Model
         public int? PointTranslationId { get; set; }
 
         public string BranchName { get; set; }
+        [DisplayName("Eligible Count")]
+        public int EligibleCount { get; set; }
     }
 }

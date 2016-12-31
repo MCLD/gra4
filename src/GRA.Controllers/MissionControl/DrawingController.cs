@@ -62,36 +62,90 @@ namespace GRA.Controllers.MissionControl
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Detail(int id)
+        public async Task<IActionResult> Detail(int id, int page = 1)
         {
-            var drawing = await _drawingService.GetDetails(id);
-            return View(drawing);
-        }
+            int take = 15;
+            int skip = take * (page - 1);
+            
+            var drawing = await _drawingService.GetDetails(id, skip, take);
 
-        public async Task<IActionResult> New(int? id)
-        {
-            var criterionList = await _drawingService.GetCriterionListAsync();
-            DrawingNewViewModel viewModel = new DrawingNewViewModel()
+            PaginateViewModel paginateModel = new PaginateViewModel()
             {
-                CriterionList = new SelectList(criterionList.ToList(), "Id", "Name")
+                ItemCount = drawing.Count,
+                CurrentPage = page,
+                ItemsPerPage = take
             };
-            if (id.HasValue)
+
+            if (paginateModel.MaxPage > 0 && paginateModel.CurrentPage > paginateModel.MaxPage)
             {
-                viewModel.Drawing.DrawingCriterionId = id.Value;
+                return RedirectToRoute(
+                    new
+                    {
+                        id = id,
+                        page = paginateModel.LastPage ?? 1
+                    });
             }
+
+            DrawingDetailViewModel viewModel = new DrawingDetailViewModel()
+            {
+                Drawing = drawing.Data,
+                PaginateModel = paginateModel
+            };
+
             return View(viewModel);
         }
 
-        public async Task<IActionResult> New(DrawingNewViewModel model)
+        [HttpPost]
+        public async Task<IActionResult> RedeemWinner(int drawingId, int winnerId, int page = 1)
         {
+            await _drawingService.RedeemWinnerAsync(drawingId, winnerId);
+            return RedirectToAction("Detail", new { id = drawingId, page = page });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveWinner(int drawingId, int winnerId, int page = 1)
+        {
+            await _drawingService.RemoveWinnerAsync(drawingId, winnerId);
+            return RedirectToAction("Detail", new { id = drawingId, page = page });
+        } 
+
+        public async Task<IActionResult> New(int id)
+        {
+            var drawing = new Drawing()
+            {
+                DrawingCriterionId = id,
+                DrawingCriterion = await _drawingService.GetCriterionDetails(id),
+                WinnerCount = 1
+            };
+            drawing.DrawingCriterion.EligibleCount = _drawingService.GetEligibleCountAsync(id);
+
+            return View(drawing);
+        }
+
+        [HttpPost]
+        public IActionResult New(Drawing model)
+        {
+            if (string.IsNullOrWhiteSpace(model.NotificationSubject)
+                && !string.IsNullOrWhiteSpace(model.NotificationMessage))
+            {
+                ModelState.AddModelError("NotificationSubject", 
+                    "A subject is required to accompany the message");
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.NotificationSubject)
+                && string.IsNullOrWhiteSpace(model.NotificationMessage))
+            {
+                ModelState.AddModelError("NotificationMessage", 
+                    "A message is required to accompany the subject");
+            }
+
             if (ModelState.IsValid)
             {
-                return RedirectToAction("Detail", new { id = 1 });
+                var drawing =  _drawingService.PerformDrawing(model);
+                return RedirectToAction("Detail", new { id = drawing.Id });
             }
             else
             {
-                var criterionList = await _drawingService.GetCriterionListAsync();
-                model.CriterionList = new SelectList(criterionList.ToList(), "Id", "Name");
                 return View(model);
             }
         }

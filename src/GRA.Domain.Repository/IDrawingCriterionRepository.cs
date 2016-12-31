@@ -6,7 +6,6 @@ namespace GRA.Domain.Repository
 {
     public interface IDrawingCriterionRepository : IRepository<DrawingCriterion>
     {
-        Task<IEnumerable<DrawingCriterion>> GetAllAsync(int siteId);
         Task<IEnumerable<DrawingCriterion>> PageAllAsync(int siteId, int skip, int take);
         Task<int> GetCountAsync(int siteId);
     }
