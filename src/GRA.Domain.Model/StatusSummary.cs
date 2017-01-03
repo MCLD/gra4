@@ -12,6 +12,8 @@ namespace GRA.Domain.Model
         public int? BranchId { get; set; }
         public int? ProgramId { get; set; }
 
+        public string BranchName { get; set; }
+
         public int RegisteredUsers { get; set; }
         public int PointsEarned { get; set; }
         public Dictionary<string, int> ActivityEarnings { get; set; }
