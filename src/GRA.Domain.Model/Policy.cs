@@ -21,6 +21,7 @@
         public const string RemoveChallenges = "RemoveChallenges";
         public const string ViewParticipantList = "ViewParticipantList";
         public const string ViewParticipantDetails = "ViewParticipantDetails";
+        public const string ViewAllReporting = "ViewAllReporting";
         public const string ViewUnpublishedPages = "ViewUnpublishedPages";
         public const string ViewUserDrawings = "ViewUserDrawings";
     }

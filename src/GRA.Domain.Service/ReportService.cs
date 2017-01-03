@@ -59,51 +59,60 @@ namespace GRA.Domain.Service
 
         public async Task<IEnumerable<StatusSummary>> GetAllByBranchAsync(StatusSummary request)
         {
-            if (request.SiteId == null || request.SiteId != GetCurrentSiteId())
+            if (HasPermission(Permission.ViewAllReporting))
             {
-                request.SiteId = GetCurrentSiteId();
-            }
+                if (request.SiteId == null || request.SiteId != GetCurrentSiteId())
+                {
+                    request.SiteId = GetCurrentSiteId();
+                }
 
-            ICollection<int> systemIds = null;
-            if (request.SystemId == null)
-            {
-                var systems = await _systemRepository.GetAllAsync((int)request.SiteId);
-                systemIds = systems.Select(_ => _.Id).ToList();
+                ICollection<int> systemIds = null;
+                if (request.SystemId == null)
+                {
+                    var systems = await _systemRepository.GetAllAsync((int)request.SiteId);
+                    systemIds = systems.Select(_ => _.Id).ToList();
+                }
+                else
+                {
+                    systemIds = new List<int>();
+                    systemIds.Add((int)request.SystemId);
+                }
+
+                var result = new List<StatusSummary>();
+                foreach (var systemId in systemIds)
+                {
+                    var branches = await _branchRepository.GetAllAsync(systemId);
+                    foreach (var branch in branches)
+                    {
+                        request.SystemId = systemId;
+                        request.BranchId = branch.Id;
+
+                        result.Add(new StatusSummary
+                        {
+                            BranchId = branch.Id,
+                            BranchName = branch.Name,
+                            StartDate = request.StartDate,
+                            EndDate = request.EndDate,
+                            SystemId = systemId,
+                            SiteId = request.SiteId,
+
+                            RegisteredUsers = await _userRepository.GetCountAsync(request),
+                            PointsEarned = await _userLogRepository.PointsEarnedTotalAsync(request),
+                            ActivityEarnings = await _userLogRepository
+                                .ActivityEarningsTotalAsync(request),
+                            CompletedChallenges = await _userLogRepository
+                                .CompletedChallengeCountAsync(request)
+                        });
+                    }
+                }
+                return result;
             }
             else
             {
-                systemIds = new List<int>();
-                systemIds.Add((int)request.SystemId);
+                var requestingUser = GetClaimId(ClaimType.UserId);
+                _logger.LogError($"User {requestingUser} doesn't have permission to view all reporting.");
+                throw new Exception("Permission denied.");
             }
-
-            var result = new List<StatusSummary>();
-            foreach (var systemId in systemIds)
-            {
-                var branches = await _branchRepository.GetAllAsync(systemId);
-                foreach (var branch in branches)
-                {
-                    request.SystemId = systemId;
-                    request.BranchId = branch.Id;
-
-                    result.Add(new StatusSummary
-                    {
-                        BranchId = branch.Id,
-                        BranchName = branch.Name,
-                        StartDate = request.StartDate,
-                        EndDate = request.EndDate,
-                        SystemId = systemId,
-                        SiteId = request.SiteId,
-
-                        RegisteredUsers = await _userRepository.GetCountAsync(request),
-                        PointsEarned = await _userLogRepository.PointsEarnedTotalAsync(request),
-                        ActivityEarnings = await _userLogRepository
-                            .ActivityEarningsTotalAsync(request),
-                        CompletedChallenges = await _userLogRepository
-                            .CompletedChallengeCountAsync(request)
-                    });
-                }
-            }
-            return result;
         }
     }
 }

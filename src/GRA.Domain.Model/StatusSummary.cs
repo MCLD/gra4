@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace GRA.Domain.Model
 {
     public class StatusSummary
     {
         public int? SiteId { get; set; }
+        [DisplayName("Start Date")]
         public DateTime? StartDate { get; set; }
+        [DisplayName("End Date")]
         public DateTime? EndDate { get; set; }
         public int? SystemId { get; set; }
         public int? BranchId { get; set; }

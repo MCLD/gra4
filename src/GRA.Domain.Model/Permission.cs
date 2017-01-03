@@ -21,6 +21,7 @@
         RemoveChallenges,
         ViewParticipantList,
         ViewParticipantDetails,
+        ViewAllReporting,
         ViewUnpublishedPages,
         ViewUserDrawings
     }
