@@ -19,6 +19,7 @@
         public const string PerformDrawing = "PerformDrawing";
         public const string ReadAllMail = "ReadAllMail";
         public const string RemoveChallenges = "RemoveChallenges";
+        public const string SendBroadcastMail = "SendBroadcastMail";
         public const string ViewParticipantList = "ViewParticipantList";
         public const string ViewParticipantDetails = "ViewParticipantDetails";
         public const string ViewAllReporting = "ViewAllReporting";

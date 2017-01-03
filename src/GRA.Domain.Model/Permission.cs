@@ -19,6 +19,7 @@
         PerformDrawing,
         ReadAllMail,
         RemoveChallenges,
+        SendBroadcastMail,
         ViewParticipantList,
         ViewParticipantDetails,
         ViewAllReporting,
