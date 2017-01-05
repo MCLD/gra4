@@ -139,10 +139,26 @@ namespace GRA.Controllers.MissionControl
                     "A message is required to accompany the subject");
             }
 
+            if (model.WinnerCount > model.DrawingCriterion.EligibleCount)
+            {
+                ModelState.AddModelError("WinnerCount", "Cannot have more Winners than Eligible Participants");
+            }
+
             if (ModelState.IsValid)
             {
-                var drawing = await _drawingService.PerformDrawingAsync(model);
-                return RedirectToAction("Detail", new { id = drawing.Id });
+                try
+                {
+                    var drawing = await _drawingService.PerformDrawingAsync(model);
+                    return RedirectToAction("Detail", new { id = drawing.Id });
+                }
+                catch (GraException gex)
+                {
+                    AlertInfo = gex.Message;
+                    ModelState["DrawingCriterion.EligibleCount"].RawValue = 
+                        await _drawingService.GetEligibleCountAsync(model.DrawingCriterionId);
+
+                    return View(model);
+                }
             }
             else
             {
