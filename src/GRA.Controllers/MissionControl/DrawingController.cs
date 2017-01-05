@@ -237,7 +237,8 @@ namespace GRA.Controllers.MissionControl
             {
                 Criterion = criterion,
                 BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
-                ReadABook = criterion.ActivityAmount.HasValue
+                ReadABook = criterion.ActivityAmount.HasValue,
+                EligibleCount = await _drawingService.GetEligibleCountAsync(id)
             };
             return View(viewModel);
         }
