@@ -69,7 +69,7 @@ namespace GRA.Controllers
 
             var siteStage = GetSiteStage();
 
-            var IsActive = AuthUser.Identity.IsAuthenticated && (siteStage == SiteStage.ProgramOpen
+            var isActive = AuthUser.Identity.IsAuthenticated && (siteStage == SiteStage.ProgramOpen
                 || siteStage == SiteStage.ProgramEnded);
 
             ChallengesListViewModel viewModel = new ChallengesListViewModel()
@@ -77,7 +77,7 @@ namespace GRA.Controllers
                 Challenges = challengeList.Data,
                 PaginateModel = paginateModel,
                 Search = Search,
-                IsActive = IsActive
+                IsActive = isActive
         };
 
             if (!string.IsNullOrWhiteSpace(Search))
