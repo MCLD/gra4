@@ -67,12 +67,18 @@ namespace GRA.Controllers
                 }
             }
 
+            var siteStage = GetSiteStage();
+
+            var IsActive = AuthUser.Identity.IsAuthenticated && (siteStage == SiteStage.ProgramOpen
+                || siteStage == SiteStage.ProgramEnded);
+
             ChallengesListViewModel viewModel = new ChallengesListViewModel()
             {
                 Challenges = challengeList.Data,
                 PaginateModel = paginateModel,
-                Search = Search
-            };
+                Search = Search,
+                IsActive = IsActive
+        };
 
             if (!string.IsNullOrWhiteSpace(Search))
             {
