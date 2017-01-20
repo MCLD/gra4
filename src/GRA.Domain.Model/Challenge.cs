@@ -38,6 +38,10 @@ namespace GRA.Domain.Model
         [Range(1, int.MaxValue, ErrorMessage = "The minimum tasks required to complete is {1}")]
         public int? TasksToComplete { get; set; }
 
+        public int? LimitToSystemId { get; set; }
+        public int? LimitToBranchId { get; set; }
+        public int? LimitToProgramId { get; set; }
+
         public IEnumerable<ChallengeTask> Tasks { get; set; }
         public bool? IsCompleted { get; set; }
         public DateTime? CompletedAt { get; set; }

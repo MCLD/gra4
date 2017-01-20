@@ -14,18 +14,21 @@ namespace GRA.Domain.Service
         private readonly IBadgeRepository _badgeRepository;
         private readonly IChallengeRepository _challengeRepository;
         private readonly IChallengeTaskRepository _challengeTaskRepository;
+        private readonly IUserRepository _userRepository;
 
         public ChallengeService(ILogger<ChallengeService> logger,
             IUserContextProvider userContextProvider,
             IBadgeRepository badgeRepository,
             IChallengeRepository challengeRepository,
-            IChallengeTaskRepository challengeTaskRepository) : base(logger, userContextProvider)
+            IChallengeTaskRepository challengeTaskRepository,
+            IUserRepository userRepository) : base(logger, userContextProvider)
         {
             _badgeRepository = Require.IsNotNull(badgeRepository, nameof(badgeRepository));
             _challengeRepository = Require.IsNotNull(challengeRepository,
                 nameof(challengeRepository));
             _challengeTaskRepository = Require.IsNotNull(challengeTaskRepository,
                 nameof(challengeTaskRepository));
+            _userRepository = Require.IsNotNull(userRepository, nameof(userRepository));
         }
 
         public async Task<DataWithCount<IEnumerable<Challenge>>>
@@ -78,13 +81,35 @@ namespace GRA.Domain.Service
             if (HasPermission(Permission.ViewAllChallenges))
             {
                 int siteId = GetCurrentSiteId();
-                if (filterBy == "User")
+                if (!string.IsNullOrWhiteSpace(filterBy))
                 {
-                    filterId = authUserId;
+                    if (filterBy.Equals("Mine", StringComparison.OrdinalIgnoreCase))
+                    {
+                        filterId = authUserId;
+                    }
+                    else if (filterBy.Equals("Branch", StringComparison.OrdinalIgnoreCase)
+                        && filterId == null)
+                    {
+                        var user = await _userRepository.GetByIdAsync(authUserId);
+                        filterId = user.BranchId;
+                    }
+                    else if (filterBy.Equals("System", StringComparison.OrdinalIgnoreCase)
+                        && filterId == null)
+                    {
+                        var user = await _userRepository.GetByIdAsync(authUserId);
+                        filterId = user.BranchId;
+                    }
+                    else if (filterBy.Equals("Pending", StringComparison.OrdinalIgnoreCase)
+                        && !(HasPermission(Permission.ActivateAllChallenges)
+                            || HasPermission(Permission.ActivateSystemChallenges)))
+                    {
+                        _logger.LogError($"User {authUserId} doesn't have permission to view pending challenges.");
+                        throw new Exception("Permission denied.");
+                    }
                 }
 
                 var challenges = await _challengeRepository
-                    .PageAllAsync(siteId, skip, take, search, filterBy, filterId);
+                .PageAllAsync(siteId, skip, take, search, filterBy, filterId);
                 await AddBadgeFilenames(challenges);
                 return new DataWithCount<IEnumerable<Challenge>>
                 {
@@ -178,7 +203,7 @@ namespace GRA.Domain.Service
         public async Task ActivateChallengeAsync(Challenge challenge)
         {
             int authUserId = GetClaimId(ClaimType.UserId);
-            if (HasPermission(Permission.ActivateChallenges))
+            if (HasPermission(Permission.ActivateAllChallenges))
             {
                 if (challenge.IsValid)
                 {

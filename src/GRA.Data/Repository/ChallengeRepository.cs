@@ -30,17 +30,33 @@ namespace GRA.Data.Repository
                     .Where(_ => _.IsDeleted == false
                         && _.SiteId == siteId);
 
-            if (filterBy == "Active")
+            if (!string.IsNullOrWhiteSpace(filterBy))
             {
-                challenges = challenges.Where(_ => _.IsActive == true);
-            }
-            else if (filterBy == "User")
-            {
-                challenges = challenges.Where(_ => _.CreatedBy == filterId.Value);
-            }
-            else if (filterBy == "Pending")
-            {
-                challenges = challenges.Where(_ => _.IsValid && !_.IsActive);
+                switch (filterBy.ToLower())
+                {
+                    case "active":
+                        challenges = challenges.Where(_ => _.IsActive == true);
+                        break;
+
+                    case "mine":
+                        challenges = challenges.Where(_ => _.CreatedBy == filterId.Value);
+                        break;
+
+                    case "branch":
+                        challenges = challenges.Where(_ => _.RelatedBranchId == filterId.Value);
+                        break;
+
+                    case "system":
+                        challenges = challenges.Where(_ => _.RelatedSystemId == filterId.Value);
+                        break;
+
+                    case "pending":
+                        challenges = challenges.Where(_ => _.IsValid && !_.IsActive);
+                        break;
+
+                    default:
+                        break;
+                }
             }
 
             if (!string.IsNullOrEmpty(search))
@@ -68,17 +84,33 @@ namespace GRA.Data.Repository
                     .Where(_ => _.IsDeleted == false
                         && _.SiteId == siteId);
 
-            if (filterBy == "Active")
+            if (!string.IsNullOrWhiteSpace(filterBy))
             {
-                challenges = challenges.Where(_ => _.IsActive == true);
-            }
-            else if (filterBy == "User")
-            {
-                challenges = challenges.Where(_ => _.CreatedBy == filterId.Value);
-            }
-            else if (filterBy == "Pending")
-            {
-                challenges = challenges.Where(_ => _.IsValid && !_.IsActive);
+                switch (filterBy.ToLower())
+                {
+                    case "active":
+                        challenges = challenges.Where(_ => _.IsActive == true);
+                        break;
+
+                    case "mine":
+                        challenges = challenges.Where(_ => _.CreatedBy == filterId.Value);
+                        break;
+
+                    case "branch":
+                        challenges = challenges.Where(_ => _.RelatedBranchId == filterId.Value);
+                        break;
+
+                    case "system":
+                        challenges = challenges.Where(_ => _.RelatedSystemId == filterId.Value);
+                        break;
+
+                    case "pending":
+                        challenges = challenges.Where(_ => _.IsValid && !_.IsActive);
+                        break;
+
+                    default:
+                        break;
+                }
             }
 
             if (!string.IsNullOrEmpty(search))

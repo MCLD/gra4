@@ -42,6 +42,11 @@ namespace GRA.Domain.Service
             return await _branchRepository.GetAllAsync(systemId);
         }
 
+        public async Task<Branch> GetBranchByIdAsync(int branchId)
+        {
+            return await _branchRepository.GetByIdAsync(branchId);
+        }
+
         public async Task<string> GetBranchName(int branchId)
         {
             var branch = await _branchRepository.GetByIdAsync(branchId);
