@@ -12,6 +12,7 @@ namespace GRA.Domain.Service
     public class ChallengeService : Abstract.BaseUserService<ChallengeService>
     {
         private readonly IBadgeRepository _badgeRepository;
+        private readonly IBranchRepository _branchRepository;
         private readonly IChallengeRepository _challengeRepository;
         private readonly IChallengeTaskRepository _challengeTaskRepository;
         private readonly IUserRepository _userRepository;
@@ -19,11 +20,14 @@ namespace GRA.Domain.Service
         public ChallengeService(ILogger<ChallengeService> logger,
             IUserContextProvider userContextProvider,
             IBadgeRepository badgeRepository,
+            IBranchRepository branchRepository,
             IChallengeRepository challengeRepository,
             IChallengeTaskRepository challengeTaskRepository,
+            
             IUserRepository userRepository) : base(logger, userContextProvider)
         {
             _badgeRepository = Require.IsNotNull(badgeRepository, nameof(badgeRepository));
+            _branchRepository = Require.IsNotNull(branchRepository, nameof(branchRepository));
             _challengeRepository = Require.IsNotNull(challengeRepository,
                 nameof(challengeRepository));
             _challengeTaskRepository = Require.IsNotNull(challengeTaskRepository,
@@ -158,8 +162,19 @@ namespace GRA.Domain.Service
 
         public async Task<Challenge> AddChallengeAsync(Challenge challenge)
         {
+            int authUserId = GetClaimId(ClaimType.UserId);
             if (HasPermission(Permission.AddChallenges))
             {
+                if (challenge.LimitToSystemId.HasValue && challenge.LimitToBranchId.HasValue)
+                {
+                    var branch = await _branchRepository
+                        .GetByIdAsync(challenge.LimitToBranchId.Value);
+                    if (branch.SystemId != challenge.LimitToSystemId.Value)
+                    {
+                        _logger.LogError($"User {authUserId} cannot set challenge limitaion branch {challenge.LimitToBranchId.Value} for system {challenge.LimitToSystemId.Value}");
+                        throw new GraException("Invalid branch limitation.");
+                    }
+                }
                 challenge.IsActive = false;
                 challenge.IsDeleted = false;
                 challenge.IsValid = false;
@@ -169,8 +184,7 @@ namespace GRA.Domain.Service
                 return await _challengeRepository
                     .AddSaveAsync(GetClaimId(ClaimType.UserId), challenge);
             }
-            int userId = GetClaimId(ClaimType.UserId);
-            _logger.LogError($"User {userId} doesn't have permission to add a challenge.");
+            _logger.LogError($"User {authUserId} doesn't have permission to add a challenge.");
             throw new Exception("Permission denied.");
         }
 
@@ -179,6 +193,16 @@ namespace GRA.Domain.Service
             int authUserId = GetClaimId(ClaimType.UserId);
             if (HasPermission(Permission.EditChallenges))
             {
+                if (challenge.LimitToSystemId.HasValue && challenge.LimitToBranchId.HasValue)
+                {
+                    var branch = await _branchRepository
+                        .GetByIdAsync(challenge.LimitToBranchId.Value);
+                    if (branch.SystemId != challenge.LimitToSystemId.Value)
+                    {
+                        _logger.LogError($"User {authUserId} cannot set challenge limitaion branch {challenge.LimitToBranchId.Value} for system {challenge.LimitToSystemId.Value}");
+                        throw new GraException("Invalid branch limitation.");
+                    }
+                }
                 var currentChallenge = await _challengeRepository.GetByIdAsync(challenge.Id);
                 challenge.SiteId = currentChallenge.SiteId;
                 challenge.RelatedBranchId = currentChallenge.RelatedBranchId;

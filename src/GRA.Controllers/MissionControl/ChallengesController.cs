@@ -165,10 +165,17 @@ namespace GRA.Controllers.MissionControl
         }
 
         [Authorize(Policy = Policy.AddChallenges)]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             PageTitle = "Create Challenge";
-            return View("Create");
+
+            ChallengesDetailViewModel viewModel = new ChallengesDetailViewModel()
+            {
+
+            };
+            viewModel = await GetDetailLists(viewModel);
+
+            return View(viewModel);
         }
 
         [Authorize(Policy = Policy.AddChallenges)]
@@ -186,33 +193,39 @@ namespace GRA.Controllers.MissionControl
             }
             if (ModelState.IsValid)
             {
-                var challenge = model.Challenge;
-                if (model.BadgeImage != null)
+                try
                 {
-                    using (var fileStream = model.BadgeImage.OpenReadStream())
+                    var challenge = model.Challenge;
+                    if (model.BadgeImage != null)
                     {
-                        using (var ms = new MemoryStream())
+                        using (var fileStream = model.BadgeImage.OpenReadStream())
                         {
-                            fileStream.CopyTo(ms);
-                            var badgeBytes = ms.ToArray();
-                            var newBadge = new Badge
+                            using (var ms = new MemoryStream())
                             {
-                                Filename = Path.GetFileName(model.BadgeImage.FileName),
-                            };
-                            var badge = await _badgeService.AddBadgeAsync(newBadge, badgeBytes);
-                            challenge.BadgeId = badge.Id;
+                                fileStream.CopyTo(ms);
+                                var badgeBytes = ms.ToArray();
+                                var newBadge = new Badge
+                                {
+                                    Filename = Path.GetFileName(model.BadgeImage.FileName),
+                                };
+                                var badge = await _badgeService.AddBadgeAsync(newBadge, badgeBytes);
+                                challenge.BadgeId = badge.Id;
+                            }
                         }
                     }
+                    challenge = await _challengeService.AddChallengeAsync(challenge);
+                    AlertSuccess = $"Challenge '<strong>{challenge.Name}</strong>' was successfully created";
+                    return RedirectToAction("Edit", new { id = challenge.Id });
                 }
-                challenge = await _challengeService.AddChallengeAsync(challenge);
-                AlertSuccess = $"Challenge '<strong>{challenge.Name}</strong>' was successfully created";
-                return RedirectToAction("Edit", new { id = challenge.Id });
+                catch (GraException gex)
+                {
+                    ShowAlertWarning("Unable to add challenge: ", gex.Message);
+                }
             }
-            else
-            {
-                PageTitle = "Create Challenge";
-                return View(model);
-            }
+            PageTitle = "Create Challenge";
+            model = await GetDetailLists(model);
+
+            return View(model);
         }
 
         [Authorize(Policy = Policy.EditChallenges)]
@@ -231,6 +244,9 @@ namespace GRA.Controllers.MissionControl
                     challenge.Description = storedChallenge.Description;
                     challenge.PointsAwarded = storedChallenge.PointsAwarded;
                     challenge.TasksToComplete = storedChallenge.TasksToComplete;
+                    challenge.LimitToSystemId = storedChallenge.LimitToSystemId;
+                    challenge.LimitToBranchId = storedChallenge.LimitToBranchId;
+                    challenge.LimitToProgramId = storedChallenge.LimitToProgramId;
                 }
             }
             catch (GraException gex)
@@ -278,6 +294,9 @@ namespace GRA.Controllers.MissionControl
                     .GetTaskAsync((int)TempData[EditTask]);
             }
             PageTitle = $"Edit Challenge - {viewModel.Challenge.Name}";
+
+            viewModel = await GetDetailLists(viewModel);
+
             return View("Edit", viewModel);
         }
 
@@ -340,7 +359,7 @@ namespace GRA.Controllers.MissionControl
                 }
                 catch (GraException gex)
                 {
-                    AlertWarning = gex.Message;
+                    ShowAlertWarning("Unable to edit challenge: ", gex.Message);
                 }
                 return RedirectToAction("Edit", new { id = model.Challenge.Id });
             }
@@ -349,8 +368,38 @@ namespace GRA.Controllers.MissionControl
                 var tasks = await _challengeService.GetChallengeTasksAsync(model.Challenge.Id);
                 model.Challenge.Tasks = tasks.ToList();
                 PageTitle = $"Edit Challenge - {model.Challenge.Name}";
+                model = await GetDetailLists(model);
                 return View(model);
             }
+        }
+
+        private async Task<ChallengesDetailViewModel> GetDetailLists(ChallengesDetailViewModel model)
+        {
+            var systemList = (await _siteService.GetSystemList())
+                    .OrderByDescending(_ => _.Id == GetId(ClaimType.SystemId))
+                    .ThenBy(_ => _.Name);
+            model.SystemList = new SelectList(systemList, "Id", "Name");
+
+            var programList = (await _siteService.GetProgramList());
+            model.ProgramList = new SelectList(programList, "Id", "Name");
+
+            if (model.Challenge?.LimitToSystemId.HasValue == true)
+            {
+                var branchList = (await _siteService
+                    .GetBranches(model.Challenge.LimitToSystemId.Value))
+                    .OrderByDescending(_ => _.Id == GetId(ClaimType.BranchId))
+                    .ThenBy(_ => _.Name);
+                model.BranchList = new SelectList(branchList, "Id", "Name");
+            }
+            else
+            {
+                var branchList = (await _siteService.GetAllBranches())
+                    .OrderByDescending(_ => _.Id == GetId(ClaimType.BranchId))
+                    .ThenBy(_ => _.Name);
+                model.BranchList = new SelectList(branchList, "Id", "Name");
+            }
+
+            return model;
         }
 
         [Authorize(Policy = Policy.RemoveChallenges)]
@@ -473,5 +522,24 @@ namespace GRA.Controllers.MissionControl
             return RedirectToAction("Edit", new { id = viewModel.Challenge.Id });
         }
         #endregion
+
+        public async Task<JsonResult> GetBranches(int? systemId, int? branchId)
+        {
+            if (systemId.HasValue)
+            {
+                var branchList = (await _siteService
+                    .GetBranches(systemId.Value))
+                    .OrderByDescending(_ => _.Id == GetId(ClaimType.BranchId))
+                    .ThenBy(_ => _.Name);
+                return Json(new SelectList(branchList, "Id", "Name", branchId));
+            }
+            else
+            {
+                var branchList = (await _siteService.GetAllBranches())
+                    .OrderByDescending(_ => _.Id == GetId(ClaimType.BranchId))
+                    .ThenBy(_ => _.Name);
+                return Json(new SelectList(branchList, "Id", "Name", branchId));
+            }
+        }
     }
 }
