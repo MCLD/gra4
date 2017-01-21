@@ -262,8 +262,9 @@ namespace GRA.Controllers.MissionControl
 
             bool canActivate = challenge.IsValid
                 && !challenge.IsActive
-                && UserHasPermission(Permission.ActivateAllChallenges);
-
+                && (UserHasPermission(Permission.ActivateAllChallenges)
+                    || (UserHasPermission(Permission.ActivateSystemChallenges)
+                        && challenge.RelatedSystemId == GetId(ClaimType.SystemId)));
 
             ChallengesDetailViewModel viewModel = new ChallengesDetailViewModel()
             {
@@ -348,7 +349,10 @@ namespace GRA.Controllers.MissionControl
                 {
                     var savedChallenge = await _challengeService.EditChallengeAsync(challenge);
                     AlertSuccess = $"Challenge '<strong>{challenge.Name}</strong>' was successfully modified";
-                    if (Submit == "Activate" && UserHasPermission(Permission.ActivateAllChallenges))
+                    if (Submit == "Activate"
+                        && (UserHasPermission(Permission.ActivateAllChallenges)
+                            || (UserHasPermission(Permission.ActivateSystemChallenges)
+                                && challenge.RelatedSystemId == GetId(ClaimType.SystemId))))
                     {
                         if (savedChallenge.IsValid)
                         {
