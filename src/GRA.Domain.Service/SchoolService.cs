@@ -186,12 +186,52 @@ namespace GRA.Domain.Service
             var currentSchool = await _schoolRepository.GetByIdAsync(school.Id);
             if (currentSchool.SiteId != GetCurrentSiteId())
             {
-                throw new GraException($"Permission denied - school belongs site id {school.SiteId}.");
+                throw new GraException($"Permission denied - school belongs site id {currentSchool.SiteId}.");
             }
             currentSchool.Name = school.Name;
             currentSchool.SchoolDistrictId = school.SchoolDistrictId;
             currentSchool.SchoolTypeId = school.SchoolTypeId;
             await _schoolRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), currentSchool);
+        }
+
+        public async Task<DataWithCount<ICollection<SchoolDistrict>>> GetPaginatedDistrictListAsync(int skip,
+            int take)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            return await _schoolDistrictRepository
+                .GetPaginatedListAsync(GetCurrentSiteId(), skip, take);
+        }
+
+        public async Task UpdateDistrictAsync(SchoolDistrict district)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            var currentDistrict = await _schoolDistrictRepository.GetByIdAsync(district.Id);
+            if (currentDistrict.SiteId != GetCurrentSiteId())
+            {
+                throw new GraException($"Permission denied - district belongs site id {currentDistrict.SiteId}.");
+            }
+            currentDistrict.Name = district.Name;
+            await _schoolDistrictRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), currentDistrict);
+        }
+
+        public async Task<DataWithCount<ICollection<SchoolType>>> GetPaginatedTypeListAsync(int skip,
+            int take)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            return await _schoolTypeRepository
+                .GetPaginatedListAsync(GetCurrentSiteId(), skip, take);
+        }
+
+        public async Task UpdateTypeAsync(SchoolType type)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            var currentType = await _schoolTypeRepository.GetByIdAsync(type.Id);
+            if (currentType.SiteId != GetCurrentSiteId())
+            {
+                throw new GraException($"Permission denied - type belongs site id {currentType.SiteId}.");
+            }
+            currentType.Name = type.Name;
+            await _schoolTypeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), currentType);
         }
     }
 }

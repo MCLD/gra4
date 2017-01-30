@@ -1,12 +1,14 @@
 ﻿@model GRA.Controllers.ViewModel.MissionControl.Schools.SchoolsListViewModel
 
+@Html.Partial("_SchoolsPartial")
+
 <div class="row">
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="deleteModalLabel">Delete page</h4>
+                    <h4 class="modal-title" id="deleteModalLabel">Delete school</h4>
                 </div>
                 <div class="modal-body">
                     <span class="fa fa-exclamation-triangle" aria-hidden="true"></span>
@@ -14,7 +16,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-right: 1em;">Cancel</button>
-                    <form asp-controller="Pages" asp-action="Delete" method="post" role="form" style="display:inline">
+                    <form asp-controller="Schools" asp-action="DeleteSchool" method="post" role="form" style="display:inline">
                         <input id="Id" name="Id" type="hidden" />
                         <button type="submit" class="btn btn-danger pull-right" aria-label="Confirm">
                             <span class="fa fa-remove" aria-hidden="true"></span>
@@ -29,7 +31,7 @@
 
 <div class="row" style="padding: 10px 0;">
     <div class="col-xs-12">
-        <a asp-action="Add" class="btn btn-default">Add a school</a>
+        <a asp-action="AddSchool" class="btn btn-default">Add a School</a>
     </div>
 </div>
 
