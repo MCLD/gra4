@@ -69,7 +69,7 @@ namespace GRA.Controllers.MissionControl
             try
             {
                 await _schoolService.AddSchool(model.School.Name,
-                    model.School.SchoolDistrictId, 
+                    model.School.SchoolDistrictId,
                     model.School.SchoolTypeId);
 
                 ShowAlertSuccess($"Added School '{model.School.Name}'");
@@ -113,6 +113,8 @@ namespace GRA.Controllers.MissionControl
 
         public async Task<IActionResult> Districts(int page = 1)
         {
+            PageTitle = "School Districts";
+
             int take = 15;
             int skip = take * (page - 1);
 
@@ -189,6 +191,8 @@ namespace GRA.Controllers.MissionControl
 
         public async Task<IActionResult> Types(int page = 1)
         {
+            PageTitle = "School Types";
+
             int take = 15;
             int skip = take * (page - 1);
 
@@ -261,6 +265,60 @@ namespace GRA.Controllers.MissionControl
                 ShowAlertDanger("Unable to delete School Type: ", gex);
             }
             return RedirectToAction("Types");
+        }
+
+        public async Task<IActionResult> Entered(int page = 1)
+        {
+            PageTitle = "Entered Schools";
+
+            int take = 15;
+            int skip = take * (page - 1);
+
+            var enteredList = await _schoolService.GetPaginatedEnteredListAsync(skip, take);
+
+            PaginateViewModel paginateModel = new PaginateViewModel()
+            {
+                ItemCount = enteredList.Count,
+                CurrentPage = page,
+                ItemsPerPage = take
+            };
+            if (paginateModel.MaxPage > 0 && paginateModel.CurrentPage > paginateModel.MaxPage)
+            {
+                return RedirectToRoute(
+                    new
+                    {
+                        page = paginateModel.LastPage ?? 1
+                    });
+            }
+
+            EnteredListViewModel viewModel = new EnteredListViewModel()
+            {
+                EnteredSchools = enteredList.Data.ToList(),
+                PaginateModel = paginateModel,
+                SchoolDistricts = new SelectList(await _schoolService.GetDistrictsAsync(), "Id", "Name"),
+                SchoolTypes = new SelectList(await _schoolService.GetTypesAsync(), "Id", "Name")
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddEnteredSchool(EnteredListViewModel model)
+        {
+            try
+            {
+                await _schoolService.AddEnteredSchoolToList(model.EnteredSchool.Id,
+                    model.EnteredSchool.Name,
+                    model.EnteredSchool.SchoolDistrictId,
+                    model.EnteredSchool.SchoolTypeId);
+
+                ShowAlertSuccess($"Added Entered School '{model.EnteredSchool.Name}' to School list");
+            }
+            catch (GraException gex)
+            {
+                ShowAlertDanger("Unable to add Entered School: ", gex);
+            }
+            return RedirectToAction("Entered");
         }
     }
 }

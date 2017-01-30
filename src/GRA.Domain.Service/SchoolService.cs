@@ -233,5 +233,13 @@ namespace GRA.Domain.Service
             currentType.Name = type.Name;
             await _schoolTypeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), currentType);
         }
+
+        public async Task<DataWithCount<ICollection<EnteredSchool>>> GetPaginatedEnteredListAsync(int skip,
+            int take)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            return await _enteredSchoolRepository
+                .GetPaginatedListAsync(GetCurrentSiteId(), skip, take);
+        }
     }
 }
