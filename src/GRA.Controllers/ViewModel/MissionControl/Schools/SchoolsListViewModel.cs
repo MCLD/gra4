@@ -11,6 +11,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Schools
     {
         public List<GRA.Domain.Model.School> Schools { get; set; }
         public PaginateViewModel PaginateModel { get; set; }
+        public GRA.Domain.Model.School School { get; set; }
         public SelectList SchoolDistricts { get; set; }
         public SelectList SchoolTypes { get; set; }
     }

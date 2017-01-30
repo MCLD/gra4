@@ -64,64 +64,50 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditSchool(SchoolsListViewModel model, int listId)
+        public async Task<IActionResult> AddSchool(SchoolsListViewModel model)
         {
-            foreach (string key in ModelState.Keys
-                .Where(m => !m.StartsWith($"Schools[{listId}].")).ToList())
+            try
             {
-                ModelState.Remove(key);
-            }
+                await _schoolService.AddSchool(model.School.Name,
+                    model.School.SchoolDistrictId, 
+                    model.School.SchoolTypeId);
 
-            if (ModelState.IsValid)
-            {
-                await _schoolService.UpdateSchoolAsync(model.Schools[listId]);
-                AlertSuccess = $"'{model.Schools[listId].Name}' updated";
+                ShowAlertSuccess($"Added School '{model.School.Name}'");
             }
-            else
+            catch (GraException gex)
             {
-                ShowAlertDanger("Missing required fields");
+                ShowAlertDanger("Unable to add School: ", gex);
             }
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> AddSchool()
-        {
-            PageTitle = "Add Schools";
-
-            SchoolsAddViewModel viewModel = new SchoolsAddViewModel()
-            {
-                SchoolDistricts = new SelectList(await _schoolService.GetDistrictsAsync(), "Id", "Name"),
-                SchoolTypes = new SelectList(await _schoolService.GetTypesAsync(), "Id", "Name")
-            };
-            return View(viewModel);
-        }
-
         [HttpPost]
-        public async Task<IActionResult> AddSchool(SchoolsAddViewModel model)
+        public async Task<IActionResult> EditSchool(SchoolsListViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                await _schoolService.AddSchool(model.School.Name,
-                    model.School.SchoolDistrictId,
-                    model.School.SchoolTypeId);
-
-                AlertSuccess = $"Added school '{model.School.Name}'";
-                return RedirectToAction("Index");
+                await _schoolService.UpdateSchoolAsync(model.School);
+                ShowAlertSuccess($"School District '{model.School.Name}' updated");
             }
-            else
+            catch (GraException gex)
             {
-                PageTitle = "Add School";
-                model.SchoolDistricts = new SelectList(await _schoolService.GetDistrictsAsync(), "Id", "Name");
-                model.SchoolTypes = new SelectList(await _schoolService.GetTypesAsync(), "Id", "Name");
-                return View(model);
+                ShowAlertDanger("Unable to edit School: ", gex);
             }
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteSchool(int id)
         {
-            await _schoolService.RemoveSchool(id);
-            AlertSuccess = "School removed";
+            try
+            {
+                await _schoolService.RemoveSchool(id);
+                AlertSuccess = "School removed";
+            }
+            catch (GraException gex)
+            {
+                ShowAlertDanger("Unable to delete School: ", gex);
+            }
             return RedirectToAction("Index");
         }
 
@@ -186,6 +172,7 @@ namespace GRA.Controllers.MissionControl
             return RedirectToAction("Districts");
         }
 
+        [HttpPost]
         public async Task<IActionResult> DeleteDistrict(int id)
         {
             try
@@ -261,6 +248,7 @@ namespace GRA.Controllers.MissionControl
             return RedirectToAction("Types");
         }
 
+        [HttpPost]
         public async Task<IActionResult> DeleteType(int id)
         {
             try

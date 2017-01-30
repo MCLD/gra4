@@ -131,7 +131,7 @@ namespace GRA.Domain.Service
             {
                 throw new GraException($"Permission denied - district belongs to site id {district.SiteId}");
             }
-            var schools = await _schoolRepository.GetAllAsync(GetCurrentSiteId(), districtId);
+            var schools = await _schoolRepository.GetAllAsync(GetCurrentSiteId(), districtId: districtId);
             if (schools.Count > 0)
             {
                 throw new GraException($"Could not delete district - there are {schools.Count} associated schools");
@@ -147,7 +147,7 @@ namespace GRA.Domain.Service
             {
                 throw new GraException($"Permission denied - district belongs to site id {type.SiteId}.");
             }
-            var schools = await _schoolRepository.GetAllAsync(GetCurrentSiteId(), typeId);
+            var schools = await _schoolRepository.GetAllAsync(GetCurrentSiteId(), typeId: typeId);
             if (schools.Count > 0)
             {
                 throw new GraException($"Could not delete school type - there are {schools.Count} associated schools");
