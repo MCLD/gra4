@@ -774,8 +774,6 @@ namespace GRA.Controllers.MissionControl
         {
             try
             {
-
-
                 var user = await _userService.GetDetails(id);
                 SetPageTitle(user);
 

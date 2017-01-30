@@ -169,5 +169,29 @@ namespace GRA.Domain.Service
             }
             await _schoolRepository.RemoveSaveAsync(GetActiveUserId(), schoolId);
         }
+
+        public async Task<DataWithCount<ICollection<School>>> GetPaginatedListAsync(int skip,
+            int take,
+            int? districtId = default(int?),
+            int? typeId = default(int?))
+        {
+            VerifyPermission(Permission.ManageSchools);
+            return await _schoolRepository
+                .GetPaginatedListAsync(GetCurrentSiteId(), skip, take, districtId, typeId);
+        }
+
+        public async Task UpdateSchoolAsync(School school)
+        {
+            VerifyPermission(Permission.ManageSchools);
+            var currentSchool = await _schoolRepository.GetByIdAsync(school.Id);
+            if (currentSchool.SiteId != GetCurrentSiteId())
+            {
+                throw new GraException($"Permission denied - school belongs site id {school.SiteId}.");
+            }
+            currentSchool.Name = school.Name;
+            currentSchool.SchoolDistrictId = school.SchoolDistrictId;
+            currentSchool.SchoolTypeId = school.SchoolTypeId;
+            await _schoolRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), currentSchool);
+        }
     }
 }
