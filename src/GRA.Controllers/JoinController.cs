@@ -32,7 +32,7 @@ namespace GRA.Controllers
             PageTitle = "Join";
         }
 
-        public async Task<IActionResult> Index(string sitePath = null)
+        public async Task<IActionResult> Index()
         {
             var site = await GetCurrentSiteAsync();
             var siteStage = GetSiteStage();
@@ -67,9 +67,9 @@ namespace GRA.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(JoinViewModel model, string sitePath = null)
+        public async Task<IActionResult> Index(SimpleViewModel model)
         {
-            var site = await GetCurrentSiteAsync(sitePath);
+            var site = await GetCurrentSiteAsync();
 
             if (ModelState.IsValid)
             {
