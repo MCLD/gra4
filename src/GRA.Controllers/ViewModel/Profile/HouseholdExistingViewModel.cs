@@ -10,10 +10,5 @@ namespace GRA.Controllers.ViewModel.Profile
 
         [Required]
         public string Password { get; set; }
-
-        [Required]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
-        [DisplayName("Confirm Password")]
-        public string ConfirmPassword { get; set; }
     }
 }
