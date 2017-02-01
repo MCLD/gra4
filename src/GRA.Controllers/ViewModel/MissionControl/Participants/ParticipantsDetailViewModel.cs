@@ -10,6 +10,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Participants
         public int? HeadOfHouseholdId { get; set; }
         public bool HasAccount { get; set; }
         public bool CanEditDetails { get; set; }
+        public bool RequirePostalCode { get; set; }
         public SelectList BranchList { get; set; }
         public SelectList ProgramList { get; set; }
         public SelectList SystemList { get; set; }

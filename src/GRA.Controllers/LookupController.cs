@@ -23,12 +23,13 @@ namespace GRA.Controllers
             _siteService = Require.IsNotNull(siteService, nameof(siteService));
         }
 
-        public async Task<JsonResult> GetBranches(int? systemId, 
-            int? branchId, 
-            bool listAll = false, 
+        public async Task<JsonResult> GetBranches(int? systemId,
+            int? branchId,
+            bool listAll = false,
             bool prioritize = false)
         {
             var branchList = new List<Branch>();
+
             if (systemId.HasValue)
             {
                 branchList = (await _siteService.GetBranches(systemId.Value)).OrderBy(_ => _.Name)
@@ -38,13 +39,14 @@ namespace GRA.Controllers
             {
                 branchList = (await _siteService.GetAllBranches()).OrderBy(_ => _.Name)
                     .ToList();
-                
             }
+
             if (prioritize)
             {
                 branchList = branchList.OrderByDescending(_ => _.Id == GetId(ClaimType.BranchId))
                     .ToList();
             }
+
             return Json(new SelectList(branchList, "Id", "Name", branchId));
         }
     }

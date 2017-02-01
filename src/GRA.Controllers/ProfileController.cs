@@ -51,6 +51,7 @@ namespace GRA.Controllers
                 User = user,
                 HouseholdCount = householdCount,
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
+                RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
                 BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
                 ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
                 SystemList = new SelectList(systemList.ToList(), "Id", "Name")
@@ -62,23 +63,37 @@ namespace GRA.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(ProfileDetailViewModel model)
         {
+            var site = await GetCurrentSiteAsync();
+            if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))
+            {
+                ModelState.AddModelError("User.PostalCode", "The Zip Code field is required.");
+            }
             if (ModelState.IsValid)
             {
-                await _userService.Update(model.User);
-                AlertSuccess = "Updated profile";
-                return RedirectToAction("Index");
+                try
+                {
+                    await _userService.Update(model.User);
+                    AlertSuccess = "Updated profile";
+                    return RedirectToAction("Index");
+                }
+                catch (GraException gex)
+                {
+                    ShowAlertDanger("Unable to update profile: ", gex);
+                }
             }
-            else
+            var branchList = await _siteService.GetBranches(model.User.SystemId);
+            if (model.User.BranchId < 1)
             {
-                var branchList = await _siteService.GetBranches(model.User.SystemId);
-                var programList = await _siteService.GetProgramList();
-                var systemList = await _siteService.GetSystemList();
-                model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
-                model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
-                model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
-
-                return View(model);
+                branchList = branchList.Prepend(new Branch() { Id = -1 });
             }
+            var programList = await _siteService.GetProgramList();
+            var systemList = await _siteService.GetSystemList();
+            model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
+            model.RequirePostalCode = site.RequirePostalCode;
+
+            return View(model);
         }
 
         public async Task<IActionResult> Household(int page = 1)
@@ -142,24 +157,30 @@ namespace GRA.Controllers
             var userBase = new User()
             {
                 LastName = authUser.LastName,
+                PostalCode = authUser.PostalCode,
                 Email = authUser.Email,
                 PhoneNumber = authUser.PhoneNumber,
                 BranchId = authUser.BranchId,
-                ProgramId = authUser.ProgramId,
                 SystemId = authUser.SystemId
             };
 
+            var systemList = await _siteService.GetSystemList();
             var branchList = await _siteService.GetBranches(authUser.SystemId);
             var programList = await _siteService.GetProgramList();
-            var systemList = await _siteService.GetSystemList();
 
             HouseholdAddViewModel viewModel = new HouseholdAddViewModel()
             {
                 User = userBase,
+                RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
                 BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
                 ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
                 SystemList = new SelectList(systemList.ToList(), "Id", "Name")
             };
+
+            if (programList.Count() == 1)
+            {
+                viewModel.User.ProgramId = programList.SingleOrDefault().Id;
+            }
 
             return View("HouseholdAdd", viewModel);
         }
@@ -167,29 +188,43 @@ namespace GRA.Controllers
         [HttpPost]
         public async Task<IActionResult> AddHouseholdMember(HouseholdAddViewModel model)
         {
+            var site = await GetCurrentSiteAsync();
             var authUser = await _userService.GetDetails(GetId(ClaimType.UserId));
             if (authUser.HouseholdHeadUserId != null)
             {
                 return RedirectToAction("Household");
             }
 
+            if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))
+            {
+                ModelState.AddModelError("User.PostalCode", "The Zip Code field is required.");
+            }
             if (ModelState.IsValid)
             {
-                await _userService.AddHouseholdMemberAsync(authUser.Id, model.User);
-                AlertSuccess = "Added household member";
-                return RedirectToAction("Household");
+                try
+                {
+                    await _userService.AddHouseholdMemberAsync(authUser.Id, model.User);
+                    AlertSuccess = "Added household member";
+                    return RedirectToAction("Household");
+                }
+                catch (GraException gex)
+                {
+                    ShowAlertDanger("Unable to add household member: ", gex);
+                }
             }
-            else
+            var branchList = await _siteService.GetBranches(model.User.SystemId);
+            if (model.User.BranchId < 1)
             {
-                var branchList = await _siteService.GetBranches(model.User.SystemId);
-                var programList = await _siteService.GetProgramList();
-                var systemList = await _siteService.GetSystemList();
-                model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
-                model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
-                model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
-
-                return View("HouseholdAdd", model);
+                branchList = branchList.Prepend(new Branch() { Id = -1 });
             }
+            var programList = await _siteService.GetProgramList();
+            var systemList = await _siteService.GetSystemList();
+            model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
+            model.RequirePostalCode = site.RequirePostalCode;
+
+            return View("HouseholdAdd", model);
         }
 
         public async Task<IActionResult> AddExistingParticipant()

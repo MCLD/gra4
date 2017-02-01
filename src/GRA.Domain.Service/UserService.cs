@@ -193,8 +193,6 @@ namespace GRA.Domain.Service
 
             if (requestingUserId == userToUpdate.Id)
             {
-                await ValidateUserFields(userToUpdate);
-
                 // users can only update some of their own fields
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 currentEntity.IsAdmin = await UserHasRoles(userToUpdate.Id);
@@ -212,6 +210,9 @@ namespace GRA.Domain.Service
                 currentEntity.SystemId = userToUpdate.SystemId;
                 currentEntity.SystemName = null;
                 //currentEntity.Username = userToUpdate.Username;
+
+                await ValidateUserFields(currentEntity);
+
                 return await _userRepository.UpdateSaveAsync(requestingUserId, currentEntity);
             }
             else
@@ -227,10 +228,12 @@ namespace GRA.Domain.Service
 
             if (HasPermission(Permission.EditParticipants))
             {
-                await ValidateUserFields(userToUpdate);
                 // admin users can update anything except siteid
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 userToUpdate.SiteId = currentEntity.SiteId;
+
+                await ValidateUserFields(userToUpdate);
+                
                 userToUpdate.IsAdmin = await UserHasRoles(userToUpdate.Id);
                 return await _userRepository.UpdateSaveAsync(requestedByUserId, userToUpdate);
             }
@@ -384,6 +387,9 @@ namespace GRA.Domain.Service
                 memberToAdd.SiteId = householdHead.SiteId;
                 memberToAdd.CanBeDeleted = true;
                 memberToAdd.IsLockedOut = false;
+
+                await ValidateUserFields(memberToAdd);
+
                 var registeredUser = await _userRepository.AddSaveAsync(authUserId, memberToAdd);
                 await JoinedProgramNotificationBadge(registeredUser);
             }

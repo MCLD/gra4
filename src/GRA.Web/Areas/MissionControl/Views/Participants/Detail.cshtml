@@ -26,6 +26,17 @@
                 </div>
             </div>
 
+            @if (Model.RequirePostalCode)
+            {
+                <div class="row row-spacing">
+                    <div class="col-xs-12">
+                        <label asp-for="User.PostalCode" class="control-label"></label>
+                        <input asp-for="User.PostalCode" class="form-control" />
+                        <span asp-validation-for="User.PostalCode" class="text-danger"></span>
+                    </div>
+                </div>
+            }
+
             <div class="row row-spacing">
                 <div class="col-xs-12">
                     <label asp-for="User.Email" class="control-label"></label>
@@ -44,13 +55,21 @@
 
             <div class="row row-spacing">
                 <div class="col-xs-12">
+                    <label asp-for="User.SystemId" class="control-label"></label>
+                    <select asp-for="User.SystemId" asp-items="Model.SystemList" class="form-control"></select>
+                    <span asp-validation-for="User.SystemId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row row-spacing">
+                <div class="col-xs-12">
                     <label asp-for="User.BranchId" class="control-label"></label>
                     <select asp-for="User.BranchId" asp-items="Model.BranchList" class="form-control"></select>
                     <span asp-validation-for="User.BranchId" class="text-danger"></span>
                 </div>
             </div>
 
-            <div class="row row-spacing" hidden>
+            <div class="row row-spacing">
                 <div class="col-xs-12">
                     <label asp-for="User.ProgramId" class="control-label"></label>
                     <select asp-for="User.ProgramId" asp-items="Model.ProgramList" class="form-control"></select>
@@ -58,13 +77,6 @@
                 </div>
             </div>
 
-            <div class="row row-spacing" hidden>
-                <div class="col-xs-12">
-                    <label asp-for="User.SystemId" class="control-label"></label>
-                    <select asp-for="User.SystemId" asp-items="Model.SystemList" class="form-control"></select>
-                    <span asp-validation-for="User.SystemId" class="text-danger"></span>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -76,15 +88,12 @@
             <input asp-for="User.Id" type="hidden" />
             <input asp-for="User.AvatarId" type="hidden" />
             <input asp-for="User.CardNumber" type="hidden" />
-            <input asp-for="User.CreatedAt" type="hidden" />
-            <input asp-for="User.CreatedBy" type="hidden" />
             <input asp-for="User.HouseholdHeadUserId" type="hidden" />
             <input asp-for="User.IsAchiever" type="hidden" />
             <input asp-for="User.IsDeleted" type="hidden" />
             <input asp-for="User.IsLockedOut" type="hidden" />
             <input asp-for="User.LastAccess" type="hidden" />
             <input asp-for="User.PointsEarned" type="hidden" />
-            <input asp-for="User.PostalCode" type="hidden" />
             <input asp-for="User.Username" type="hidden" />
 
             <button type="submit" asp-action="Detail" id="Submit" name="Submit" value="Submit" class="btn btn-primary btn-spinner">
@@ -104,5 +113,23 @@
         $("select").prop('disabled', true);
         </text>
         }
+
+        $("#User_SystemId").on("change", function() {
+            var systemId = $(this).val();
+            var branchList = $("#User_BranchId");
+            var branchId = branchList.val();
+            var url = "@Url.Action("GetBranches", "Lookup", new { Area = string.Empty })";
+
+            $.getJSON(url, { systemId: systemId, branchId: branchId }, function(response) {
+                branchList.empty();
+                if (response.length > 1)
+                {
+                    branchList.append(new Option("", "-1"));
+                }
+                $.each(response, function(index, item) {
+                    branchList.append(new Option(item.text, item.value, item.selected))
+                });
+            });
+        });
     </script>
 }
