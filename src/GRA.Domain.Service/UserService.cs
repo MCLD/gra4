@@ -14,12 +14,14 @@ namespace GRA.Domain.Service
         private readonly IAuthorizationCodeRepository _authorizationCodeRepository;
         private readonly IBadgeRepository _badgeRepository;
         private readonly IBookRepository _bookRepository;
+        private readonly IBranchRepository _branchRepository;
         private readonly IDrawingRepository _drawingRepository;
         private readonly INotificationRepository _notificationRepository;
         private readonly IProgramRepository _programRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly ISiteRepository _siteRepository;
         private readonly IStaticAvatarRepository _staticAvatarRepository;
+        private readonly ISystemRepository _systemRepository;
         private readonly IUserLogRepository _userLogRepository;
         private readonly IUserRepository _userRepository;
         private readonly SampleDataService _configurationService;
@@ -29,12 +31,14 @@ namespace GRA.Domain.Service
             IAuthorizationCodeRepository authorizationCodeRepository,
             IBadgeRepository badgeRepository,
             IBookRepository bookRepository,
+            IBranchRepository branchRepository,
             IDrawingRepository drawingRepository,
             INotificationRepository notificationRepository,
             IProgramRepository programRepository,
             IRoleRepository roleRepository,
             ISiteRepository siteRepository,
             IStaticAvatarRepository staticAvatarRepository,
+            ISystemRepository systemRepository,
             IUserLogRepository userLogRepository,
             IUserRepository userRepository,
             SampleDataService configurationService)
@@ -45,6 +49,7 @@ namespace GRA.Domain.Service
                 nameof(authorizationCodeRepository));
             _badgeRepository = Require.IsNotNull(badgeRepository, nameof(badgeRepository));
             _bookRepository = Require.IsNotNull(bookRepository, nameof(bookRepository));
+            _branchRepository = Require.IsNotNull(branchRepository, nameof(branchRepository));
             _drawingRepository = Require.IsNotNull(drawingRepository, nameof(drawingRepository));
             _notificationRepository = Require.IsNotNull(notificationRepository,
                 nameof(notificationRepository));
@@ -53,6 +58,7 @@ namespace GRA.Domain.Service
             _siteRepository = Require.IsNotNull(siteRepository, nameof(siteRepository));
             _staticAvatarRepository = Require.IsNotNull(staticAvatarRepository,
                 nameof(staticAvatarRepository));
+            _systemRepository = Require.IsNotNull(systemRepository, nameof(systemRepository));
             _userLogRepository = Require.IsNotNull(userLogRepository, nameof(userLogRepository));
             _userRepository = Require.IsNotNull(userRepository, nameof(userRepository));
             _configurationService = Require.IsNotNull(configurationService,
@@ -67,6 +73,8 @@ namespace GRA.Domain.Service
             {
                 throw new GraException("Someone has already chosen that username, please try another.");
             }
+
+            await ValidateUserFields(user);
 
             _passwordValidator.Validate(password);
 
@@ -185,6 +193,8 @@ namespace GRA.Domain.Service
 
             if (requestingUserId == userToUpdate.Id)
             {
+                await ValidateUserFields(userToUpdate);
+
                 // users can only update some of their own fields
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 currentEntity.IsAdmin = await UserHasRoles(userToUpdate.Id);
@@ -217,6 +227,7 @@ namespace GRA.Domain.Service
 
             if (HasPermission(Permission.EditParticipants))
             {
+                await ValidateUserFields(userToUpdate);
                 // admin users can update anything except siteid
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 userToUpdate.SiteId = currentEntity.SiteId;
@@ -524,6 +535,22 @@ namespace GRA.Domain.Service
                 notification.BadgeFilename = badge.Filename;
             }
             await _notificationRepository.AddSaveAsync(registeredUser.Id, notification);
+        }
+
+        private async Task ValidateUserFields(User user)
+        {
+            if (!(await _systemRepository.ValidateAsync(user.SystemId, user.SiteId)))
+            {
+                throw new GraException("Invalid System selection.");
+            }
+            if (!(await _branchRepository.ValidateAsync(user.BranchId, user.SystemId)))
+            {
+                throw new GraException("Invalid Branch selection.");
+            }
+            if (!(await _programRepository.ValidateAsync(user.ProgramId, user.SiteId)))
+            {
+                throw new GraException("Invalid Program selection.");
+            }
         }
     }
 }
