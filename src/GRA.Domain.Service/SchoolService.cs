@@ -50,6 +50,19 @@ namespace GRA.Domain.Service
             return await _schoolRepository.GetAllAsync(GetCurrentSiteId(), districtId, typeId);
         }
 
+        public async Task<SchoolDetails> GetSchoolDetailsAsync(int schoolId)
+        {
+            var school = await _schoolRepository.GetByIdAsync(schoolId);
+            return new SchoolDetails()
+            {
+                Schools = await _schoolRepository.GetAllAsync(GetCurrentSiteId(),
+                    school.SchoolDistrictId,
+                    school.SchoolTypeId),
+                SchoolDisctrictId = school.SchoolDistrictId,
+                SchoolTypeId = school.SchoolTypeId
+            };
+        }
+
         public async Task<EnteredSchool> AddEnteredSchool(string schoolName, int districtId)
         {
             var district = await _schoolDistrictRepository.GetByIdAsync(districtId);
@@ -86,6 +99,24 @@ namespace GRA.Domain.Service
                 enteredSchoolId,
                 newSchool.Id);
             return newSchool;
+        }
+
+        public async Task RemoveEnteredSchoolAsync(int enteredSchoolId)
+        {
+            var authUserId = GetClaimId(ClaimType.UserId);
+            var activeUserId = GetActiveUserId();
+            var activeUser = await _userRepository.GetByIdAsync(activeUserId);
+            var enteredSchool = await _enteredSchoolRepository.GetByIdAsync(enteredSchoolId);
+            if (enteredSchool.Id == activeUser.EnteredSchoolId)
+            {
+                await _enteredSchoolRepository
+                    .RemoveSaveAsync(authUserId, enteredSchoolId);
+            }
+            else
+            {
+                _logger.LogError($"User id {authUserId} cannot remove entered school {enteredSchoolId}.");
+                throw new GraException("Permission denied.");
+            }
         }
 
         public async Task<SchoolDistrict> AddDistrict(string districtName)

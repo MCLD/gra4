@@ -19,12 +19,14 @@ namespace GRA.Domain.Service
         private readonly INotificationRepository _notificationRepository;
         private readonly IProgramRepository _programRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly ISchoolRepository _schoolRepository;
         private readonly ISiteRepository _siteRepository;
         private readonly IStaticAvatarRepository _staticAvatarRepository;
         private readonly ISystemRepository _systemRepository;
         private readonly IUserLogRepository _userLogRepository;
         private readonly IUserRepository _userRepository;
         private readonly SampleDataService _configurationService;
+        private readonly SchoolService _schoolService;
         public UserService(ILogger<UserService> logger,
             IUserContextProvider userContextProvider,
             GRA.Abstract.IPasswordValidator passwordValidator,
@@ -36,12 +38,14 @@ namespace GRA.Domain.Service
             INotificationRepository notificationRepository,
             IProgramRepository programRepository,
             IRoleRepository roleRepository,
+            ISchoolRepository schoolRepository,
             ISiteRepository siteRepository,
             IStaticAvatarRepository staticAvatarRepository,
             ISystemRepository systemRepository,
             IUserLogRepository userLogRepository,
             IUserRepository userRepository,
-            SampleDataService configurationService)
+            SampleDataService configurationService,
+            SchoolService schoolService)
             : base(logger, userContextProvider)
         {
             _passwordValidator = Require.IsNotNull(passwordValidator, nameof(passwordValidator));
@@ -55,6 +59,7 @@ namespace GRA.Domain.Service
                 nameof(notificationRepository));
             _programRepository = Require.IsNotNull(programRepository, nameof(programRepository));
             _roleRepository = Require.IsNotNull(roleRepository, nameof(roleRepository));
+            _schoolRepository = Require.IsNotNull(schoolRepository, nameof(schoolRepository));
             _siteRepository = Require.IsNotNull(siteRepository, nameof(siteRepository));
             _staticAvatarRepository = Require.IsNotNull(staticAvatarRepository,
                 nameof(staticAvatarRepository));
@@ -63,6 +68,7 @@ namespace GRA.Domain.Service
             _userRepository = Require.IsNotNull(userRepository, nameof(userRepository));
             _configurationService = Require.IsNotNull(configurationService,
                 nameof(configurationService));
+            _schoolService = Require.IsNotNull(schoolService, nameof(schoolService));
         }
 
         public async Task<User> RegisterUserAsync(User user, string password)
@@ -187,7 +193,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<User> Update(User userToUpdate)
+        public async Task<User> Update(User userToUpdate, bool? hasSchool = null, int? schoolDistrictId = null)
         {
             int requestingUserId = GetActiveUserId();
 
@@ -196,6 +202,7 @@ namespace GRA.Domain.Service
                 // users can only update some of their own fields
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 currentEntity.IsAdmin = await UserHasRoles(userToUpdate.Id);
+                currentEntity.Age = userToUpdate.Age;
                 currentEntity.AvatarId = userToUpdate.AvatarId;
                 currentEntity.BranchId = userToUpdate.BranchId;
                 currentEntity.BranchName = null;
@@ -210,6 +217,33 @@ namespace GRA.Domain.Service
                 currentEntity.SystemId = userToUpdate.SystemId;
                 currentEntity.SystemName = null;
                 //currentEntity.Username = userToUpdate.Username;
+
+                if (hasSchool == false)
+                {
+                    currentEntity.SchoolId = null;
+                    if (currentEntity.EnteredSchoolId.HasValue)
+                    {
+                        await _schoolService.RemoveEnteredSchoolAsync(currentEntity.EnteredSchoolId.Value);
+                        currentEntity.EnteredSchoolId = null;
+                    }
+                }
+                else if (hasSchool == true)
+                {
+                    if (!currentEntity.EnteredSchoolId.HasValue)
+                    {
+                        if (!currentEntity.SchoolId.HasValue
+                            && !string.IsNullOrWhiteSpace(userToUpdate.EnteredSchoolName))
+                        {
+                            var enteredSchool = await _schoolService.AddEnteredSchool(
+                                userToUpdate.EnteredSchoolName, schoolDistrictId.Value);
+                            currentEntity.EnteredSchoolId = enteredSchool.Id;
+                        }
+                        else
+                        {
+                            currentEntity.SchoolId = userToUpdate.SchoolId;
+                        }
+                    }
+                }
 
                 await ValidateUserFields(currentEntity);
 
@@ -233,7 +267,7 @@ namespace GRA.Domain.Service
                 userToUpdate.SiteId = currentEntity.SiteId;
 
                 await ValidateUserFields(userToUpdate);
-                
+
                 userToUpdate.IsAdmin = await UserHasRoles(userToUpdate.Id);
                 return await _userRepository.UpdateSaveAsync(requestedByUserId, userToUpdate);
             }
@@ -556,6 +590,13 @@ namespace GRA.Domain.Service
             if (!(await _programRepository.ValidateAsync(user.ProgramId, user.SiteId)))
             {
                 throw new GraException("Invalid Program selection.");
+            }
+            if (user.SchoolId.HasValue)
+            {
+                if (!(await _schoolRepository.ValidateAsync(user.SchoolId.Value, user.SiteId)))
+                {
+                    throw new GraException("Invalid School selection.");
+                }
             }
         }
     }

@@ -68,13 +68,20 @@
                 <input asp-for="User.SystemId" type="hidden" />
             }
 
-            <div class="row row-spacing">
-                <div class="col-xs-12">
-                    <label asp-for="User.BranchId" class="control-label"></label>
-                    <select asp-for="User.BranchId" asp-items="Model.BranchList" class="form-control"></select>
-                    <span asp-validation-for="User.BranchId" class="text-danger"></span>
+            @if (Model.SystemList.Count() > 1 || Model.BranchList.Count() > 1)
+            {
+                <div class="row row-spacing">
+                    <div class="col-xs-12">
+                        <label asp-for="User.BranchId" class="control-label"></label>
+                        <select asp-for="User.BranchId" asp-items="Model.BranchList" class="form-control"></select>
+                        <span asp-validation-for="User.BranchId" class="text-danger"></span>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <input asp-for="User.BranchId" type="hidden" />
+            }
 
             @if (Model.ProgramList.Count() > 1)
             {
