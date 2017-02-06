@@ -18,10 +18,12 @@ namespace GRA.Controllers.MissionControl
     public class ParticipantsController : Base.MCController
     {
         private readonly ILogger<ParticipantsController> _logger;
+        private readonly AutoMapper.IMapper _mapper;
         private readonly ActivityService _activityService;
         private readonly AuthenticationService _authenticationService;
         private readonly DrawingService _drawingService;
         private readonly MailService _mailService;
+        private readonly SchoolService _schoolService;
         private readonly SiteService _siteService;
         private readonly UserService _userService;
         public ParticipantsController(ILogger<ParticipantsController> logger,
@@ -30,16 +32,19 @@ namespace GRA.Controllers.MissionControl
             AuthenticationService authenticationService,
             DrawingService drawingService,
             MailService mailService,
+            SchoolService schoolService,
             SiteService siteService,
             UserService userService)
             : base(context)
         {
             _logger = Require.IsNotNull(logger, nameof(logger));
+            _mapper = context.Mapper;
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _authenticationService = Require.IsNotNull(authenticationService,
                 nameof(authenticationService));
             _drawingService = Require.IsNotNull(drawingService, nameof(drawingService));
             _mailService = Require.IsNotNull(mailService, nameof(mailService));
+            _schoolService = Require.IsNotNull(schoolService, nameof(schoolService));
             _siteService = Require.IsNotNull(siteService, nameof(siteService));
             _userService = Require.IsNotNull(userService, nameof(userService));
             PageTitle = "Participants";
@@ -111,8 +116,10 @@ namespace GRA.Controllers.MissionControl
                 var user = await _userService.GetDetails(id);
                 SetPageTitle(user);
                 var branchList = await _siteService.GetBranches(user.SystemId);
-                var programList = await _siteService.GetProgramList();
                 var systemList = await _siteService.GetSystemList();
+                var programList = await _siteService.GetProgramList();
+                var userProgram = programList.Where(_ => _.Id == user.ProgramId).SingleOrDefault();
+                var programViewObject = _mapper.Map<List<ProgramViewModel>>(programList);
 
                 ParticipantsDetailViewModel viewModel = new ParticipantsDetailViewModel()
                 {
@@ -124,10 +131,31 @@ namespace GRA.Controllers.MissionControl
                     HasAccount = !string.IsNullOrWhiteSpace(user.Username),
                     CanEditDetails = UserHasPermission(Permission.EditParticipants),
                     RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
+                    ShowAge = userProgram.AskAge,
+                    ShowSchool = userProgram.AskSchool,
+                    HasSchoolId = user.SchoolId.HasValue,
+                    ProgramJson = Newtonsoft.Json.JsonConvert.SerializeObject(programViewObject),
                     BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
                     ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
                     SystemList = new SelectList(systemList.ToList(), "Id", "Name")
                 };
+
+                var districtList = await _schoolService.GetDistrictsAsync();
+                if (user.SchoolId.HasValue)
+                {
+                    var schoolDetails = await _schoolService.GetSchoolDetailsAsync(user.SchoolId.Value);
+                    var typeList = await _schoolService.GetTypesAsync(schoolDetails.SchoolDisctrictId);
+                    viewModel.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name",
+                        schoolDetails.SchoolDisctrictId);
+                    viewModel.SchoolTypeList = new SelectList(typeList.ToList(), "Id", "Name",
+                        schoolDetails.SchoolTypeId);
+                    viewModel.SchoolList = new SelectList(schoolDetails.Schools.ToList(), "Id", "Name");
+                }
+                else
+                {
+                    viewModel.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name");
+                }
+
                 return View(viewModel);
             }
             catch (GraException gex)
@@ -142,21 +170,64 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> Detail(ParticipantsDetailViewModel model)
         {
             var site = await GetCurrentSiteAsync();
+            var program = await _siteService.GetProgramByIdAsync(model.User.ProgramId);
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))
             {
                 ModelState.AddModelError("User.PostalCode", "The Zip Code field is required.");
             }
+            if (program.AgeRequired && !model.User.Age.HasValue)
+            {
+                ModelState.AddModelError("User.Age", "The Age field is required.");
+            }
+            if (program.SchoolRequired && !model.User.EnteredSchoolId.HasValue)
+            {
+                if (!model.NewEnteredSchool && !model.User.SchoolId.HasValue)
+                {
+                    ModelState.AddModelError("User.SchoolId", "The School field is required.");
+                }
+                else if (model.NewEnteredSchool
+                    && string.IsNullOrWhiteSpace(model.User.EnteredSchoolName))
+                {
+                    ModelState.AddModelError("User.EnteredSchoolName", "The School Name field is required.");
+                }
+            }
+            if (model.NewEnteredSchool && !model.SchoolDistrictId.HasValue
+                && ((program.AskSchool && !string.IsNullOrWhiteSpace(model.User.EnteredSchoolName))
+                    || program.SchoolRequired))
+            {
+                ModelState.AddModelError("SchoolDistrictId", "The School District field is required.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _userService.MCUpdate(model.User);
+                    bool hasSchool = false;
+                    if (!program.AskAge)
+                    {
+                        model.User.Age = null;
+                    }
+                    if (program.AskSchool)
+                    {
+                        hasSchool = true;
+                        if (model.NewEnteredSchool || model.User.EnteredSchoolId.HasValue)
+                        {
+                            model.User.SchoolId = null;
+                        }
+                        else
+                        {
+                            model.User.EnteredSchoolId = null;
+                            model.User.EnteredSchoolName = null;
+                        }
+                    }
+
+                    await _userService.MCUpdate(model.User, hasSchool, model.SchoolDistrictId);
                     AlertSuccess = "Participant infomation updated";
                     return RedirectToAction("Detail", new { id = model.User.Id });
                 }
                 catch (GraException gex)
                 {
-                    ShowAlertWarning("Unable to udate participant: ", gex);
+                    ShowAlertWarning("Unable to update participant: ", gex);
                 }
             }
             SetPageTitle(model.User);
@@ -166,12 +237,42 @@ namespace GRA.Controllers.MissionControl
             {
                 branchList = branchList.Prepend(new Branch() { Id = -1 });
             }
-            var programList = await _siteService.GetProgramList();
+
             var systemList = await _siteService.GetSystemList();
+            var programList = await _siteService.GetProgramList();
+            var programViewObject = _mapper.Map<List<ProgramViewModel>>(programList);
             model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
-            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
             model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+            model.ProgramJson = Newtonsoft.Json.JsonConvert.SerializeObject(programViewObject);
             model.RequirePostalCode = site.RequirePostalCode;
+            model.ShowAge = program.AskAge;
+            model.ShowSchool = program.AskSchool;
+
+            var districtList = await _schoolService.GetDistrictsAsync();
+            if (model.User.SchoolId.HasValue)
+            {
+                var schoolDetails = await _schoolService.GetSchoolDetailsAsync(model.User.SchoolId.Value);
+                var typeList = await _schoolService.GetTypesAsync(schoolDetails.SchoolDisctrictId);
+                model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name",
+                    schoolDetails.SchoolDisctrictId);
+                model.SchoolTypeList = new SelectList(typeList.ToList(), "Id", "Name",
+                    schoolDetails.SchoolTypeId);
+                model.SchoolList = new SelectList(schoolDetails.Schools.ToList(), "Id", "Name");
+            }
+            else
+            {
+                model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name");
+                if (model.SchoolDistrictId.HasValue)
+                {
+                    var typeList = await _schoolService.GetTypesAsync(model.SchoolDistrictId);
+                    model.SchoolTypeList = new SelectList(typeList.ToList(), "Id", "Name",
+                        model.SchoolTypeId);
+                    var schoolList = await _schoolService.GetSchoolsAsync(model.SchoolDistrictId,
+                        model.SchoolTypeId);
+                    model.SchoolList = new SelectList(schoolList.ToList(), "Id", "Name");
+                }
+            }
 
             return View(model);
         }
@@ -265,17 +366,21 @@ namespace GRA.Controllers.MissionControl
                 };
 
                 var branchList = await _siteService.GetBranches(headOfHousehold.SystemId);
-                var programList = await _siteService.GetProgramList();
                 var systemList = await _siteService.GetSystemList();
+                var programList = await _siteService.GetProgramList();
+                var programViewObject = _mapper.Map<List<ProgramViewModel>>(programList);
+                var districtList = await _schoolService.GetDistrictsAsync();
 
                 HouseholdAddViewModel viewModel = new HouseholdAddViewModel()
                 {
                     User = userBase,
                     Id = id,
                     RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
+                    ProgramJson = Newtonsoft.Json.JsonConvert.SerializeObject(programViewObject),
                     BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
                     ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
-                    SystemList = new SelectList(systemList.ToList(), "Id", "Name")
+                    SystemList = new SelectList(systemList.ToList(), "Id", "Name"),
+                    SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name")
                 };
 
                 return View("HouseholdAdd", viewModel);
@@ -303,11 +408,65 @@ namespace GRA.Controllers.MissionControl
             {
                 ModelState.AddModelError("User.PostalCode", "The Zip Code field is required.");
             }
+
+            bool askAge = false;
+            bool askSchool = false;
+            if (model.User.ProgramId >= 0)
+            {
+                var program = await _siteService.GetProgramByIdAsync(model.User.ProgramId);
+                askAge = program.AskAge;
+                askSchool = program.AskSchool;
+                if (program.AgeRequired && !model.User.Age.HasValue)
+                {
+                    ModelState.AddModelError("User.Age", "The Age field is required.");
+                }
+                if (program.SchoolRequired)
+                {
+                    if (!model.NewEnteredSchool && !model.User.SchoolId.HasValue)
+                    {
+                        ModelState.AddModelError("User.SchoolId", "The School field is required.");
+                    }
+                    else if (model.NewEnteredSchool
+                        && string.IsNullOrWhiteSpace(model.User.EnteredSchoolName))
+                    {
+                        ModelState.AddModelError("User.EnteredSchoolName", "The School Name field is required.");
+                    }
+                }
+                if (model.NewEnteredSchool && !model.SchoolDistrictId.HasValue
+                    && ((program.AskSchool && !string.IsNullOrWhiteSpace(model.User.EnteredSchoolName))
+                        || program.SchoolRequired))
+                {
+                    ModelState.AddModelError("SchoolDistrictId", "The School District field is required.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _userService.AddHouseholdMemberAsync(headOfHousehold.Id, model.User);
+                    if (!askAge)
+                    {
+                        model.User.Age = null;
+                    }
+                    if (askSchool)
+                    {
+                        if (model.NewEnteredSchool)
+                        {
+                            model.User.SchoolId = null;
+                        }
+                        else
+                        {
+                            model.User.EnteredSchoolName = null;
+                        }
+                    }
+                    else
+                    {
+                        model.User.SchoolId = null;
+                        model.User.EnteredSchoolName = null;
+                    }
+
+                    await _userService.AddHouseholdMemberAsync(headOfHousehold.Id, model.User,
+                        model.SchoolDistrictId);
                     AlertSuccess = "Added household member";
                     return RedirectToAction("Household", new { id = model.Id });
                 }
@@ -323,12 +482,41 @@ namespace GRA.Controllers.MissionControl
             {
                 branchList = branchList.Prepend(new Branch() { Id = -1 });
             }
-            var programList = await _siteService.GetProgramList();
             var systemList = await _siteService.GetSystemList();
+            var programList = await _siteService.GetProgramList();
+            var programViewObject = _mapper.Map<List<ProgramViewModel>>(programList);
             model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
-            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
             model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+            model.ProgramJson = Newtonsoft.Json.JsonConvert.SerializeObject(programViewObject);
             model.RequirePostalCode = site.RequirePostalCode;
+            model.ShowAge = askAge;
+            model.ShowSchool = askSchool;
+
+            var districtList = await _schoolService.GetDistrictsAsync();
+            if (model.User.SchoolId.HasValue)
+            {
+                var schoolDetails = await _schoolService.GetSchoolDetailsAsync(model.User.SchoolId.Value);
+                var typeList = await _schoolService.GetTypesAsync(schoolDetails.SchoolDisctrictId);
+                model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name",
+                    schoolDetails.SchoolDisctrictId);
+                model.SchoolTypeList = new SelectList(typeList.ToList(), "Id", "Name",
+                    schoolDetails.SchoolTypeId);
+                model.SchoolList = new SelectList(schoolDetails.Schools.ToList(), "Id", "Name");
+            }
+            else
+            {
+                model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name");
+                if (model.SchoolDistrictId.HasValue)
+                {
+                    var typeList = await _schoolService.GetTypesAsync(model.SchoolDistrictId);
+                    model.SchoolTypeList = new SelectList(typeList.ToList(), "Id", "Name",
+                        model.SchoolTypeId);
+                    var schoolList = await _schoolService.GetSchoolsAsync(model.SchoolDistrictId,
+                        model.SchoolTypeId);
+                    model.SchoolList = new SelectList(schoolList.ToList(), "Id", "Name");
+                }
+            }
 
             return View("HouseholdAdd", model);
         }

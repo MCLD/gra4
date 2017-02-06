@@ -193,7 +193,8 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<User> Update(User userToUpdate, bool? hasSchool = null, int? schoolDistrictId = null)
+        public async Task<User> Update(User userToUpdate, bool? hasSchool = null,
+            int? schoolDistrictId = null)
         {
             int requestingUserId = GetActiveUserId();
 
@@ -218,12 +219,13 @@ namespace GRA.Domain.Service
                 currentEntity.SystemName = null;
                 //currentEntity.Username = userToUpdate.Username;
 
+                int? removeEnteredSchoolId = null;
                 if (hasSchool == false)
                 {
                     currentEntity.SchoolId = null;
                     if (currentEntity.EnteredSchoolId.HasValue)
                     {
-                        await _schoolService.RemoveEnteredSchoolAsync(currentEntity.EnteredSchoolId.Value);
+                        removeEnteredSchoolId = currentEntity.EnteredSchoolId;
                         currentEntity.EnteredSchoolId = null;
                     }
                 }
@@ -247,7 +249,15 @@ namespace GRA.Domain.Service
 
                 await ValidateUserFields(currentEntity);
 
-                return await _userRepository.UpdateSaveAsync(requestingUserId, currentEntity);
+                var updatedUser = await _userRepository
+                    .UpdateSaveAsync(requestingUserId, currentEntity);
+
+                if (removeEnteredSchoolId.HasValue)
+                {
+                    await _schoolService.RemoveEnteredSchoolAsync(removeEnteredSchoolId.Value);
+                }
+
+                return updatedUser;
             }
             else
             {
@@ -256,7 +266,8 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<User> MCUpdate(User userToUpdate)
+        public async Task<User> MCUpdate(User userToUpdate, bool? hasSchool = null,
+            int? schoolDistrictId = null)
         {
             int requestedByUserId = GetClaimId(ClaimType.UserId);
 
@@ -265,11 +276,50 @@ namespace GRA.Domain.Service
                 // admin users can update anything except siteid
                 var currentEntity = await _userRepository.GetByIdAsync(userToUpdate.Id);
                 userToUpdate.SiteId = currentEntity.SiteId;
+                userToUpdate.IsAdmin = await UserHasRoles(userToUpdate.Id);
+
+                int? removeEnteredSchoolId = null;
+                if (hasSchool == false)
+                {
+                    userToUpdate.SchoolId = null;
+                    if (currentEntity.EnteredSchoolId.HasValue)
+                    {
+                        removeEnteredSchoolId = currentEntity.EnteredSchoolId;
+                        userToUpdate.EnteredSchoolId = null;
+                    }
+                }
+                else if (hasSchool == true)
+                {
+                    if (currentEntity.EnteredSchoolId.HasValue)
+                    {
+                        userToUpdate.EnteredSchoolId = currentEntity.EnteredSchoolId;
+                        userToUpdate.SchoolId = null;
+                    }
+                    else if (!currentEntity.SchoolId.HasValue
+                        && !string.IsNullOrWhiteSpace(userToUpdate.EnteredSchoolName))
+                    {
+                        var enteredSchool = await _schoolService.AddEnteredSchool(
+                            userToUpdate.EnteredSchoolName, schoolDistrictId.Value);
+                        userToUpdate.EnteredSchoolId = enteredSchool.Id;
+                        userToUpdate.SchoolId = null;
+                    }
+                    else
+                    {
+                        userToUpdate.EnteredSchoolId = null;
+                    }
+                }
 
                 await ValidateUserFields(userToUpdate);
 
-                userToUpdate.IsAdmin = await UserHasRoles(userToUpdate.Id);
-                return await _userRepository.UpdateSaveAsync(requestedByUserId, userToUpdate);
+                var updatedUser = await _userRepository
+                    .UpdateSaveAsync(requestedByUserId, userToUpdate);
+
+                if (removeEnteredSchoolId.HasValue)
+                {
+                    await _schoolService.RemoveEnteredSchoolAsync(removeEnteredSchoolId.Value);
+                }
+
+                return updatedUser;
             }
             else
             {
@@ -403,7 +453,8 @@ namespace GRA.Domain.Service
             return authCode.RoleName;
         }
 
-        public async Task AddHouseholdMemberAsync(int householdHeadUserId, User memberToAdd)
+        public async Task AddHouseholdMemberAsync(int householdHeadUserId, User memberToAdd,
+            int? schoolDistrictId = null)
         {
             int authUserId = GetClaimId(ClaimType.UserId);
             var householdHead = await _userRepository.GetByIdAsync(householdHeadUserId);
@@ -421,6 +472,15 @@ namespace GRA.Domain.Service
                 memberToAdd.SiteId = householdHead.SiteId;
                 memberToAdd.CanBeDeleted = true;
                 memberToAdd.IsLockedOut = false;
+                memberToAdd.IsAdmin = false;
+                memberToAdd.EnteredSchoolId = null;
+
+                if (!string.IsNullOrWhiteSpace(memberToAdd.EnteredSchoolName))
+                {
+                    var enteredSchool = await _schoolService
+                        .AddEnteredSchool(memberToAdd.EnteredSchoolName, schoolDistrictId.Value);
+                    memberToAdd.EnteredSchoolId = enteredSchool.Id;
+                }
 
                 await ValidateUserFields(memberToAdd);
 

@@ -140,7 +140,7 @@
 
                         <div id="schoolTypeGroup" class="col-xs-12 col-sm-6 row-spacing @(Model.NewEnteredSchool ? "hide" : "" )">
                             <label class="control-label">School Type</label>
-                            <select id="schoolType" asp-items="Model.SchoolTypeList" class="form-control">
+                            <select asp-for="SchoolTypeId" asp-items="Model.SchoolTypeList" class="form-control">
                                 <option></option>
                             </select>
                         </div>
@@ -278,7 +278,7 @@
 
         $("#SchoolDistrictId").on("change", function() {
             var districtId = $(this).val();
-            var typeList = $("#schoolType");
+            var typeList = $("#SchoolTypeId");
             var typeId = typeList.val();
             var getTypesUrl = "@Url.Action("GetSchoolTypes", "Lookup", new { Area = string.Empty })";
 
@@ -304,7 +304,7 @@
             }   
         });
 
-        $("#schoolType").on("change", function() {
+        $("#SchoolTypeId").on("change", function() {
             var typeId = $(this).val();
             var districtId = $("#SchoolDistrictId").val();
             UpdateSchoolList(districtId, typeId);

@@ -14,6 +14,7 @@ namespace GRA.Controllers.ViewModel.Profile
         public bool HasSchoolId { get; set; }
         public bool NewEnteredSchool { get; set; }
         public int? SchoolDistrictId { get; set; }
+        public int? SchoolTypeId { get; set; }
         public string ProgramJson { get; set; }
         public SelectList BranchList { get; set; }
         public SelectList SystemList { get; set; }
