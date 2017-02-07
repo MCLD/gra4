@@ -41,5 +41,6 @@ namespace GRA.Domain.Model
         public string MetaDescription { get; set; }
 
         public bool RequirePostalCode { get; set; }
+        public bool SinglePageSignUp { get; set; }
     }
 }

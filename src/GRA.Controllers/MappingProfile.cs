@@ -8,8 +8,8 @@ namespace GRA.Controllers
     {
         public MappingProfile()
         {
-            CreateMap<JoinViewModel, User>().ReverseMap();
             CreateMap<ViewModel.Shared.ProgramViewModel, GRA.Domain.Model.Program>().ReverseMap();
+            CreateMap<SinglePageViewModel, User>().ReverseMap();
             CreateMap<TaskDetailViewModel, ChallengeTask>().ReverseMap();
         }
     }

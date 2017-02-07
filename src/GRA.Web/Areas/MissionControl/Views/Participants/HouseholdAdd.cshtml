@@ -85,52 +85,42 @@
             </div>
 
             <div id="schoolFields" class="@(Model.ShowSchool ? "": "hide")">
-                @if (!Model.User.EnteredSchoolId.HasValue)
-                {
-                    <div class="row">
-                        <div id="schoolDistrictGroup" class="col-xs-12 @(Model.NewEnteredSchool ? "" : "col-sm-6" ) row-spacing">
-                            <label class="control-label">School District</label>
-                            <select asp-for="SchoolDistrictId" asp-items="Model.SchoolDistrictList" class="form-control">
-                                <option></option>
-                            </select>
-                            <span asp-validation-for="SchoolDistrictId" class="text-danger"></span>
-                        </div>
-
-                        <div id="schoolTypeGroup" class="col-xs-12 col-sm-6 row-spacing @(Model.NewEnteredSchool ? "hide" : "" )">
-                            <label class="control-label">School Type</label>
-                            <select asp-for="SchoolTypeId" asp-items="Model.SchoolTypeList" class="form-control">
-                                <option></option>
-                            </select>
-                        </div>
+                <div class="row">
+                    <div id="schoolDistrictGroup" class="col-xs-12 @(Model.NewEnteredSchool ? "" : "col-sm-6" ) row-spacing">
+                        <label class="control-label">School District</label>
+                        <select asp-for="SchoolDistrictId" asp-items="Model.SchoolDistrictList" class="form-control">
+                            <option></option>
+                        </select>
+                        <span asp-validation-for="SchoolDistrictId" class="text-danger"></span>
                     </div>
 
-                    <div id="schoolGroup" class="row row-spacing @(Model.NewEnteredSchool ? "hide" : "" )">
-                        <div class="col-xs-12">
-                            <label asp-for="User.SchoolId" class="control-label"></label>
-                            <label style="font-size: 12px;">
-                                <a id="schoolNotListed" style="text-decoration:none;cursor:pointer">My school isn't listed</a>
-                            </label>
-                            <select asp-for="User.SchoolId" asp-items="Model.SchoolList" class="form-control">
-                                <option></option>
-                            </select>
-                            <span asp-validation-for="User.SchoolId" class="text-danger"></span>
-                        </div>
+                    <div id="schoolTypeGroup" class="col-xs-12 col-sm-6 row-spacing @(Model.NewEnteredSchool ? "hide" : "" )">
+                        <label class="control-label">School Type</label>
+                        <select asp-for="SchoolTypeId" asp-items="Model.SchoolTypeList" class="form-control">
+                            <option></option>
+                        </select>
                     </div>
-                }
+                </div>
+
+                <div id="schoolGroup" class="row row-spacing @(Model.NewEnteredSchool ? "hide" : "" )">
+                    <div class="col-xs-12">
+                        <label asp-for="User.SchoolId" class="control-label"></label>
+                        <label style="font-size: 12px;">
+                            <a id="schoolNotListed" style="text-decoration:none;cursor:pointer">My school isn't listed</a>
+                        </label>
+                        <select asp-for="User.SchoolId" asp-items="Model.SchoolList" class="form-control">
+                            <option></option>
+                        </select>
+                        <span asp-validation-for="User.SchoolId" class="text-danger"></span>
+                    </div>
+                </div>
                 <div id="enteredSchoolGroup" class="row row-spacing @(Model.NewEnteredSchool ? "" : "hide" )">
                     <div class="col-xs-12">
                         <label asp-for="User.EnteredSchoolName" class="control-label"></label>
-                        @if (!Model.User.EnteredSchoolId.HasValue)
-                        {
-                            <label style="font-size: 12px;">
-                                <a id="viewSchoolList" style="text-decoration:none;cursor:pointer">View school list</a>
-                            </label>
-                            <input asp-for="User.EnteredSchoolName" class="form-control" />
-                        }
-                        else
-                        {
-                            <input asp-for="User.EnteredSchoolName" class="form-control" readonly />
-                        }
+                        <label style="font-size: 12px;">
+                            <a id="viewSchoolList" style="text-decoration:none;cursor:pointer">View school list</a>
+                        </label>
+                        <input asp-for="User.EnteredSchoolName" class="form-control" />
                         <span asp-validation-for="User.EnteredSchoolName" class="text-danger"></span>
                     </div>
                 </div>
@@ -197,7 +187,6 @@
                 {
                     $("#schoolFields").addClass("hide");
                 }
-
             }
         });
 

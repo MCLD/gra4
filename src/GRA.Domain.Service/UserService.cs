@@ -71,7 +71,8 @@ namespace GRA.Domain.Service
             _schoolService = Require.IsNotNull(schoolService, nameof(schoolService));
         }
 
-        public async Task<User> RegisterUserAsync(User user, string password)
+        public async Task<User> RegisterUserAsync(User user, string password,
+            int? schoolDistrictId = null)
         {
             VerifyCanRegister();
             var existingUser = await _userRepository.GetByUsernameAsync(user.Username);
@@ -86,6 +87,14 @@ namespace GRA.Domain.Service
 
             user.CanBeDeleted = true;
             user.IsLockedOut = false;
+
+            if (!string.IsNullOrWhiteSpace(user.EnteredSchoolName))
+            {
+                var enteredSchool = await _schoolService
+                    .AddEnteredSchool(user.EnteredSchoolName, schoolDistrictId.Value);
+                user.EnteredSchoolId = enteredSchool.Id;
+            }
+
             var registeredUser = await _userRepository.AddSaveAsync(0, user);
             await _userRepository
                 .SetUserPasswordAsync(registeredUser.Id, registeredUser.Id, password);

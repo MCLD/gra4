@@ -76,8 +76,7 @@ namespace GRA.Domain.Service
                 Name = schoolName,
                 SchoolDistrictId = districtId
             };
-            return await _enteredSchoolRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
-                enteredSchool);
+            return await _enteredSchoolRepository.AddSaveNoAuditAsync(enteredSchool);
         }
 
         public async Task<School> AddEnteredSchoolToList(int enteredSchoolId,

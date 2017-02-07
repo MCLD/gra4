@@ -8,19 +8,8 @@ using System.Threading.Tasks;
 
 namespace GRA.Controllers.ViewModel.Join
 {
-    public class JoinViewModel
+    public class Step1ViewModel
     {
-        [Required]
-        public string Username { get; set; }
-
-        [Required]
-        public string Password { get; set; }
-
-        [Required]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
-        [DisplayName("Confirm Password")]
-        public string ConfirmPassword { get; set; }
-
         [Required]
         [DisplayName("First Name")]
         public string FirstName { get; set; }
@@ -29,24 +18,27 @@ namespace GRA.Controllers.ViewModel.Join
         [DisplayName("Last name")]
         public string LastName { get; set; }
 
+        [DisplayName("Zip Code")]
+        public string PostalCode { get; set; }
+
+        [Required]
+        [DisplayName("System")]
+        public int SystemId { get; set; }
+
         [Required]
         [DisplayName("Branch")]
         public int? BranchId { get; set; }
 
-        [DisplayName("Email Address")]
-        [EmailAddress]
-        public string Email { get; set; }
+        [Required]
+        [DisplayName("Program")]
+        public int? ProgramId { get; set; }
 
-        [DisplayName("Phone Number")]
-        [Phone]
-        public string PhoneNumber { get; set; }
-
-        public int ProgramId { get; set; }
+        public bool RequirePostalCode { get; set; }
 
         public int SiteId { get; set; }
-        
-        public int SystemId { get; set; }
 
+        public SelectList SystemList { get; set; }
         public SelectList BranchList { get; set; }
+        public SelectList ProgramList { get; set; }
     }
 }
