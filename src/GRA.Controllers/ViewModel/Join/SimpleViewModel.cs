@@ -69,8 +69,6 @@ namespace GRA.Controllers.ViewModel.Join
         public int? SchoolTypeId { get; set; }
         public string ProgramJson { get; set; }
 
-        public int SiteId { get; set; }
-
         public SelectList SystemList { get; set; }
         public SelectList BranchList { get; set; }
         public SelectList ProgramList { get; set; }

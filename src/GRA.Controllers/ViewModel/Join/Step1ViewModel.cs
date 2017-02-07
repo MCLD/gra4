@@ -15,7 +15,7 @@ namespace GRA.Controllers.ViewModel.Join
         public string FirstName { get; set; }
 
         [Required]
-        [DisplayName("Last name")]
+        [DisplayName("Last Name")]
         public string LastName { get; set; }
 
         [DisplayName("Zip Code")]
@@ -23,22 +23,16 @@ namespace GRA.Controllers.ViewModel.Join
 
         [Required]
         [DisplayName("System")]
-        public int SystemId { get; set; }
+        public int? SystemId { get; set; }
 
         [Required]
         [DisplayName("Branch")]
         public int? BranchId { get; set; }
 
-        [Required]
-        [DisplayName("Program")]
-        public int? ProgramId { get; set; }
-
         public bool RequirePostalCode { get; set; }
 
-        public int SiteId { get; set; }
 
         public SelectList SystemList { get; set; }
         public SelectList BranchList { get; set; }
-        public SelectList ProgramList { get; set; }
     }
 }

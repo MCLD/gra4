@@ -283,7 +283,11 @@ namespace GRA.Controllers
 
             if (programList.Count() == 1)
             {
+                var programId = programList.SingleOrDefault().Id;
+                var program = await _siteService.GetProgramByIdAsync(programId);
                 viewModel.User.ProgramId = programList.SingleOrDefault().Id;
+                viewModel.ShowAge = program.AskAge;
+                viewModel.ShowSchool = program.AskSchool;
             }
 
             return View("HouseholdAdd", viewModel);
