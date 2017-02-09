@@ -8,5 +8,7 @@ namespace GRA.Domain.Repository
     {
         Task<ICollection<Trigger>> PageAsync(Filter filter);
         Task<int> CountAsync(Filter filter);
+        Task<ICollection<Trigger>> GetTriggersAsync(int userId);
+        Task AddTriggerActivationAsync(int userId, int triggerId);
     }
 }

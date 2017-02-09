@@ -77,7 +77,7 @@ namespace GRA.Domain.Service
             {
                 IsUsed = false,
                 SiteId = codeType.SiteId,
-                VendorCodeTypeId = codeType.Id
+                VendorCodeTypeId = codeType.Id,
             };
             for (; count <= System.Math.Min(numberOfCodes, 5000); count++)
             {
