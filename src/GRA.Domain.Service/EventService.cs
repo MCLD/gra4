@@ -96,6 +96,7 @@ namespace GRA.Domain.Service
             graEvent.SiteId = GetCurrentSiteId();
             graEvent.RelatedBranchId = GetClaimId(ClaimType.BranchId);
             graEvent.RelatedSystemId = GetClaimId(ClaimType.SystemId);
+            await ValidateEvent(graEvent);
             return await _eventRepository.AddSaveAsync(GetClaimId(ClaimType.UserId), graEvent);
         }
 
@@ -103,6 +104,7 @@ namespace GRA.Domain.Service
         {
             VerifyPermission(Permission.ManageEvents);
             graEvent.SiteId = GetCurrentSiteId();
+            await ValidateEvent(graEvent);
             return await _eventRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), graEvent);
         }
 
@@ -150,6 +152,26 @@ namespace GRA.Domain.Service
                 throw new GraException("The location is being used by events.");
             }
             await _locationRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId), locationId);
+        }
+
+        private async Task ValidateEvent(Event graEvent)
+        {
+            if (graEvent.AtBranchId.HasValue)
+            {
+                if (!(await _branchRepository.ValidateBySiteAsync(
+                    graEvent.AtBranchId.Value, graEvent.SiteId)))
+                {
+                    throw new GraException("Invalid Branch selection.");
+                }
+            }
+            if (graEvent.AtLocationId.HasValue)
+            {
+                if (!(await _locationRepository.ValidateAsync(
+                    graEvent.AtLocationId.Value, graEvent.SiteId)))
+                {
+                    throw new GraException("Invalid Location selection.");
+                }
+            }
         }
     }
 }
