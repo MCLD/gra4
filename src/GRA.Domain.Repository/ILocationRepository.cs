@@ -9,6 +9,6 @@ namespace GRA.Domain.Repository
         Task<ICollection<Location>> GetAll(int siteId);
         Task<int> CountAsync(Filter filter);
         Task<ICollection<Location>> PageAsync(Filter filter);
-        Task<bool> ValidateAsync(int locationId, int siteId)
+        Task<bool> ValidateAsync(int locationId, int siteId);
     }
 }

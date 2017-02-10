@@ -142,6 +142,16 @@ namespace GRA.Data.Repository
                 events = events.Where(_ => filter.ProgramIds.Contains(_.ProgramId));
             }
 
+            // filter by dates
+            if (filter.StartDate != null)
+            {
+                events = events.Where(_ => _.StartsAt.Date >= filter.StartDate.Value.Date);
+            }
+            if (filter.EndDate != null)
+            {
+                events = events.Where(_ => _.StartsAt.Date <= filter.EndDate.Value.Date);
+            }
+
             // apply search
             if (!string.IsNullOrEmpty(filter.Search))
             {
