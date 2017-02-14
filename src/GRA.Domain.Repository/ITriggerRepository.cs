@@ -10,5 +10,6 @@ namespace GRA.Domain.Repository
         Task<int> CountAsync(Filter filter);
         Task<ICollection<Trigger>> GetTriggersAsync(int userId);
         Task AddTriggerActivationAsync(int userId, int triggerId);
+        Task<Trigger> GetByCodeAsync(int siteId, string secretCode);
     }
 }

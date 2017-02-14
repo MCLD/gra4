@@ -34,6 +34,20 @@ namespace GRA.Data.Repository
             return await DbSet.AsNoTracking().Where(_ => _.SiteId == filter.SiteId).CountAsync();
         }
 
+        public async Task<Trigger> GetByCodeAsync(int siteId, string secretCode)
+        {
+            var codeTrigger = await DbSet
+                .AsNoTracking()
+                .Where(_ => _.SiteId == siteId && _.SecretCode == secretCode)
+                .SingleOrDefaultAsync();
+
+            if(codeTrigger == null)
+            {
+                return null;
+            }
+            return _mapper.Map<Trigger>(codeTrigger);
+        }
+
         public async Task<ICollection<Trigger>> GetTriggersAsync(int userId)
         {
             // get user details for filtering triggers

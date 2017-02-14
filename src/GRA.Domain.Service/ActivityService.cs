@@ -627,6 +627,81 @@ namespace GRA.Domain.Service
             }
         }
 
+        public async Task LogSecretCodeAsync(int userIdToLog, string secretCode)
+        {
+            VerifyCanLog();
 
+            if(string.IsNullOrWhiteSpace(secretCode))
+            {
+                throw new GraException("You must enter a code!");
+            }
+
+            int activeUserId = GetActiveUserId();
+            int authUserId = GetClaimId(ClaimType.UserId);
+            var userToLog = await _userRepository.GetByIdAsync(userIdToLog);
+
+            bool loggingAsAdminUser = HasPermission(Permission.LogActivityForAny);
+
+            if (activeUserId != userIdToLog
+                && authUserId != userToLog.HouseholdHeadUserId
+                && !loggingAsAdminUser)
+            {
+                string error = $"User id {activeUserId} cannot log a code for user id {userIdToLog}";
+                _logger.LogError(error);
+                throw new GraException("You do not have permission to apply that code.");
+            }
+
+            var trigger = await _triggerRepository.GetByCodeAsync(GetCurrentSiteId(), secretCode);
+
+            if(trigger == null)
+            {
+                throw new GraException($"'{secretCode}' is not a valid code.");
+            }
+
+            // add that we've processed this trigger for this user
+            await _triggerRepository.AddTriggerActivationAsync(userIdToLog, trigger.Id);
+
+            // every trigger awards a badge
+            var badge = await AwardBadgeAsync(userIdToLog, trigger.AwardBadgeId);
+
+            // log the notification
+            await _notificationRepository.AddSaveAsync(authUserId, new Notification
+            {
+                PointsEarned = trigger.AwardPoints,
+                UserId = userIdToLog,
+                Text = trigger.AwardMessage,
+                BadgeId = trigger.AwardBadgeId,
+                BadgeFilename = badge.Filename
+            });
+
+            // add the award to the user's history
+            var userLog = new UserLog
+            {
+                UserId = userIdToLog,
+                PointsEarned = trigger.AwardPoints,
+                IsDeleted = false,
+                BadgeId = trigger.AwardBadgeId,
+                Description = trigger.AwardMessage
+            };
+
+            if (activeUserId != userToLog.Id)
+            {
+                userLog.AwardedBy = activeUserId;
+            }
+
+            await _userLogRepository.AddSaveAsync(authUserId, userLog);
+
+            // award any vendor code that is necessary
+            await AwardVendorCodeAsync(userIdToLog, trigger.AwardVendorCodeTypeId);
+
+            // if there are points to be awarded, do that now, also check for other triggers
+            if (trigger.AwardPoints > 0)
+            {
+                await AddPointsSaveAsync(authUserId,
+                    activeUserId,
+                    userIdToLog,
+                    trigger.AwardPoints);
+            }
+        }
     }
 }
