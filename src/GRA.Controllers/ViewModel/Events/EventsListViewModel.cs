@@ -17,6 +17,7 @@ namespace GRA.Controllers.ViewModel.Events
         [DisplayName("Location")]
         public int? LocationId { get; set; }
         public bool? UseLocation { get; set; }
+        [DisplayName("Program")]
         public int? ProgramId { get; set; }
         public string Search { get; set; }
         [DisplayName("Start Date")]

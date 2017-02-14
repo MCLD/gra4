@@ -46,9 +46,14 @@ namespace GRA.Controllers
             {
                 filter.BranchIds = new List<int?>() { branch.Value };
             }
-            else if(location.HasValue)
+            else if (location.HasValue)
             {
-                filter.LocationIds = new List<int?>() {location.Value };
+                filter.LocationIds = new List<int?>() { location.Value };
+            }
+
+            if (program.HasValue)
+            {
+                filter.ProgramIds = new List<int?>() { program.Value };
             }
 
             if (!string.IsNullOrWhiteSpace(StartDate))
@@ -83,6 +88,7 @@ namespace GRA.Controllers
                 Events = eventList.Data,
                 PaginateModel = paginateModel,
                 Search = search,
+                ProgramId = program,
                 SystemList = new SelectList((await _siteService.GetSystemList()), "Id", "Name"),
                 LocationList = new SelectList((await _eventService.GetLocations()), "Id", "Name"),
                 ProgramList = new SelectList((await _siteService.GetProgramList()), "Id", "Name")
@@ -128,13 +134,43 @@ namespace GRA.Controllers
             {
                 startDate = model.StartDate.Value.ToString("MM-dd-yyyy");
             }
-            if (model.EndDate.HasValue 
+            if (model.EndDate.HasValue
                 && (!model.StartDate.HasValue || model.EndDate >= model.StartDate))
             {
                 endDate = model.EndDate.Value.ToString("MM-dd-yyyy");
             }
 
-            return RedirectToAction("Index", new { Search = model.Search, Branch = model.BranchId, Location = model.LocationId, StartDate = startDate, EndDate = endDate });
+            return RedirectToAction("Index", new { Search = model.Search, Branch = model.BranchId, Location = model.LocationId, Program = model.ProgramId, StartDate = startDate, EndDate = endDate });
+        }
+
+        public async Task<IActionResult> Detail(int id)
+        {
+            EventsDetailViewModel viewModel = new EventsDetailViewModel()
+            {
+                Event = await _eventService.GetDetails(id)
+            };
+            if (viewModel.Event.ProgramId.HasValue)
+            {
+                var program = await _siteService.GetProgramByIdAsync(viewModel.Event.ProgramId.Value);
+                viewModel.ProgramString = $"This event is limited to the {program.Name} program.";
+            }
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> GetDetails(int eventId)
+        {
+            EventsDetailViewModel viewModel = new EventsDetailViewModel()
+            {
+                Event = await _eventService.GetDetails(eventId)
+            };
+            if (viewModel.Event.ProgramId.HasValue)
+            {
+                var program = await _siteService.GetProgramByIdAsync(viewModel.Event.ProgramId.Value);
+                viewModel.ProgramString = $"This event is limited to the {program.Name} program.";
+            }
+
+            return PartialView("_DetailPartial", viewModel);
         }
     }
 }

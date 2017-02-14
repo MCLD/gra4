@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace GRA.Controllers.MissionControl
@@ -105,6 +106,11 @@ namespace GRA.Controllers.MissionControl
             {
                 try
                 {
+                    if (!string.IsNullOrWhiteSpace(model.Event.ExternalLink))
+                    {
+                        model.Event.ExternalLink = new UriBuilder(
+                            model.Event.ExternalLink).Uri.AbsoluteUri;
+                    }
                     var graEvent = model.Event;
                     if (model.UseLocation)
                     {
@@ -175,6 +181,11 @@ namespace GRA.Controllers.MissionControl
             {
                 try
                 {
+                    if (!string.IsNullOrWhiteSpace(model.Event.ExternalLink))
+                    {
+                        model.Event.ExternalLink = new UriBuilder(
+                            model.Event.ExternalLink).Uri.AbsoluteUri;
+                    }
                     var graEvent = model.Event;
                     if (model.UseLocation)
                     {
@@ -254,6 +265,10 @@ namespace GRA.Controllers.MissionControl
             {
                 try
                 {
+                    if (!string.IsNullOrWhiteSpace(model.Location.Url))
+                    {
+                        model.Location.Url = new UriBuilder(model.Location.Url).Uri.AbsoluteUri;
+                    }
                     await _eventService.AddLocation(model.Location);
                     ShowAlertSuccess($"Added Location '{model.Location.Name}'");
                 }
@@ -273,6 +288,10 @@ namespace GRA.Controllers.MissionControl
             {
                 try
                 {
+                    if (!string.IsNullOrWhiteSpace(model.Location.Url))
+                    {
+                        model.Location.Url = new UriBuilder(model.Location.Url).Uri.AbsoluteUri;
+                    }
                     await _eventService.EditLocation(model.Location);
                     ShowAlertSuccess($"Location '{model.Location.Name}' updated");
                 }
@@ -298,6 +317,26 @@ namespace GRA.Controllers.MissionControl
                 ShowAlertDanger("Unable to delete Location: ", gex);
             }
             return RedirectToAction("Locations");
+        }
+
+        [Authorize(Policy = Policy.ManageLocations)]
+        public async Task<JsonResult> AddLocationReturnList (string name, 
+            string address, string url, string telephone)
+        {
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                url = new UriBuilder(url).Uri.AbsoluteUri;
+            }
+            Location location = new Location()
+            {
+                Name = name,
+                Address = address,
+                Url = url,
+                Telephone = telephone
+            };
+            var newLocation = await _eventService.AddLocation(location);
+            var locationList = await _eventService.GetLocations();
+            return Json(new SelectList(locationList, "Id", "Name", newLocation.Id));
         }
     }
 }

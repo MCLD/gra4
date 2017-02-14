@@ -1,6 +1,15 @@
 ﻿@model GRA.Controllers.ViewModel.Events.EventsListViewModel
 
 <div class="row">
+    <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel">
+        <div class="modal-dialog" role="document">
+            <div id="detailModalContent" class="modal-content">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-xs-12 col-sm-10 col-sm-offset-1">
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -33,6 +42,15 @@
                     </div>
 
                     <div class="row row-spacing">
+                        <div class="col-xs-12">
+                            <label asp-for="ProgramId" class="control-label"></label>
+                            <select asp-for="ProgramId" asp-items="Model.ProgramList" class="form-control">
+                                <option>All Programs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-xs-6">
                             <div class="form-group">
                                 <label asp-for="SystemId" class="control-label"></label>
@@ -83,7 +101,7 @@
                         else
                         {
                             <div>
-                                <table class="table table-condensed table-bordered table-striped">
+                                <table class="table table-condensed table-bordered link-table">
                                     <thead>
                                         <tr>
                                             <th>What</th>
@@ -95,7 +113,14 @@
                                         @foreach (var eventItem in Model.Events)
                                         {
                                             <tr>
-                                                <td>@eventItem.Name</td>
+                                                <td class="td-class">
+                                                    <a asp-action="Detail"
+                                                       asp-route-id="@eventItem.Id"
+                                                       data-id="@eventItem.Id"
+                                                       class="rowlink">
+                                                        @eventItem.Name
+                                                    </a>
+                                                </td>
                                                 <td>@eventItem.StartsAt.ToString("d") @(!eventItem.AllDay ? "at " + eventItem.StartsAt.ToString("t") : "")</td>
                                                 <td>@eventItem.EventLocationName</td>
                                             </tr>
@@ -118,6 +143,19 @@
 @section scripts
 {
     <script>
+        var test;
+
+        $(document).ready(function() {
+            $('.td-class').each(function() {
+                $(this).children('a.rowlink').height($(this).height() + 11);
+            });
+        });
+        $(window).resize(function() {
+            $('.td-class').each(function() {
+                $(this).children('a.rowlink').height($(this).height() + 11);
+            });
+        });
+
         $("#SystemId").on("change", function(e) {
             if (e.originalEvent)
             {
@@ -153,8 +191,8 @@
             }
         });
 
-        $('[id^=picker]').datetimepicker({
-            format: 'MM/DD/YYYY',
+        $("[id^=picker]").datetimepicker({
+            format: "MM/DD/YYYY",
             allowInputToggle: true,
             useCurrent: false,
             icons: {
@@ -166,5 +204,20 @@
                 next: "fa fa-arrow-right"
             }
         });
+
+        $(".rowlink").on('click', function(e) {
+            e.preventDefault();
+            $("#detailModal").modal("show");
+            var id = $(this).data("id");
+            var url = "@Url.Action("GetDetails")";
+            $.get(url, { eventId: id }, function(response) {
+                $("#detailModalContent").html(response);
+            });
+        });
+
+        $("#detailModal").on('hidden.bs.modal', function() {
+            $("#detailModalContent").html("");
+        });
+
     </script>
 }

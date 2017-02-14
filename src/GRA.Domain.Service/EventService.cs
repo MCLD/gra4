@@ -12,15 +12,18 @@ namespace GRA.Domain.Service
         private readonly IBranchRepository _branchRepository;
         private readonly IEventRepository _eventRepository;
         private readonly ILocationRepository _locationRepository;
+        private readonly IProgramRepository _programRepository;
         public EventService(ILogger<EventService> logger,
             IUserContextProvider userContextProvider,
             IBranchRepository branchRepository,
             IEventRepository eventRepository,
-            ILocationRepository locationRepository) : base(logger, userContextProvider)
+            ILocationRepository locationRepository,
+            IProgramRepository programRepository) : base(logger, userContextProvider)
         {
             _branchRepository = Require.IsNotNull(branchRepository, nameof(branchRepository));
             _eventRepository = Require.IsNotNull(eventRepository, nameof(eventRepository));
             _locationRepository = Require.IsNotNull(locationRepository, nameof(locationRepository));
+            _programRepository = Require.IsNotNull(programRepository, nameof(programRepository));
         }
 
         public async Task<DataWithCount<IEnumerable<Event>>>
@@ -123,6 +126,7 @@ namespace GRA.Domain.Service
             Filter filter)
         {
             VerifyPermission(Permission.ManageLocations);
+            filter.SiteId = GetCurrentSiteId();
             return new DataWithCount<ICollection<Location>>
             {
                 Data = await _locationRepository.PageAsync(filter),
@@ -170,6 +174,14 @@ namespace GRA.Domain.Service
                     graEvent.AtLocationId.Value, graEvent.SiteId)))
                 {
                     throw new GraException("Invalid Location selection.");
+                }
+            }
+            if (graEvent.ProgramId.HasValue)
+            {
+                if (!(await _programRepository.ValidateAsync(
+                    graEvent.ProgramId.Value, graEvent.SiteId)))
+                {
+                    throw new GraException("Invalid Program selection.");
                 }
             }
         }
