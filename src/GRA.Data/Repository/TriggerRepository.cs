@@ -28,6 +28,22 @@ namespace GRA.Data.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<DateTime?> CheckTriggerActivationAsync(int userId, int triggerId)
+        {
+            var trigger = await _context.UserTriggers
+                .AsNoTracking()
+                .Where(_ => _.UserId == userId && _.TriggerId == triggerId)
+                .SingleOrDefaultAsync();
+            if (trigger == null)
+            {
+                return null;
+            }
+            else
+            {
+                return trigger.CreatedAt;
+            }
+        }
+
         // honors site id, skip, and take
         public async Task<int> CountAsync(Filter filter)
         {
@@ -41,7 +57,7 @@ namespace GRA.Data.Repository
                 .Where(_ => _.SiteId == siteId && _.SecretCode == secretCode)
                 .SingleOrDefaultAsync();
 
-            if(codeTrigger == null)
+            if (codeTrigger == null)
             {
                 return null;
             }
@@ -85,7 +101,8 @@ namespace GRA.Data.Repository
             var badgeTriggers = triggers
                 .Where(_ => _.RequiredBadges != null && _.RequiredBadges.Count > 0);
 
-            if (badgeTriggers.Count() > 0) {
+            if (badgeTriggers.Count() > 0)
+            {
                 // get the user's badges
                 var userBadgeIds = _context.UserBadges
                     .AsNoTracking()
@@ -108,7 +125,7 @@ namespace GRA.Data.Repository
             var challengeTriggers = triggers
                 .Where(_ => _.RequiredChallenges != null && _.RequiredChallenges.Count > 0);
 
-            if(challengeTriggers.Count() > 0)
+            if (challengeTriggers.Count() > 0)
             {
                 // user's challenges
                 var userChallengeIds = _context.UserLogs
@@ -116,17 +133,17 @@ namespace GRA.Data.Repository
                     .Where(_ => _.UserId == userId && _.ChallengeId != null)
                     .Select(_ => _.ChallengeId.Value);
 
-                foreach(var eligibleTrigger in challengeTriggers)
+                foreach (var eligibleTrigger in challengeTriggers)
                 {
                     var requiredChallenges = eligibleTrigger.RequiredChallenges.Select(_ => _.ChallengeId);
-                    if(requiredChallenges.Except(userChallengeIds).Any())
+                    if (requiredChallenges.Except(userChallengeIds).Any())
                     {
                         // requires challenges the user doesn't have
                         itemsToRemove.Add(eligibleTrigger);
                     }
                 }
             }
-            
+
             // return all the triggers that should be awarded to the user
             return _mapper.Map<ICollection<Trigger>>(triggers.Except(itemsToRemove));
         }

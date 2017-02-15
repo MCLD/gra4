@@ -11,14 +11,17 @@ namespace GRA.Controllers.MissionControl
     public class FlightController : Base.MCController
     {
         private readonly ILogger<FlightController> _logger;
+        private readonly ActivityService _activityService;
         private readonly VendorCodeService _vendorCodeService;
 
         public FlightController(ILogger<FlightController> logger,
             ServiceFacade.Controller context,
+            ActivityService activityService,
             VendorCodeService vendorCodeService)
             : base(context)
         {
             _logger = Require.IsNotNull(logger, nameof(logger));
+            _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _vendorCodeService = Require.IsNotNull(vendorCodeService, nameof(vendorCodeService));
             PageTitle = "Flight Director";
         }
@@ -49,7 +52,7 @@ namespace GRA.Controllers.MissionControl
             return View();
         }
 
-        public async Task<IActionResult> CreateVendorCodes()
+        public async Task<IActionResult> CreateVendorCodesAsync()
         {
             var code = await _vendorCodeService.AddTypeAsync(new VendorCodeType
             {
@@ -66,6 +69,25 @@ namespace GRA.Controllers.MissionControl
             AlertSuccess = $"Generated {generatedCount} codes in {sw.Elapsed.TotalSeconds} seconds of type: {code.Description}";
 
             return View("Index");
+        }
+
+        public async Task<IActionResult> RedeemSecretCodeAsync()
+        {
+            var userContext = _userContextProvider.GetContext();
+            try
+            {
+                await _activityService.LogSecretCodeAsync((int)userContext.ActiveUserId, "secretcode");
+            }
+            catch (GraException gex)
+            {
+                AlertWarning = gex.Message;
+            }
+            return RedirectToRoute(new
+            {
+                area = string.Empty,
+                controller = "Home",
+                action = "Index"
+            });
         }
     }
 }

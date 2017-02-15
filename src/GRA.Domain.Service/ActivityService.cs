@@ -655,8 +655,17 @@ namespace GRA.Domain.Service
 
             if(trigger == null)
             {
-                throw new GraException($"'{secretCode}' is not a valid code.");
+                throw new GraException($"<strong>{secretCode}</strong> is not a valid code.");
             }
+
+            // check if this user's gotten this code
+            var alreadyDone 
+                = await _triggerRepository.CheckTriggerActivationAsync(userIdToLog, trigger.Id);
+            if(alreadyDone != null)
+            {
+                throw new GraException($"You already entered the code <strong>{secretCode}</strong> on <strong>{alreadyDone:d}</strong>!");
+            }
+
 
             // add that we've processed this trigger for this user
             await _triggerRepository.AddTriggerActivationAsync(userIdToLog, trigger.Id);

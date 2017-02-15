@@ -1,4 +1,5 @@
 ﻿using GRA.Domain.Model;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace GRA.Domain.Repository
         Task<ICollection<Trigger>> GetTriggersAsync(int userId);
         Task AddTriggerActivationAsync(int userId, int triggerId);
         Task<Trigger> GetByCodeAsync(int siteId, string secretCode);
+        Task<DateTime?> CheckTriggerActivationAsync(int userId, int triggerId);
     }
 }
