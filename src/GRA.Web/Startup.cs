@@ -66,21 +66,6 @@ namespace GRA.Web
                         = DefaultConnectionString.SQLite;
                 }
             }
-
-            string contentDirectory = Configuration[ConfigurationKey.ContentDirectory];
-
-            if (!string.IsNullOrEmpty(contentDirectory) && !Directory.Exists(contentDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(contentDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Unable to create directory '{contentDirectory}' in {Directory.GetCurrentDirectory()}");
-                    throw (ex);
-                }
-            }
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -244,6 +229,19 @@ namespace GRA.Web
             else
             {
                 contentPath = Path.Combine(Directory.GetCurrentDirectory(), "content");
+            }
+
+            if (!Directory.Exists(contentPath))
+            {
+                try
+                {
+                    Directory.CreateDirectory(contentPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to create directory '{contentPath}' in {Directory.GetCurrentDirectory()}");
+                    throw (ex);
+                }
             }
 
             string pathString = null;
