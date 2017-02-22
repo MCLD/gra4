@@ -72,10 +72,17 @@ namespace GRA.Data.Repository
 
         public async Task<ICollection<Trigger>> PageAsync(Filter filter)
         {
-            return await ApplyFilters(filter)
+            var triggerList = await ApplyFilters(filter)
                 .ApplyPagination(filter)
                 .ProjectTo<Trigger>()
                 .ToListAsync();
+
+            foreach (var trigger in triggerList)
+            {
+                trigger.HasDependents = await HasDependentsAsync(trigger.Id);
+            }
+
+            return triggerList;
         }
 
         private IQueryable<Model.Trigger> ApplyFilters(Filter filter)
@@ -87,9 +94,12 @@ namespace GRA.Data.Repository
 
         public async Task<Trigger> GetByCodeAsync(int siteId, string secretCode)
         {
+            secretCode = secretCode.Trim().ToLower();
             var codeTrigger = await DbSet
                 .AsNoTracking()
-                .Where(_ => _.SiteId == siteId && _.SecretCode == secretCode)
+                .Where(_ => _.SiteId == siteId
+                    && _.IsDeleted == false
+                    && _.SecretCode == secretCode)
                 .SingleOrDefaultAsync();
 
             if (codeTrigger == null)
@@ -348,12 +358,13 @@ namespace GRA.Data.Repository
             return requirements;
         }
 
-        public async Task<bool> SecretCodeExists(int siteId, string secretCode)
+        public async Task<bool> CodeExistsAsync(int siteId, string secretCode, int? triggerId = null)
         {
             return await DbSet
                 .AsNoTracking()
                 .Where(_ => _.SiteId == siteId
                     && _.IsDeleted == false
+                    && _.Id != triggerId
                     && _.SecretCode == secretCode)
                 .AnyAsync();
         }
@@ -428,15 +439,34 @@ namespace GRA.Data.Repository
             return updatedTrigger;
         }
 
-        public async Task DeleteRequirementsAsync(int triggerId)
+        public async Task<bool> HasDependentsAsync(int triggerId)
         {
-            var triggerBadges = _context.TriggerBadges.Where(_ => _.TriggerId == triggerId);
-            _context.TriggerBadges.RemoveRange(triggerBadges);
+            return await (from triggerBadges in _context.TriggerBadges
+                          join trigger in DbSet.Where(_ => _.Id == triggerId)
+                          on triggerBadges.BadgeId equals trigger.AwardBadgeId
+                          select triggerBadges)
+                          .AnyAsync();
+        }
 
-            var triggerChallenges = _context.TriggerChallenges.Where(_ => _.TriggerId == triggerId);
-            _context.TriggerChallenges.RemoveRange(triggerChallenges);
+        public async Task<ICollection<Trigger>> GetTriggerDependentsAsync(int triggerBadgeId)
+        {
+            return await _context.TriggerBadges
+                .AsNoTracking()
+                .Include(_ => _.Trigger)
+                .Where(_ => _.BadgeId == triggerBadgeId)
+                .Select(_ => _.Trigger)
+                .ProjectTo<Trigger>()
+                .ToListAsync();
+        }
 
-            await _context.SaveChangesAsync();
+        public async Task<ICollection<Trigger>> GetChallengeDependentsAsync(int challengeId)
+        {
+            return await _context.TriggerChallenges
+                .AsNoTracking()
+                .Where(_ => _.ChallengeId == challengeId)
+                .Select(_ => _.Trigger)
+                .ProjectTo<Trigger>()
+                .ToListAsync();
         }
     }
 }

@@ -711,6 +711,10 @@ namespace GRA.Domain.Service
                     userIdToLog,
                     trigger.AwardPoints);
             }
+            else
+            {
+                await AwardTriggersAsync(userIdToLog);
+            }
         }
     }
 }

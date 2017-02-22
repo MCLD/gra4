@@ -63,7 +63,7 @@
     </div>
 </div>
 
-<form asp-controller="Triggers" asp-action="@Model.Action" method="post" role="form" enctype="multipart/form-data">
+<form asp-controller="Triggers" asp-action="@Model.Action" method="post" role="form" enctype="multipart/form-data" style="padding: 10px 0;">
     <input asp-for="BadgeRequiredList" type="hidden" />
     <input asp-for="ChallengeRequiredList" type="hidden" />
     <input asp-for="IsSecretCode" type="hidden" />
@@ -75,7 +75,35 @@
         <input asp-for="Trigger.AwardBadgeId" type="hidden" />
     }
 
-    <div class="row" style="padding: 10px 0;">
+    @if (Model.DependentTriggers?.Count > 0)
+    {
+        <div class="panel-group row-spacing" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingOne">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Dependent Triggers
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        The following trigger(s) depend on this trigger:
+                        <ul>
+                            @foreach (var trigger in Model.DependentTriggers)
+                            {
+                                <li>
+                                    <a target="_blank" href="@Url.Action("Edit", new { id = trigger.Id })"> @trigger.Name</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row row-spacing">
         <div class="col-xs-12">
             <label asp-for="Trigger.Name" class="control-label"></label>
             <input asp-for="Trigger.Name" class="form-control" />

@@ -18,6 +18,7 @@ namespace GRA.Domain.Model
         public int? Points { get; set; }
         [MaxLength(50)]
         [DisplayName("Secret Code")]
+        [RegularExpression("([a-zA-Z0-9]+)", ErrorMessage = "Only alphanumeric characters are allowed.")]
         public string SecretCode { get; set; }
         [DisplayName("Items Required")]
         [Range(0, int.MaxValue, ErrorMessage = "{0} cannot be less than {1}.")]
@@ -44,5 +45,6 @@ namespace GRA.Domain.Model
         [DisplayName("Award Points")]
         [Range (0, int.MaxValue, ErrorMessage = "{0} cannot be less than {1}.")]
         public int AwardPoints { get; set; }
+        public bool HasDependents { get; set; }
     }
 }

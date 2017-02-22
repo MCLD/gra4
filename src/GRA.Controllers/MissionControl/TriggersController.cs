@@ -47,7 +47,7 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var trigger in triggerList.Data)
             {
-                trigger.AwardBadgeFilename = 
+                trigger.AwardBadgeFilename =
                     _pathResolver.ResolveContentPath(trigger.AwardBadgeFilename);
             }
 
@@ -148,7 +148,7 @@ namespace GRA.Controllers.MissionControl
             {
                 ModelState.AddModelError("Trigger.SecretCode", "The Secret Code field is required.");
             }
-            else if (await _triggerService.SecretCodeExists(model.Trigger.SecretCode))
+            else if (await _triggerService.CodeExistsAsync(model.Trigger.SecretCode))
             {
                 ModelState.AddModelError("Trigger.SecretCode", "That Secret Code already exists.");
             }
@@ -165,6 +165,8 @@ namespace GRA.Controllers.MissionControl
                         model.Trigger.LimitToBranchId = null;
                         model.Trigger.LimitToProgramId = null;
                         model.Trigger.SecretCode = model.Trigger.SecretCode.Trim().ToLower();
+                        model.Trigger.BadgeIds = new List<int>();
+                        model.Trigger.ChallengeIds = new List<int>();
                     }
                     else
                     {
@@ -230,6 +232,7 @@ namespace GRA.Controllers.MissionControl
                 Trigger = trigger,
                 Action = "Edit",
                 IsSecretCode = !string.IsNullOrWhiteSpace(trigger.SecretCode),
+                DependentTriggers = await _triggerService.GetDependentsAsync(trigger.AwardBadgeId),
                 TriggerRequirements = await _triggerService.GetTriggerRequirementsAsync(trigger),
                 BadgeRequiredList = string.Join("", trigger.BadgeIds
                     .Select(_ => "<" + _.ToString() + ">")),
@@ -312,7 +315,7 @@ namespace GRA.Controllers.MissionControl
             {
                 ModelState.AddModelError("Trigger.SecretCode", "The Secret Code field is required.");
             }
-            else if (await _triggerService.SecretCodeExists(model.Trigger.SecretCode))
+            else if (await _triggerService.CodeExistsAsync(model.Trigger.SecretCode, model.Trigger.Id))
             {
                 ModelState.AddModelError("Trigger.SecretCode", "That Secret Code already exists.");
             }
@@ -328,6 +331,8 @@ namespace GRA.Controllers.MissionControl
                         model.Trigger.LimitToBranchId = null;
                         model.Trigger.LimitToProgramId = null;
                         model.Trigger.SecretCode = model.Trigger.SecretCode.Trim().ToLower();
+                        model.Trigger.BadgeIds = new List<int>();
+                        model.Trigger.ChallengeIds = new List<int>();
                     }
                     else
                     {
@@ -361,6 +366,7 @@ namespace GRA.Controllers.MissionControl
             }
 
             model.Action = "Edit";
+            model.DependentTriggers = await _triggerService.GetDependentsAsync(model.Trigger.Id);
             model.SystemList = new SelectList((await _siteService.GetSystemList()), "Id", "Name");
             if (model.Trigger.LimitToSystemId.HasValue)
             {
@@ -387,8 +393,15 @@ namespace GRA.Controllers.MissionControl
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            await _triggerService.RemoveAsync(id);
-            ShowAlertSuccess("Trigger deleted.");
+            try
+            {
+                await _triggerService.RemoveAsync(id);
+                ShowAlertSuccess("Trigger deleted.");
+            }
+            catch (GraException gex)
+            {
+                ShowAlertWarning("Unable to delete trigger: ", gex.Message);
+            }
             return RedirectToAction("Index");
         }
 

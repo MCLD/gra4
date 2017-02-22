@@ -67,11 +67,17 @@ namespace GRA.Domain.Service
         public async Task RemoveAsync(int triggerId)
         {
             VerifyManagementPermission();
+            if (await _triggerRepository.HasDependentsAsync(triggerId))
+            {
+                throw new GraException("Trigger has dependents");
+            }
             var trigger = await _triggerRepository.GetByIdAsync(triggerId);
             trigger.IsDeleted = true;
+            trigger.BadgeIds = new List<int>();
+            trigger.ChallengeIds = new List<int>();
+
             await _triggerRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId),
                 trigger);
-            await _triggerRepository.DeleteRequirementsAsync(triggerId);
         }
 
         public async Task<ICollection<TriggerRequirement>> GetTriggerRequirementsAsync(Trigger trigger)
@@ -103,10 +109,15 @@ namespace GRA.Domain.Service
             };
         }
 
-        public async Task<bool> SecretCodeExists(string secretCode)
+        public async Task<bool> CodeExistsAsync(string secretCode, int? triggerId = null)
         {
-            return await _triggerRepository.SecretCodeExists(
-                GetCurrentSiteId(), secretCode.Trim().ToLower());
+            return await _triggerRepository.CodeExistsAsync(
+                GetCurrentSiteId(), secretCode.Trim().ToLower(), triggerId);
+        }
+
+        public async Task<ICollection<Trigger>> GetDependentsAsync(int triggerId)
+        {
+            return await _triggerRepository.GetTriggerDependentsAsync(triggerId);
         }
 
         private async Task ValidateTriggerAsync(Trigger trigger)
@@ -147,7 +158,8 @@ namespace GRA.Domain.Service
 
             if (!string.IsNullOrWhiteSpace(trigger.SecretCode))
             {
-                if (await _triggerRepository.SecretCodeExists(trigger.SiteId, trigger.SecretCode))
+                if (await _triggerRepository.CodeExistsAsync(
+                    trigger.SiteId, trigger.SecretCode, trigger.Id))
                 {
                     throw new GraException("Secret code already in use.");
                 }

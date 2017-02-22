@@ -12,6 +12,8 @@ namespace GRA.Controllers.ViewModel.MissionControl.Triggers
         public string Action { get; set; }
         public bool IsSecretCode { get; set; }
 
+        public ICollection<Trigger> DependentTriggers { get; set; }
+
         [DisplayName("Challenges/Triggers")]
         public ICollection<TriggerRequirement> TriggerRequirements { get; set; }
         public string BadgeRequiredList { get; set; }
