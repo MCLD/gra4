@@ -166,6 +166,7 @@
                     $('.btn-file').removeClass('btn-default');
                     $('.btn-file').addClass('btn-success');
                     $("#badgeImage").removeAttr("src");
+                    $("#badgeImage").height(200);
                     $("#BadgeMakerImage").val("");
                 }
                 else
@@ -226,6 +227,7 @@
                 $("#badgeModal").modal("hide");
                 var data = e.originalEvent.data;
                 $("#badgeImage").attr("src", data);
+                $("#badgeImage").height(200);
                 $("#BadgeMakerImage").val(data);
                 $('#BadgeUploadImage').val('');
                 $('.btn-file').addClass('btn-default');

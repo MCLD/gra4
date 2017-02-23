@@ -208,7 +208,7 @@ namespace GRA.Controllers.MissionControl
                     && Path.GetExtension(model.BadgeUploadImage.FileName).ToLower() != ".jpeg"
                     && Path.GetExtension(model.BadgeUploadImage.FileName).ToLower() != ".png")
                 {
-                    ModelState.AddModelError("BadgeImage", "Please use a .jpg or .png image");
+                    ModelState.AddModelError("BadgeUploadImage", "Please use a .jpg or .png image");
                 }
             }
             if (ModelState.IsValid)
@@ -309,7 +309,7 @@ namespace GRA.Controllers.MissionControl
                     .Select(m => new SelectListItem { Text = m, Value = m }).ToList(),
                 CanActivate = canActivate,
                 CanViewTriggers = UserHasPermission(Permission.ManageTriggers),
-                DependentTriggers = await _challengeService.GetDependentsAsync(challenge.Id)
+                DependentTriggers = await _challengeService.GetDependentsAsync(challenge.Id),
                 BadgeMakerUrl = GetBadgeMakerUrl(siteUrl, site.FromEmailAddress),
                 UseBadgeMaker = true
             };
@@ -367,7 +367,7 @@ namespace GRA.Controllers.MissionControl
                     && Path.GetExtension(model.BadgeUploadImage.FileName).ToLower() != ".jpeg"
                     && Path.GetExtension(model.BadgeUploadImage.FileName).ToLower() != ".png")
                 {
-                    ModelState.AddModelError("BadgeImage", "Please use a .jpg or .png image");
+                    ModelState.AddModelError("BadgeUploadImage", "Please use a .jpg or .png image");
                 }
             }
             if (ModelState.IsValid)
