@@ -222,3 +222,15 @@ input.form-checkbox {
         background-color: #fff;
         border-color: #ddd;
     }
+
+.dynamic-avatar-container {
+    width: 280px;
+    height: 400px;
+    position: relative;
+}
+
+.dynamic-avatar {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

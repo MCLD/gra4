@@ -149,6 +149,7 @@ namespace GRA.Web
             services.AddScoped<CategoryService>();
             services.AddScoped<ChallengeService>();
             services.AddScoped<DrawingService>();
+            services.AddScoped<DynamicAvatarService>();
             services.AddScoped<EmailReminderService>();
             services.AddScoped<EmailService>();
             services.AddScoped<EventService>();
@@ -174,6 +175,8 @@ namespace GRA.Web
             services.AddScoped<Domain.Repository.IBranchRepository, Data.Repository.BranchRepository>();
             services.AddScoped<Domain.Repository.IDrawingCriterionRepository, Data.Repository.DrawingCriterionRepository>();
             services.AddScoped<Domain.Repository.IDrawingRepository, Data.Repository.DrawingRepository>();
+            services.AddScoped<Domain.Repository.IDynamicAvatarElementRepository, Data.Repository.DynamicAvatarElementRepository>();
+            services.AddScoped<Domain.Repository.IDynamicAvatarLayerRepository, Data.Repository.DynamicAvatarLayerRepository>();
             services.AddScoped<Domain.Repository.ICategoryRepository, Data.Repository.CategoryRepository>();
             services.AddScoped<Domain.Repository.IChallengeRepository, Data.Repository.ChallengeRepository>();
             services.AddScoped<Domain.Repository.IChallengeTaskRepository, Data.Repository.ChallengeTaskRepository>();
