@@ -124,7 +124,6 @@ namespace GRA.Controllers
             }
         }
 
-
         public async Task<IActionResult> DynamicIndex(string id = default(string))
         {
             if (!string.IsNullOrEmpty(id) && id.Length % 2 != 0)
@@ -183,16 +182,16 @@ namespace GRA.Controllers
             return View("DynamicIndex", viewModel);
         }
 
-        public IActionResult Increase(int id, DynamicViewModel viewModel)
+        public async Task<IActionResult> Increase(int id, DynamicViewModel viewModel)
         {
-            return IncreaseOrDecrease(id, viewModel, true);
+            return await IncreaseOrDecrease(id, viewModel, true);
         }
-        public IActionResult Decrease(int id, DynamicViewModel viewModel)
+        public async Task<IActionResult> Decrease(int id, DynamicViewModel viewModel)
         {
-            return IncreaseOrDecrease(id, viewModel, false);
+            return await IncreaseOrDecrease(id, viewModel, false);
         }
 
-        private IActionResult IncreaseOrDecrease(int id, DynamicViewModel viewModel, bool increase)
+        private async Task<IActionResult> IncreaseOrDecrease(int id, DynamicViewModel viewModel, bool increase)
         {
             var newValue = new StringBuilder();
             int counter = 0;
@@ -204,11 +203,13 @@ namespace GRA.Controllers
                     int elementIdInt = Convert.ToInt32(elementIdHex, 16);
                     if (increase)
                     {
-                        elementIdInt++;
+                        elementIdInt 
+                            = await _dynamicAvatarService.GetNextElement(counter, elementIdInt);
                     }
                     else
                     {
-                        elementIdInt--;
+                        elementIdInt
+                            = await _dynamicAvatarService.GetPreviousElement(counter, elementIdInt);
                     }
                     newValue.Append(elementIdInt.ToString("x2"));
                 }

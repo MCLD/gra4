@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using GRA.Domain.Model;
+﻿using GRA.Domain.Model;
 using GRA.Domain.Repository;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GRA.Data.Repository
 {
@@ -43,17 +43,103 @@ namespace GRA.Data.Repository
             return _mapper.Map<DynamicAvatarElement>(entity);
         }
 
+        public async Task<int> GetFirstElement(int dynamicAvatarLayerId)
+        {
+            var entity = await DbSet
+                .AsNoTracking()
+                .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId)
+                .OrderBy(_ => _.Position)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+            {
+                throw new Exception($"Couldn't find first element for layer {dynamicAvatarLayerId}");
+            }
+
+            return entity.Id;
+        }
+
         public async Task<int> GetIdByLayerIdAsync(int dynamicAvatarLayerId)
         {
             var entity = await DbSet
                 .AsNoTracking()
                 .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId)
+                .OrderBy(_ => _.Position)
                 .FirstOrDefaultAsync();
-            if(entity == null)
+            if (entity == null)
             {
                 throw new Exception("Couldn't find an appropriate avatar part!");
             }
             return entity.Id;
+        }
+
+        public async Task<int> GetLastElement(int dynamicAvatarLayerId)
+        {
+            var entity = await DbSet
+                .AsNoTracking()
+                .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId)
+                .OrderByDescending(_ => _.Position)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+            {
+                throw new Exception($"Couldn't find first element for layer {dynamicAvatarLayerId}");
+            }
+
+            return entity.Id;
+        }
+
+        public async Task<int?> GetNextElement(int dynamicAvatarLayerId, int elementId)
+        {
+            int? position = await GetPosition(dynamicAvatarLayerId, elementId);
+            if (position != null)
+            {
+                var nextElement = await DbSet
+                    .AsNoTracking()
+                    .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId
+                        && _.Position > position)
+                    .OrderBy(_ => _.Position)
+                    .FirstOrDefaultAsync();
+                if (nextElement != null)
+                {
+                    return nextElement.Id;
+                }
+            }
+            return await GetFirstElement(dynamicAvatarLayerId);
+        }
+
+        public async Task<int?> GetPreviousElement(int dynamicAvatarLayerId, int elementId)
+        {
+            int? position = await GetPosition(dynamicAvatarLayerId, elementId);
+            if (position != null)
+            {
+                var previousElement = await DbSet
+                    .AsNoTracking()
+                    .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId
+                        && _.Position < position)
+                    .OrderByDescending(_ => _.Position)
+                    .FirstOrDefaultAsync();
+                if (previousElement != null)
+                {
+                    return previousElement.Id;
+                }
+            }
+            return await GetLastElement(dynamicAvatarLayerId);
+        }
+
+        private async Task<int?> GetPosition(int dynamicAvatarLayerId, int elementId)
+        {
+            var currentPosition = await DbSet
+             .AsNoTracking()
+             .Where(_ => _.DynamicAvatarLayerId == dynamicAvatarLayerId && _.Id == elementId)
+             .FirstOrDefaultAsync();
+
+            if (currentPosition == null)
+            {
+                return null;
+            }
+
+            return currentPosition.Position;
         }
     }
 }

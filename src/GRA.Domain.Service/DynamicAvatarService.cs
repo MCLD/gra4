@@ -1,12 +1,9 @@
-﻿using System;
+﻿using GRA.Domain.Repository;
+using GRA.Domain.Service.Abstract;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-using GRA.Domain.Service.Abstract;
-using GRA.Domain.Repository;
-using GRA.Domain.Model;
 
 namespace GRA.Domain.Service
 {
@@ -59,6 +56,36 @@ namespace GRA.Domain.Service
                 }
             }
             return layerElements;
+        }
+
+        public async Task<int> GetNextElement(int layerNumber, int elementId)
+        {
+            var layerIds = await _dynamicAvatarLayerRepository.GetLayerIdsAsync();
+            int layerId = layerIds.ElementAt(layerNumber - 1);
+            var nextId
+                = await _dynamicAvatarElementRepository.GetNextElement(layerId, elementId);
+
+            if (nextId == null)
+            {
+                nextId = await _dynamicAvatarElementRepository.GetFirstElement(layerId);
+            }
+
+            return (int)nextId;
+        }
+
+        public async Task<int> GetPreviousElement(int layerNumber, int elementId)
+        {
+            var layerIds = await _dynamicAvatarLayerRepository.GetLayerIdsAsync();
+            int layerId = layerIds.ElementAt(layerNumber - 1);
+            var prevId
+                = await _dynamicAvatarElementRepository.GetPreviousElement(layerId, elementId);
+
+            if (prevId == null)
+            {
+                prevId = await _dynamicAvatarElementRepository.GetLastElement(layerId);
+            }
+
+            return (int)prevId;
         }
     }
 }
