@@ -241,3 +241,19 @@ input.form-checkbox {
     top: 0;
     left: 0;
 }
+
+.text-strong {
+    font-weight: bold;
+}
+
+.exclamation-alert {
+    position: relative;
+    color: red;
+    margin-left: -8px;
+    top: -8px;
+    vertical-align: middle;
+}
+
+.user-mail {
+    cursor: pointer;
+}
