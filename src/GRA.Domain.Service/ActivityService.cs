@@ -726,9 +726,7 @@ namespace GRA.Domain.Service
                 throw new GraException($"Minutes read must be at least 1.");
             }
             int authUserId = GetClaimId(ClaimType.UserId);
-            var householdList = (await _userRepository.GetHouseholdAsync(authUserId))
-                .Select(_ => _.Id).ToList();
-            householdList.Add(authUserId);
+            
             if (!HasPermission(Permission.LogActivityForAny))
             {
                 var authUser = await _userRepository.GetByIdAsync(authUserId);
@@ -739,6 +737,9 @@ namespace GRA.Domain.Service
                     throw new GraException("Permission denied.");
                 }
 
+                var householdList = (await _userRepository.GetHouseholdAsync(authUserId))
+                .Select(_ => _.Id).ToList();
+                householdList.Add(authUserId);
                 if (userIds.Except(householdList).Any())
                 {
                     string error = $"User id {authUserId} cannot log minutes for {userIds.Except(householdList).First()}";
@@ -763,9 +764,7 @@ namespace GRA.Domain.Service
                 throw new GraException("You must enter a code!");
             }
             int authUserId = GetClaimId(ClaimType.UserId);
-            var householdList = (await _userRepository.GetHouseholdAsync(authUserId))
-                .Select(_ => _.Id).ToList();
-            householdList.Add(authUserId);
+
             if (!HasPermission(Permission.LogActivityForAny))
             {
                 var authUser = await _userRepository.GetByIdAsync(authUserId);
@@ -776,6 +775,9 @@ namespace GRA.Domain.Service
                     throw new GraException("Permission denied.");
                 }
 
+                var householdList = (await _userRepository.GetHouseholdAsync(authUserId))
+                    .Select(_ => _.Id).ToList();
+                householdList.Add(authUserId);
                 if (userIds.Except(householdList).Any())
                 {
                     string error = $"User id {authUserId} cannot log codes for {userIds.Except(householdList).First()}";

@@ -616,31 +616,48 @@ namespace GRA.Domain.Service
         }
 
         public async Task<IEnumerable<User>> GetHouseholdAsync(int householdHeadUserId,
-            bool includeAllFields)
+            bool includeVendorCode, bool includeMail)
         {
+            var authId = GetClaimId(ClaimType.UserId);
+            if (!HasPermission(Permission.ViewParticipantDetails)
+                && householdHeadUserId != authId)
+            {
+                var authUser = await _userRepository.GetByIdAsync(authId);
+                if (authUser.HouseholdHeadUserId != householdHeadUserId)
+                {
+                    _logger.LogError($"User {authId} doesn't have permission to view details for {householdHeadUserId}.");
+                    throw new GraException("Permission denied.");
+                }
+            }
+
             var household = await _userRepository.GetHouseholdAsync(householdHeadUserId);
 
-            if (includeAllFields)
+            if (includeVendorCode || includeMail)
             {
-                var authId = GetClaimId(ClaimType.UserId);
-                if (householdHeadUserId != authId && !HasPermission(Permission.ReadAllMail))
+                if (householdHeadUserId != authId)
                 {
-                    if (!HasPermission(Permission.ViewParticipantDetails))
+                    if (includeVendorCode && !HasPermission(Permission.ViewParticipantDetails))
                     {
-                        _logger.LogError($"User {authId} doesn't have permission to view details for {householdHeadUserId}.");
+                        _logger.LogError($"User {authId} doesn't have permission to vendor codes for {householdHeadUserId}.");
                         throw new GraException("Permission denied.");
                     }
-                    else if (!HasPermission(Permission.ReadAllMail))
+                    if (includeMail && !HasPermission(Permission.ReadAllMail))
                     {
-                        _logger.LogError($"User {authId} doesn't have permission to view messages for {householdHeadUserId}.");
+                        _logger.LogError($"User {authId} doesn't have permission to view mail for {householdHeadUserId}.");
                         throw new GraException("Permission denied.");
                     }
                 }
 
                 foreach (var member in household)
                 {
-                    member.HasNewMail = await _mailRepository.UserHasUnreadAsync(member.Id);
-                    member.VendorCode = await _vendorCodeRepository.GetUserVendorCode(member.Id);
+                    if (includeMail)
+                    {
+                        member.HasNewMail = await _mailRepository.UserHasUnreadAsync(member.Id);
+                    }
+                    if (includeVendorCode)
+                    {
+                        member.VendorCode = await _vendorCodeRepository.GetUserVendorCode(member.Id);
+                    }
                 }
             }
             return household;

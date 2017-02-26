@@ -236,7 +236,7 @@ namespace GRA.Controllers
             }
 
             var household = await _userService
-                .GetHouseholdAsync(authUser.HouseholdHeadUserId ?? authUser.Id, authUserIsHead);
+                .GetHouseholdAsync(authUser.HouseholdHeadUserId ?? authUser.Id, authUserIsHead, authUserIsHead);
 
             HouseholdListViewModel viewModel = new HouseholdListViewModel()
             {
@@ -318,7 +318,7 @@ namespace GRA.Controllers
                     }
                     else
                     {
-                        TempData[SecretCodeMessage] = "Selected members have already entered that Secret Code.";
+                        TempData[SecretCodeMessage] = "All selected members have already entered that Secret Code.";
                     }
                 }
                 catch (GraException gex)

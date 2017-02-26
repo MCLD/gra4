@@ -257,3 +257,18 @@ input.form-checkbox {
 .user-mail {
     cursor: pointer;
 }
+
+.plain-link {
+    color: unset;
+    text-decoration: none;
+}
+
+    .plain-link:hover {
+        color: unset;
+        text-decoration: none;
+    }
+
+    .plain-link:visited {
+        color: unset;
+        text-decoration: none;
+    }
