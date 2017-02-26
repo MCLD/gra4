@@ -1,14 +1,13 @@
 ﻿using GRA.Controllers.ViewModel.Avatar;
+using GRA.Domain.Repository.Extensions;
 using GRA.Domain.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GRA.Domain.Repository.Extensions;
 using System;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GRA.Controllers
 {
@@ -144,68 +143,35 @@ namespace GRA.Controllers
                 return RedirectToAction("Index");
             }
 
-            Dictionary<int, int> avatarLayerElement = null;
-            if (!string.IsNullOrEmpty(id))
+            var details = await GetDynamicAvatarDetailsAsync(id, _dynamicAvatarService);
+
+            if (details.DynamicAvatarPaths.Count == 0)
             {
-                var elementIds = new List<int>();
-                foreach (string hexString in id.SplitInParts(2))
+                return RedirectToRoute(new
                 {
-                    try
-                    {
-                        elementIds.Add(Convert.ToInt32(hexString, 16));
-                    }
-                    catch (Exception)
-                    {
-                        return RedirectToAction("Index");
-                    }
-                }
-                avatarLayerElement = await _dynamicAvatarService.ReturnValidated(elementIds);
-                if (avatarLayerElement == null)
-                {
-                    return RedirectToRoute(new
-                    {
-                        controller = "Avatar",
-                        action = "Index",
-                        id = string.Empty
-                    });
-                }
-            }
-            else
-            {
-                avatarLayerElement = await _dynamicAvatarService.GetDefaultAvatarAsync();
+                    controller = "Avatar",
+                    action = "Index",
+                    id = string.Empty
+                });
             }
 
-            var viewModel = new DynamicViewModel();
-            viewModel.Paths = new Dictionary<int, string>();
-
-            int siteId = GetCurrentSiteId();
-            int zIndex = 1;
-            var currentlyShown = new StringBuilder();
-            foreach (int layerId in avatarLayerElement.Keys)
-            {
-                string path = $"site{siteId}/dynamicavatars/layer{layerId}/{avatarLayerElement[layerId]}.png";
-                viewModel.Paths.Add(zIndex, _pathResolver.ResolveContentPath(path));
-                currentlyShown.Append(avatarLayerElement[layerId].ToString("x2"));
-                zIndex++;
-            }
-            viewModel.CurrentlyShown = currentlyShown.ToString();
-            return View("DynamicIndex", viewModel);
+            return View("DynamicIndex", details);
         }
 
-        public async Task<IActionResult> Increase(int id, DynamicViewModel viewModel)
+        public async Task<IActionResult> Increase(int id, DynamicAvatarDetails details)
         {
-            return await IncreaseOrDecrease(id, viewModel, true);
+            return await IncreaseOrDecrease(id, details, true);
         }
-        public async Task<IActionResult> Decrease(int id, DynamicViewModel viewModel)
+        public async Task<IActionResult> Decrease(int id, DynamicAvatarDetails details)
         {
-            return await IncreaseOrDecrease(id, viewModel, false);
+            return await IncreaseOrDecrease(id, details, false);
         }
 
-        private async Task<IActionResult> IncreaseOrDecrease(int id, DynamicViewModel viewModel, bool increase)
+        private async Task<IActionResult> IncreaseOrDecrease(int id, DynamicAvatarDetails details, bool increase)
         {
             var newValue = new StringBuilder();
             int counter = 0;
-            foreach (string elementIdHex in viewModel.CurrentlyShown.SplitInParts(2))
+            foreach (string elementIdHex in details.DynamicAvatarString.SplitInParts(2))
             {
                 counter++;
                 if (counter == id)
@@ -237,11 +203,11 @@ namespace GRA.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DynamicIndex(DynamicViewModel viewModel)
+        public async Task<IActionResult> DynamicIndex(DynamicAvatarDetails details)
         {
             var currentUserId = GetActiveUserId();
             var currentUser = await _userService.GetDetails(currentUserId);
-            currentUser.DynamicAvatar = viewModel.CurrentlyShown.Trim();
+            currentUser.DynamicAvatar = details.DynamicAvatarString.Trim();
             await _userService.Update(currentUser);
             return RedirectToRoute(new { controller = "Home", action = "Index" });
         }

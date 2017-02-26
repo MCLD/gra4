@@ -229,6 +229,13 @@ input.form-checkbox {
     position: relative;
 }
 
+.dynamic-avatar-container-square {
+    width: 280px;
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+}
+
 .dynamic-avatar {
     position: absolute;
     top: 0;
