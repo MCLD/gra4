@@ -41,6 +41,19 @@ namespace GRA.Controllers
             var currentSite = await GetCurrentSiteAsync();
             if (currentSite.UseDynamicAvatars)
             {
+                if (string.IsNullOrEmpty(id))
+                {
+                    var currentUser = await _userService.GetDetails(GetActiveUserId());
+                    if (!string.IsNullOrEmpty(currentUser.DynamicAvatar))
+                    {
+                        return RedirectToRoute(new
+                        {
+                            controller = "Avatar",
+                            action = "Index",
+                            id = currentUser.DynamicAvatar
+                        });
+                    }
+                }
                 return await DynamicIndex(id);
             }
             else
@@ -200,7 +213,7 @@ namespace GRA.Controllers
                     int elementIdInt = Convert.ToInt32(elementIdHex, 16);
                     if (increase)
                     {
-                        elementIdInt 
+                        elementIdInt
                             = await _dynamicAvatarService.GetNextElement(counter, elementIdInt);
                     }
                     else
@@ -221,7 +234,16 @@ namespace GRA.Controllers
                 action = "Index",
                 id = newValue.ToString()
             });
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> DynamicIndex(DynamicViewModel viewModel)
+        {
+            var currentUserId = GetActiveUserId();
+            var currentUser = await _userService.GetDetails(currentUserId);
+            currentUser.DynamicAvatar = viewModel.CurrentlyShown.Trim();
+            await _userService.Update(currentUser);
+            return RedirectToRoute(new { controller = "Home", action = "Index" });
         }
     }
 }
