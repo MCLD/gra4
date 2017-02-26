@@ -200,7 +200,7 @@ namespace GRA.Domain.Service
                     int random = System.Math.Abs(System.BitConverter.ToInt32(randomBytes, 0));
                     int randomUserId = remainingUsers.ElementAt(random % remainingUsers.Count());
 
-                    var winner = new DrawingWinner
+                    var winner = new PrizeWinner
                     {
                         DrawingId = drawing.Id,
                         UserId = randomUserId

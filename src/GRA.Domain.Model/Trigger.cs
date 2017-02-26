@@ -43,8 +43,17 @@ namespace GRA.Domain.Model
         [DisplayName("Award Vendor Code")]
         public int? AwardVendorCodeTypeId { get; set; }
         [DisplayName("Award Points")]
-        [Range (0, int.MaxValue, ErrorMessage = "{0} cannot be less than {1}.")]
+        [Range(0, int.MaxValue, ErrorMessage = "{0} cannot be less than {1}.")]
         public int AwardPoints { get; set; }
         public bool HasDependents { get; set; }
+
+        [MaxLength(500)]
+        public string AwardMailSubject { get; set; }
+        [MaxLength(2000)]
+        public string AwardMail { get; set; }
+        [MaxLength(255)]
+        public string AwardPrizeName { get; set; }
+        [MaxLength(1000)]
+        public string AwardPrizeRedemptionInstructions { get; set; }
     }
 }

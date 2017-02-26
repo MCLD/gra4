@@ -54,7 +54,7 @@ namespace GRA.Data.Repository
                 throw new Exception($"Drawing id {id} could not be found.");
             }
 
-            drawing.Winners = await _context.DrawingWinners
+            drawing.Winners = await _context.PrizeWinners
                 .AsNoTracking()
                 .Include(_ => _.User)
                 .Where(_ => _.DrawingId == id && _.User.IsDeleted == false)
@@ -63,22 +63,22 @@ namespace GRA.Data.Repository
                 .ThenBy(_ => _.UserId)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<DrawingWinner>()
+                .ProjectTo<PrizeWinner>()
                 .ToListAsync();
             return drawing;
         }
 
         public async Task<int> GetWinnerCountAsync(int id)
         {
-            return await _context.DrawingWinners
+            return await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.DrawingId == id)
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<DrawingWinner>> PageUserAsync(int userId, int skip, int take)
+        public async Task<IEnumerable<PrizeWinner>> PageUserAsync(int userId, int skip, int take)
         {
-            return await _context.DrawingWinners
+            return await _context.PrizeWinners
                 .AsNoTracking()
                 .Include(_ => _.Drawing)
                 .Where(_ => _.UserId == userId)
@@ -86,31 +86,31 @@ namespace GRA.Data.Repository
                 .ThenByDescending(_ => _.RedeemedAt.Value)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<DrawingWinner>()
+                .ProjectTo<PrizeWinner>()
                 .ToListAsync();
         }
 
         public async Task<int> GetUserWinCountAsync(int userId)
         {
-            return await _context.DrawingWinners
+            return await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.UserId == userId)
-                .ProjectTo<DrawingWinner>()
+                .ProjectTo<PrizeWinner>()
                 .CountAsync();
         }
 
-        public async Task<DrawingWinner> GetDrawingWinnerById(int drawingId, int userId)
+        public async Task<PrizeWinner> GetDrawingWinnerById(int drawingId, int userId)
         {
-            return await _context.DrawingWinners
+            return await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.DrawingId == drawingId && _.UserId == userId)
-                .ProjectTo<DrawingWinner>()
+                .ProjectTo<PrizeWinner>()
                 .SingleOrDefaultAsync();
         }
 
         public async Task RedeemWinnerAsync(int drawingId, int userId)
         {
-            var drawingWinner = await _context.DrawingWinners
+            var drawingWinner = await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.DrawingId == drawingId && _.UserId == userId)
                 .SingleOrDefaultAsync();
@@ -120,7 +120,7 @@ namespace GRA.Data.Repository
                 if (!drawingWinner.RedeemedAt.HasValue)
                 {
                     drawingWinner.RedeemedAt = DateTime.Now;
-                    _context.DrawingWinners.Update(drawingWinner);
+                    _context.PrizeWinners.Update(drawingWinner);
                     await _context.SaveChangesAsync();
                 }
             }
@@ -132,7 +132,7 @@ namespace GRA.Data.Repository
 
         public async Task UndoRedemptionAsync(int drawingId, int userId)
         {
-            var drawingWinner = await _context.DrawingWinners
+            var drawingWinner = await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.DrawingId == drawingId && _.UserId == userId)
                 .SingleOrDefaultAsync();
@@ -142,7 +142,7 @@ namespace GRA.Data.Repository
                 if (drawingWinner.RedeemedAt.HasValue)
                 {
                     drawingWinner.RedeemedAt = null;
-                    _context.DrawingWinners.Update(drawingWinner);
+                    _context.PrizeWinners.Update(drawingWinner);
                     await _context.SaveChangesAsync();
                 }
             }
@@ -154,14 +154,14 @@ namespace GRA.Data.Repository
 
         public async Task RemoveWinnerAsync(int drawingId, int userId)
         {
-            var drawingWinner = await _context.DrawingWinners
+            var drawingWinner = await _context.PrizeWinners
                 .AsNoTracking()
                 .Where(_ => _.DrawingId == drawingId && _.UserId == userId)
                 .SingleOrDefaultAsync();
 
             if (drawingWinner != null)
             {
-                _context.DrawingWinners.Remove(drawingWinner);
+                _context.PrizeWinners.Remove(drawingWinner);
                 await _context.SaveChangesAsync();
             }
             else
@@ -170,10 +170,10 @@ namespace GRA.Data.Repository
             }
         }
 
-        public async Task AddWinnerAsync(DrawingWinner winner)
+        public async Task AddWinnerAsync(PrizeWinner winner)
         {
-            await _context.DrawingWinners
-                .AddAsync(_mapper.Map<Model.DrawingWinner>(winner));
+            await _context.PrizeWinners
+                .AddAsync(_mapper.Map<Model.PrizeWinner>(winner));
         }
 
         public async Task SetArchivedAsync(int userId, int drawingId, bool archive)

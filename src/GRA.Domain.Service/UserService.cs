@@ -407,7 +407,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<DataWithCount<IEnumerable<DrawingWinner>>>
+        public async Task<DataWithCount<IEnumerable<PrizeWinner>>>
             GetPaginatedUserDrawingListAsync(int userId,
             int skip,
             int take)
@@ -415,7 +415,7 @@ namespace GRA.Domain.Service
             int authUserId = GetClaimId(ClaimType.UserId);
             if (HasPermission(Permission.ViewUserDrawings))
             {
-                return new DataWithCount<IEnumerable<DrawingWinner>>
+                return new DataWithCount<IEnumerable<PrizeWinner>>
                 {
                     Data = await _drawingRepository.PageUserAsync(userId, skip, take),
                     Count = await _drawingRepository.GetUserWinCountAsync(userId)

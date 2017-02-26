@@ -8,7 +8,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Participants
 {
     public class DrawingListViewModel
     {
-        public IEnumerable<GRA.Domain.Model.DrawingWinner> DrawingWinners { get; set; }
+        public IEnumerable<GRA.Domain.Model.PrizeWinner> DrawingWinners { get; set; }
         public PaginateViewModel PaginateModel { get; set; }
         public int Id { get; set; }
         public int HouseholdCount { get; set; }
