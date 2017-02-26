@@ -10,6 +10,7 @@ namespace GRA.Domain.Model
         [Required]
         [MaxLength(255)]
         public string Name { get; set; }
+        [Required]
         public int Position { get; set; }
     }
 }

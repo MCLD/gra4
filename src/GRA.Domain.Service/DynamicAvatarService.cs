@@ -1,4 +1,5 @@
-﻿using GRA.Domain.Repository;
+﻿using GRA.Domain.Model;
+using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace GRA.Domain.Service
                 nameof(dynamicAvatarElementRepository));
             _dynamicAvatarLayerRepository = Require.IsNotNull(dynamicAvatarLayerRepository,
                 nameof(dynamicAvatarLayerRepository));
+            SetManagementPermission(Permission.ManageAvatars);
         }
         public async Task<Dictionary<int, int>> GetDefaultAvatarAsync()
         {
@@ -86,6 +88,20 @@ namespace GRA.Domain.Service
             }
 
             return (int)prevId;
+        }
+
+        public async Task<DynamicAvatarLayer> AddLayerAsync(DynamicAvatarLayer dynamicAvatarLayer)
+        {
+            VerifyManagementPermission();
+            return await _dynamicAvatarLayerRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
+                dynamicAvatarLayer);
+        }
+
+        public async Task<DynamicAvatarElement> AddElementAsync(DynamicAvatarElement dynamicAvatarElement)
+        {
+            VerifyManagementPermission();
+            return await _dynamicAvatarElementRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
+                dynamicAvatarElement);
         }
     }
 }

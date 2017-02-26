@@ -38,7 +38,7 @@ namespace GRA.Data.Repository
                 .SingleOrDefaultAsync();
             if (entity == null)
             {
-                throw new System.Exception($"{nameof(DynamicAvatarElement)} id {id} with layer id {dynamicAvatarLayerId} could not be found.");
+                throw new Exception($"{nameof(DynamicAvatarElement)} id {id} with layer id {dynamicAvatarLayerId} could not be found.");
             }
             return _mapper.Map<DynamicAvatarElement>(entity);
         }
@@ -125,6 +125,26 @@ namespace GRA.Data.Repository
                 }
             }
             return await GetLastElement(dynamicAvatarLayerId);
+        }
+
+        public override async Task<DynamicAvatarElement> AddSaveAsync(int userId, DynamicAvatarElement domainEntity)
+        {
+            var nextId = await DbSet
+                .AsNoTracking()
+                .Where(_ => _.DynamicAvatarLayerId == domainEntity.DynamicAvatarLayerId)
+                .OrderByDescending(_ => _.Id)
+                .FirstOrDefaultAsync();
+
+            if (nextId != null)
+            {
+                domainEntity.Id = nextId.Id + 1;
+            }
+            else
+            {
+                domainEntity.Id = 1;
+            }
+
+            return await base.AddSaveAsync(userId, domainEntity);
         }
 
         private async Task<int?> GetPosition(int dynamicAvatarLayerId, int elementId)

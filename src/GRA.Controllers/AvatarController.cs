@@ -170,10 +170,7 @@ namespace GRA.Controllers
             var currentlyShown = new StringBuilder();
             foreach (int layerId in avatarLayerElement.Keys)
             {
-                string path = System.IO.Path.Combine($"site{siteId}",
-                    "dynamicavatars",
-                    $"layer{layerId}",
-                    $"{avatarLayerElement[layerId]}.png");
+                string path = $"site{siteId}/dynamicavatars/layer{layerId}/{avatarLayerElement[layerId]}.png";
                 viewModel.Paths.Add(zIndex, _pathResolver.ResolveContentPath(path));
                 currentlyShown.Append(avatarLayerElement[layerId].ToString("x2"));
                 zIndex++;

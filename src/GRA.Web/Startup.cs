@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GRA.Abstract;
 using GRA.Controllers.RouteConstraint;
 using GRA.Domain.Service;
 using GRA.Domain.Service.Abstract;
@@ -209,7 +210,8 @@ namespace GRA.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
             IHostingEnvironment env,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IPathResolver pathResolver)
         {
             loggerFactory.AddSerilog();
 
@@ -240,15 +242,7 @@ namespace GRA.Web
                 }
             });
 
-            string contentPath = null;
-            if (!string.IsNullOrEmpty(Configuration[ConfigurationKey.ContentDirectory]))
-            {
-                contentPath = Configuration[ConfigurationKey.ContentDirectory];
-            }
-            else
-            {
-                contentPath = Path.Combine(Directory.GetCurrentDirectory(), "content");
-            }
+            string contentPath = pathResolver.ResolveContentFilePath();
 
             if (!Directory.Exists(contentPath))
             {
@@ -263,14 +257,10 @@ namespace GRA.Web
                 }
             }
 
-            string pathString = null;
-            if (!string.IsNullOrEmpty(Configuration[ConfigurationKey.ContentPath]))
+            string pathString = pathResolver.ResolveContentPath();
+            if(!pathString.StartsWith("/"))
             {
-                pathString = "/" + Configuration[ConfigurationKey.ContentPath];
-            }
-            else
-            {
-                pathString = "/content";
+                pathString = "/" + pathString;
             }
 
             // configure /content with 7 day cache
