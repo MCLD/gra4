@@ -937,7 +937,7 @@ namespace GRA.Controllers.MissionControl
         #endregion
 
         #region Drawings
-        [Authorize(Policy = Policy.ViewUserDrawings)]
+        [Authorize(Policy = Policy.ViewUserPrizes)]
         public async Task<IActionResult> Drawings(int id, int page = 1)
         {
             try
@@ -985,7 +985,7 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        [Authorize(Policy = Policy.ViewUserDrawings)]
+        [Authorize(Policy = Policy.ViewUserPrizes)]
         public async Task<IActionResult> RedeemWinner(int drawingId, int userId, int page = 1)
         {
             await _drawingService.RedeemWinnerAsync(drawingId, userId);
@@ -993,7 +993,7 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        [Authorize(Policy = Policy.ViewUserDrawings)]
+        [Authorize(Policy = Policy.ViewUserPrizes)]
         public async Task<IActionResult> UndoRedemption(int drawingId, int userId, int page = 1)
         {
             await _drawingService.UndoRedemptionAsnyc(drawingId, userId);

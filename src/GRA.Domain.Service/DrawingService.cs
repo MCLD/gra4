@@ -244,7 +244,7 @@ namespace GRA.Domain.Service
         {
             int authUserId = GetClaimId(ClaimType.UserId);
             if (HasPermission(Permission.PerformDrawing)
-                || HasPermission(Permission.ViewUserDrawings))
+                || HasPermission(Permission.ViewUserPrizes))
             {
                 await _drawingRepository.RedeemWinnerAsync(drawingId, userId);
             }
@@ -259,7 +259,7 @@ namespace GRA.Domain.Service
         {
             int authUserId = GetClaimId(ClaimType.UserId);
             if (HasPermission(Permission.PerformDrawing)
-                || HasPermission(Permission.ViewUserDrawings))
+                || HasPermission(Permission.ViewUserPrizes))
             {
                 await _drawingRepository.UndoRedemptionAsync(drawingId, userId);
             }

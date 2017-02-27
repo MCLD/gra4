@@ -25,6 +25,7 @@ namespace GRA.Domain.Service
         private readonly IVendorCodeRepository _vendorCodeRepository;
         private readonly IVendorCodeTypeRepository _vendorCodeTypeRepository;
         private readonly MailService _mailService;
+        private readonly PrizeWinnerService _prizeWinnerService;
 
         private ICollection<int> _queuedTriggerIds;
 
@@ -42,7 +43,8 @@ namespace GRA.Domain.Service
             IUserLogRepository userLogRepository,
             IVendorCodeRepository vendorCodeRepository,
             IVendorCodeTypeRepository vendorCodeTypeRepository,
-            MailService mailService) : base(logger, userContext)
+            MailService mailService,
+            PrizeWinnerService prizeWinnerService) : base(logger, userContext)
         {
             _badgeRepository = Require.IsNotNull(badgeRepository, nameof(badgeRepository));
             _bookRepository = Require.IsNotNull(bookRepository, nameof(bookRepository));
@@ -63,6 +65,8 @@ namespace GRA.Domain.Service
             _vendorCodeTypeRepository = Require.IsNotNull(vendorCodeTypeRepository,
                 nameof(vendorCodeTypeRepository));
             _mailService = Require.IsNotNull(mailService, nameof(mailService));
+            _prizeWinnerService = Require.IsNotNull(prizeWinnerService,
+                nameof(prizeWinnerService));
         }
 
         public async Task<ActivityLogResult> LogActivityAsync(int userIdToLog,
@@ -911,8 +915,7 @@ namespace GRA.Domain.Service
                     prize.MailId = mailId;
                 }
 
-                await _drawingRepository.AddWinnerAsync(prize);
-                await _drawingRepository.SaveAsync();
+                await _prizeWinnerService.AddPrizeWinnerAsync(prize);
             }
         }
     }

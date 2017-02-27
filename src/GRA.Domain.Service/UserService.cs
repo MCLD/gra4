@@ -15,7 +15,6 @@ namespace GRA.Domain.Service
         private readonly IBadgeRepository _badgeRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IBranchRepository _branchRepository;
-        private readonly IDrawingRepository _drawingRepository;
         private readonly IMailRepository _mailRepository;
         private readonly INotificationRepository _notificationRepository;
         private readonly IProgramRepository _programRepository;
@@ -36,7 +35,6 @@ namespace GRA.Domain.Service
             IBadgeRepository badgeRepository,
             IBookRepository bookRepository,
             IBranchRepository branchRepository,
-            IDrawingRepository drawingRepository,
             IMailRepository mailRepository,
             INotificationRepository notificationRepository,
             IProgramRepository programRepository,
@@ -58,7 +56,6 @@ namespace GRA.Domain.Service
             _badgeRepository = Require.IsNotNull(badgeRepository, nameof(badgeRepository));
             _bookRepository = Require.IsNotNull(bookRepository, nameof(bookRepository));
             _branchRepository = Require.IsNotNull(branchRepository, nameof(branchRepository));
-            _drawingRepository = Require.IsNotNull(drawingRepository, nameof(drawingRepository));
             _mailRepository = Require.IsNotNull(mailRepository, nameof(mailRepository));
             _notificationRepository = Require.IsNotNull(notificationRepository,
                 nameof(notificationRepository));
@@ -403,27 +400,6 @@ namespace GRA.Domain.Service
             else
             {
                 _logger.LogError($"User {requestedByUserId} doesn't have permission to view details for {userId}.");
-                throw new GraException("Permission denied.");
-            }
-        }
-
-        public async Task<DataWithCount<IEnumerable<PrizeWinner>>>
-            GetPaginatedUserDrawingListAsync(int userId,
-            int skip,
-            int take)
-        {
-            int authUserId = GetClaimId(ClaimType.UserId);
-            if (HasPermission(Permission.ViewUserDrawings))
-            {
-                return new DataWithCount<IEnumerable<PrizeWinner>>
-                {
-                    Data = await _drawingRepository.PageUserAsync(userId, skip, take),
-                    Count = await _drawingRepository.GetUserWinCountAsync(userId)
-                };
-            }
-            else
-            {
-                _logger.LogError($"User {authUserId} doesn't have permission to view drawinsg for {userId}.");
                 throw new GraException("Permission denied.");
             }
         }

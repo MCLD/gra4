@@ -11,12 +11,6 @@ namespace GRA.Domain.Repository
         Task<int> GetCountAsync(int siteId, bool archived);
         Task<Drawing> GetByIdAsync(int id, int skip, int take);
         Task<int> GetWinnerCountAsync(int id);
-        Task<PrizeWinner> GetDrawingWinnerById(int drawingId, int userId);
-        Task RemoveWinnerAsync(int drawingId, int userId);
-        Task RedeemWinnerAsync(int drawingId, int userId);
-        Task UndoRedemptionAsync(int drawingId, int userid);
-        Task<IEnumerable<PrizeWinner>> PageUserAsync(int userId, int skip, int take);
-        Task<int> GetUserWinCountAsync(int userId);
         Task SetArchivedAsync(int userId, int drawingId, bool archive);
     }
 }
