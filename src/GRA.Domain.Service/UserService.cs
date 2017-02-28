@@ -17,6 +17,7 @@ namespace GRA.Domain.Service
         private readonly IBranchRepository _branchRepository;
         private readonly IMailRepository _mailRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly IPrizeWinnerRepository _prizeWinnerRepository;
         private readonly IProgramRepository _programRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly ISchoolRepository _schoolRepository;
@@ -37,6 +38,7 @@ namespace GRA.Domain.Service
             IBranchRepository branchRepository,
             IMailRepository mailRepository,
             INotificationRepository notificationRepository,
+            IPrizeWinnerRepository prizeWinnerRepository,
             IProgramRepository programRepository,
             IRoleRepository roleRepository,
             ISchoolRepository schoolRepository,
@@ -59,6 +61,8 @@ namespace GRA.Domain.Service
             _mailRepository = Require.IsNotNull(mailRepository, nameof(mailRepository));
             _notificationRepository = Require.IsNotNull(notificationRepository,
                 nameof(notificationRepository));
+            _prizeWinnerRepository = Require.IsNotNull(prizeWinnerRepository, 
+                nameof(prizeWinnerRepository));
             _programRepository = Require.IsNotNull(programRepository, nameof(programRepository));
             _roleRepository = Require.IsNotNull(roleRepository, nameof(roleRepository));
             _schoolRepository = Require.IsNotNull(schoolRepository, nameof(schoolRepository));
@@ -592,7 +596,7 @@ namespace GRA.Domain.Service
         }
 
         public async Task<IEnumerable<User>> GetHouseholdAsync(int householdHeadUserId,
-            bool includeVendorCode, bool includeMail)
+            bool includeVendorCode, bool includeMail, bool includePrize = false)
         {
             var authId = GetClaimId(ClaimType.UserId);
             if (!HasPermission(Permission.ViewParticipantDetails)
@@ -608,7 +612,7 @@ namespace GRA.Domain.Service
 
             var household = await _userRepository.GetHouseholdAsync(householdHeadUserId);
 
-            if (includeVendorCode || includeMail)
+            if (includeVendorCode || includeMail || includePrize)
             {
                 if (householdHeadUserId != authId)
                 {
@@ -624,11 +628,22 @@ namespace GRA.Domain.Service
                     }
                 }
 
+                if (includePrize && !HasPermission(Permission.ViewUserPrizes))
+                {
+                    _logger.LogError($"User {authId} doesn't have permission to view prizes for {householdHeadUserId}.");
+                    throw new GraException("Permission denied.");
+                }
+
                 foreach (var member in household)
                 {
                     if (includeMail)
                     {
                         member.HasNewMail = await _mailRepository.UserHasUnreadAsync(member.Id);
+                    }
+                    if (includePrize)
+                    {
+                        member.HasUnclaimedPrize = (await _prizeWinnerRepository
+                            .CountByWinningUserId(GetCurrentSiteId(), member.Id, false)) > 0;
                     }
                     if (includeVendorCode)
                     {

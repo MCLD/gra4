@@ -83,6 +83,8 @@
     <input asp-for="BadgeMakerUrl" type="hidden" />
     <input asp-for="BadgeMakerImage" type="hidden" />
     <input asp-for="EditVendorCode" type="hidden" />
+    <input asp-for="AwardsPrize" type="hidden" />
+    <input asp-for="AwardsMail" type="hidden" />
     @if (Model.Action == "Edit")
     {
         <input asp-for="Trigger.Id" type="hidden" />
@@ -93,16 +95,16 @@
 
     @if (Model.DependentTriggers?.Count > 0)
     {
-        <div class="panel-group row-spacing" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel-group row-spacing" id="accordionDependent" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
-                <div class="panel-heading" role="tab" id="headingOne">
+                <div class="panel-heading" role="tab" id="headingDependent">
                     <h4 class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <a role="button" data-toggle="collapse" data-parent="#accordionDependent" href="#collapseDependent" aria-expanded="false" aria-controls="collapseDependent">
                             Dependent Triggers
                         </a>
                     </h4>
                 </div>
-                <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                <div id="collapseDependent" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingDependent">
                     <div class="panel-body">
                         The following trigger(s) depend on this trigger:
                         <ul>
@@ -353,6 +355,70 @@
         }
     }
 
+    <div class="panel-group" id="accordionPrize" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingPrize">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordionPrize" href="#collapsePrize" aria-expanded="true" aria-controls="collapsePrize">
+                        <span id="prizeIcon" class="fa fa-lg @(Model.AwardsPrize ? "fa-check" : "fa-times")"></span>
+                        Award Prize
+                    </a>
+                </h4>
+            </div>
+            <div id="collapsePrize" class="panel-collapse collapse @(Model.AwardsPrize ? "in" : "")" role="tabpanel" aria-labelledby="headingPrize">
+                <div class="panel-body">
+                    <div class="row row-spacing">
+                        <div class="col-xs-12">
+                            <label asp-for="Trigger.AwardPrizeName" class="control-label"></label>
+                            <input asp-for="Trigger.AwardPrizeName" class="form-control" />
+                            <span asp-validation-for="Trigger.AwardPrizeName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row row-spacing">
+                        <div class="col-xs-12">
+                            <label asp-for="Trigger.AwardPrizeRedemptionInstructions" class="control-label"></label>
+                            <textarea asp-for="Trigger.AwardPrizeRedemptionInstructions" class="form-control"></textarea>
+                            <span asp-validation-for="Trigger.AwardPrizeRedemptionInstructions" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-group" id="accordionMail" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingMail">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordionMail" href="#collapseMail" aria-expanded="true" aria-controls="collapseMail">
+                        <span id="mailIcon" class="fa fa-lg @(Model.AwardsMail ? "fa-check" : "fa-times")"></span>
+                        Award Mail
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseMail" class="panel-collapse collapse @(Model.AwardsMail ? "in" : "")" role="tabpanel" aria-labelledby="headingMail">
+                <div class="panel-body">
+                    <div class="row row-spacing">
+                        <div class="col-xs-12">
+                            <label asp-for="Trigger.AwardMailSubject" class="control-label"></label>
+                            <input asp-for="Trigger.AwardMailSubject" class="form-control" />
+                            <span asp-validation-for="Trigger.AwardMailSubject" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row row-spacing">
+                        <div class="col-xs-12">
+                            <label asp-for="Trigger.AwardMail" class="control-label"></label>
+                            <textarea asp-for="Trigger.AwardMail" class="form-control"></textarea>
+                            <span asp-validation-for="Trigger.AwardMail" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <div class="form-group">
         <a asp-action="Index" class="btn btn-default">Return to List</a>
         <button type="submit" class="btn btn-primary">
@@ -557,6 +623,24 @@
             $('.btn-file').addClass('btn-default');
             $('.btn-file').removeClass('btn-success');
             $('#selectedFile').val('');
+        });
+
+        $("#collapsePrize").on("show.bs.collapse", function() {
+            $("#AwardsPrize").val("true");
+            $("#prizeIcon").removeClass("fa-times").addClass("fa-check");
+        });
+        $("#collapsePrize").on("hide.bs.collapse", function() {
+            $("#AwardsPrize").val("false");
+            $("#prizeIcon").removeClass("fa-check").addClass("fa-times");
+        });
+
+        $("#collapseMail").on("show.bs.collapse", function() {
+            $("#AwardsMail").val("true");
+            $("#mailIcon").removeClass("fa-times").addClass("fa-check");
+        });
+        $("#collapseMail").on("hide.bs.collapse", function() {
+            $("#AwardsMail").val("false");
+            $("#mailIcon").removeClass("fa-check").addClass("fa-times");
         });
     </script>
 }

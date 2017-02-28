@@ -6,7 +6,6 @@ namespace GRA.Domain.Repository
 {
     public interface IDrawingRepository : IRepository<Drawing>
     {
-        Task AddWinnerAsync(PrizeWinner winners);
         Task<IEnumerable<Drawing>> PageAllAsync(int siteId, int skip, int take, bool archived);
         Task<int> GetCountAsync(int siteId, bool archived);
         Task<Drawing> GetByIdAsync(int id, int skip, int take);

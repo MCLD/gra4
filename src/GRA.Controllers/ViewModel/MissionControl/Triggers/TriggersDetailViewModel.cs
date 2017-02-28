@@ -27,6 +27,9 @@ namespace GRA.Controllers.ViewModel.MissionControl.Triggers
 
         public bool EditVendorCode { get; set; }
 
+        public bool AwardsMail { get; set; }
+        public bool AwardsPrize { get; set; }
+
         public SelectList SystemList { get; set; }
         public SelectList BranchList { get; set; }
         public SelectList ProgramList { get; set; }

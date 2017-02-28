@@ -35,7 +35,7 @@ namespace GRA.Domain.Model
 
         [Required]
         [MaxLength(1000)]
-        [DisplayName("Award Message")]
+        [DisplayName("Notification Message")]
         public string AwardMessage { get; set; }
         [Required]
         public int AwardBadgeId { get; set; }
@@ -48,12 +48,17 @@ namespace GRA.Domain.Model
         public bool HasDependents { get; set; }
 
         [MaxLength(500)]
+        [DisplayName("Mail Subject")]
         public string AwardMailSubject { get; set; }
         [MaxLength(2000)]
+        [DisplayName("Mail Message")]
         public string AwardMail { get; set; }
+
         [MaxLength(255)]
+        [DisplayName("Prize Name")]
         public string AwardPrizeName { get; set; }
         [MaxLength(1000)]
+        [DisplayName("Redepemption Instructions")]
         public string AwardPrizeRedemptionInstructions { get; set; }
     }
 }

@@ -18,12 +18,17 @@ namespace GRA.Data.Repository
         {
         }
 
-        public async Task<int> CountByWinningUserId(int siteId, int userId)
+        public async Task<int> CountByWinningUserId(int siteId, int userId, bool? redeemed = null)
         {
-            return await DbSet
+            var prizeWinners = DbSet
                 .AsNoTracking()
-                .Where(_ => _.SiteId == siteId && _.UserId == userId)
-                .CountAsync();
+                .Where(_ => _.SiteId == siteId && _.UserId == userId);
+            if (redeemed.HasValue)
+            {
+                prizeWinners = prizeWinners.Where(_ => _.RedeemedAt.HasValue == redeemed.Value);
+            }
+
+            return await prizeWinners.CountAsync();
         }
 
         public async Task<ICollection<PrizeWinner>> PageByWinnerAsync(int siteId, 
