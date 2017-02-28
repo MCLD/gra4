@@ -6,4 +6,4 @@ build_script:
   - ps: dotnet --verbose build src/GRA.Web
 
 test: off
-version: 0.0.1.{build}
+version: 4.0.0-alpha2.{build}
