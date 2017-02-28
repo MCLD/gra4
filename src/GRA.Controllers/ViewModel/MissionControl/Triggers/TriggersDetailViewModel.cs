@@ -14,7 +14,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Triggers
 
         public ICollection<Trigger> DependentTriggers { get; set; }
 
-        [DisplayName("Challenges/Triggers")]
+        [DisplayName("Challenges and triggers the participant must have earned")]
         public ICollection<TriggerRequirement> TriggerRequirements { get; set; }
         public string BadgeRequiredList { get; set; }
         public string ChallengeRequiredList { get; set; }
