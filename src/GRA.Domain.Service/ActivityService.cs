@@ -890,7 +890,7 @@ namespace GRA.Domain.Service
             if (!string.IsNullOrEmpty(trigger.AwardMailSubject)
                 && !string.IsNullOrEmpty(trigger.AwardMail))
             {
-                var mail = await _mailService.MCSendAsync(new Mail
+                var mail = await _mailService.SendSystemMailAsync(new Mail
                 {
                     Body = trigger.AwardMail,
                     Subject = trigger.AwardMailSubject,
