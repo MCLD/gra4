@@ -99,12 +99,13 @@ namespace GRA.Domain.Service
             bool loggingAsAdminUser = HasPermission(Permission.LogActivityForAny);
 
             if (activeUserId != userIdToLog
+                && authUserId != userIdToLog
                 && authUserId != userToLog.HouseholdHeadUserId
                 && !loggingAsAdminUser)
             {
                 string error = $"User id {activeUserId} cannot log activity for user id {userIdToLog}";
                 _logger.LogError(error);
-                throw new GraException(error);
+                throw new GraException("Permission denied.");
             }
 
             var translation
