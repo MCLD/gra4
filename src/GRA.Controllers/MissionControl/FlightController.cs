@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace GRA.Controllers.MissionControl
         private readonly ILogger<FlightController> _logger;
         private readonly ActivityService _activityService;
         private readonly DynamicAvatarService _dynamicAvatarService;
+        private readonly QuestionnaireService _questionnaireService;
         private readonly VendorCodeService _vendorCodeService;
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -25,6 +27,7 @@ namespace GRA.Controllers.MissionControl
             ServiceFacade.Controller context,
             ActivityService activityService,
             DynamicAvatarService dynamicAvatarService,
+            QuestionnaireService questionnaireService,
             VendorCodeService vendorCodeService,
             IHostingEnvironment hostingEnvironment)
             : base(context)
@@ -33,6 +36,8 @@ namespace GRA.Controllers.MissionControl
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _dynamicAvatarService = Require.IsNotNull(dynamicAvatarService, nameof(dynamicAvatarService));
             _vendorCodeService = Require.IsNotNull(vendorCodeService, nameof(vendorCodeService));
+            _questionnaireService = Require.IsNotNull(questionnaireService,
+                nameof(questionnaireService));
             _hostingEnvironment = Require.IsNotNull(hostingEnvironment, nameof(hostingEnvironment));
             PageTitle = "Flight Director";
         }
@@ -186,6 +191,43 @@ namespace GRA.Controllers.MissionControl
                 }
             }
             AlertSuccess = $"Inserted {elementCount} elements on {layerCount} layers.";
+            return View("Index");
+        }
+
+        public async Task<IActionResult> AddQuestionnaireAsync()
+        {
+            var questionnaire = new Questionnaire
+            {
+                IsActive = true,
+                IsValid = true,
+                Name = "Test questionnaire",
+                Questions = new List<Question>()
+            };
+
+            var question = new Question
+            {
+                Name = "Name question",
+                Text = "What is your name?",
+                Answers = new List<Answer>()
+            };
+
+            question.Answers.Add(new Answer
+            {
+                Text = "Sir Lancelot"
+            });
+            question.Answers.Add(new Answer
+            {
+                Text = "Sir Robin"
+            });
+            question.Answers.Add(new Answer
+            {
+                Text = "King Arthur"
+            });
+
+            questionnaire.Questions.Add(question);
+
+            await _questionnaireService.AddAsync(questionnaire);
+
             return View("Index");
         }
     }

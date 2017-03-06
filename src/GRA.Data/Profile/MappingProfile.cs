@@ -6,6 +6,7 @@ namespace GRA.Data.Profile
     {
         public MappingProfile()
         {
+            CreateMap<Model.Answer, Domain.Model.Answer>().ReverseMap();
             CreateMap<Model.AuthorizationCode, Domain.Model.AuthorizationCode>().ReverseMap();
             CreateMap<Model.Badge, Domain.Model.Badge>().ReverseMap();
             CreateMap<Model.Book, Domain.Model.Book>().ReverseMap();
@@ -28,6 +29,8 @@ namespace GRA.Data.Profile
             CreateMap<Model.Page, Domain.Model.Page>().ReverseMap();
             CreateMap<Model.PointTranslation, Domain.Model.PointTranslation>().ReverseMap();
             CreateMap<Model.Program, Domain.Model.Program>().ReverseMap();
+            CreateMap<Model.Question, Domain.Model.Question>().ReverseMap();
+            CreateMap<Model.Questionnaire, Domain.Model.Questionnaire>().ReverseMap();
             CreateMap<Model.RecoveryToken, Domain.Model.RecoveryToken>().ReverseMap();
             CreateMap<Model.Role, Domain.Model.Role>().ReverseMap();
             CreateMap<Model.School, Domain.Model.School>().ReverseMap();
