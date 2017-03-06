@@ -35,9 +35,9 @@ namespace GRA.Controllers.MissionControl
             _logger = Require.IsNotNull(logger, nameof(logger));
             _activityService = Require.IsNotNull(activityService, nameof(activityService));
             _dynamicAvatarService = Require.IsNotNull(dynamicAvatarService, nameof(dynamicAvatarService));
-            _vendorCodeService = Require.IsNotNull(vendorCodeService, nameof(vendorCodeService));
             _questionnaireService = Require.IsNotNull(questionnaireService,
                 nameof(questionnaireService));
+            _vendorCodeService = Require.IsNotNull(vendorCodeService, nameof(vendorCodeService));
             _hostingEnvironment = Require.IsNotNull(hostingEnvironment, nameof(hostingEnvironment));
             PageTitle = "Flight Director";
         }
@@ -199,7 +199,7 @@ namespace GRA.Controllers.MissionControl
             var questionnaire = new Questionnaire
             {
                 IsActive = true,
-                IsValid = true,
+                IsDeleted = false,
                 Name = "Test questionnaire",
                 Questions = new List<Question>()
             };

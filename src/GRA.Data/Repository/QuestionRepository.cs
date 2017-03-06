@@ -20,11 +20,11 @@ namespace GRA.Data.Repository
 
         public async Task<ICollection<Question>> GetByQuestionnaireIdAsync(int questionnaireId)
         {
-            var questions = DbSet
+            var questions = await DbSet
                 .AsNoTracking()
                 .Where(_ => _.QuestionnaireId == questionnaireId)
                 .ProjectTo<Question>()
-                .ToList();
+                .ToListAsync();
 
             throw new NotImplementedException();
             //return questions;

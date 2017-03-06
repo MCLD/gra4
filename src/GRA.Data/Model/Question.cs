@@ -11,6 +11,7 @@ namespace GRA.Data.Model
 
         [MaxLength(255)]
         public string Name { get; set; }
+        public int SortOrder { get; set; }
 
         [MaxLength(1500)]
         public string Text { get; set; }

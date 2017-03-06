@@ -6,6 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using GRA.Data.ServiceFacade;
 using Microsoft.Extensions.Logging;
+using GRA.Domain.Model.Filters;
+using GRA.Domain.Repository.Extensions;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper.QueryableExtensions;
 
 namespace GRA.Data.Repository
 {
@@ -15,6 +19,27 @@ namespace GRA.Data.Repository
         public QuestionnaireRepository(ServiceFacade.Repository repositoryFacade, 
             ILogger<QuestionnaireRepository> logger) : base(repositoryFacade, logger)
         {
+        }
+
+        public async Task<int> CountAsync(BaseFilter filter)
+        {
+            return await ApplyFilters(filter)
+                .CountAsync();
+        }
+
+        public async Task<ICollection<Questionnaire>> PageAsync(BaseFilter filter)
+        {
+            return await ApplyFilters(filter)
+                .ApplyPagination(filter)
+                .ProjectTo<Questionnaire>()
+                .ToListAsync();
+        }
+
+        private IQueryable<Model.Questionnaire> ApplyFilters(BaseFilter filter)
+        {
+            return DbSet
+                .AsNoTracking()
+                .Where(_ => _.IsDeleted == false && _.SiteId == filter.SiteId);
         }
     }
 }

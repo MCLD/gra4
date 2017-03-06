@@ -1,4 +1,5 @@
 ﻿using GRA.Domain.Model;
+using GRA.Domain.Model.Filters;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,18 @@ namespace GRA.Domain.Service
                 nameof(questionRepository));
             _questionnaireRepository = Require.IsNotNull(questionnaireRepository,
                 nameof(questionnaireRepository));
+        }
+
+        public async Task<DataWithCount<ICollection<Questionnaire>>> GetPaginatedListAsync(
+            BaseFilter filter)
+        {
+            VerifyManagementPermission();
+            filter.SiteId = GetCurrentSiteId();
+            return new DataWithCount<ICollection<Questionnaire>>
+            {
+                Data = await _questionnaireRepository.PageAsync(filter),
+                Count = await _questionnaireRepository.CountAsync(filter)
+            };
         }
 
         // add questionnaire
