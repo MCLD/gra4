@@ -31,7 +31,7 @@ namespace GRA.Data.Repository
         {
             return await ApplyFilters(filter)
                 .ApplyPagination(filter)
-                .ProjectTo<Questionnaire>()
+                .ProjectTo<Questionnaire>(_ => _.Questions)
                 .ToListAsync();
         }
 

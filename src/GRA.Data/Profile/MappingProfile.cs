@@ -29,8 +29,12 @@ namespace GRA.Data.Profile
             CreateMap<Model.Page, Domain.Model.Page>().ReverseMap();
             CreateMap<Model.PointTranslation, Domain.Model.PointTranslation>().ReverseMap();
             CreateMap<Model.Program, Domain.Model.Program>().ReverseMap();
-            CreateMap<Model.Question, Domain.Model.Question>().ReverseMap();
-            CreateMap<Model.Questionnaire, Domain.Model.Questionnaire>().ReverseMap();
+            CreateMap<Model.Question, Domain.Model.Question>()
+                .ForMember(dest => dest.Answers, opt => opt.ExplicitExpansion())
+                .ReverseMap();
+            CreateMap<Model.Questionnaire, Domain.Model.Questionnaire>()
+                .ForMember(dest => dest.Questions, opt => opt.ExplicitExpansion())
+                .ReverseMap();
             CreateMap<Model.RecoveryToken, Domain.Model.RecoveryToken>().ReverseMap();
             CreateMap<Model.Role, Domain.Model.Role>().ReverseMap();
             CreateMap<Model.School, Domain.Model.School>().ReverseMap();
