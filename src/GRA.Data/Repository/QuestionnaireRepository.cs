@@ -31,7 +31,7 @@ namespace GRA.Data.Repository
         {
             return await ApplyFilters(filter)
                 .ApplyPagination(filter)
-                .ProjectTo<Questionnaire>(_ => _.Questions)
+                .ProjectTo<Questionnaire>()
                 .ToListAsync();
         }
 
@@ -40,6 +40,16 @@ namespace GRA.Data.Repository
             return DbSet
                 .AsNoTracking()
                 .Where(_ => _.IsDeleted == false && _.SiteId == filter.SiteId);
+        }
+
+        public async Task<Questionnaire> GetFullQuestionnaireAsync(int id)
+        {
+            return await DbSet
+                .AsNoTracking()
+                .Include(_ => _.Questions)
+                .Where(_ => _.Id == id && _.IsDeleted == false)
+                .ProjectTo<Questionnaire>()
+                .SingleOrDefaultAsync();
         }
     }
 }

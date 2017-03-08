@@ -9,5 +9,6 @@ namespace GRA.Domain.Repository
     {
         Task<int> CountAsync(BaseFilter filter);
         Task<ICollection<Questionnaire>> PageAsync(BaseFilter filter);
+        Task<Questionnaire> GetFullQuestionnaireAsync(int id);
     }
 }

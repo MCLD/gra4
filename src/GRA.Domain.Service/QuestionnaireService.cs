@@ -58,8 +58,20 @@ namespace GRA.Domain.Service
             }
             else
             {
-                return await GetFullQuestionnaireAsync(addedQuestionnaire.Id);
+                return addedQuestionnaire;
             }
+        }
+
+        public async Task<Questionnaire> UpdateAsync(Questionnaire questionnaire)
+        {
+            VerifyManagementPermission();
+
+            var currentQuestionnaire = await _questionnaireRepository.GetByIdAsync(questionnaire.Id);
+            currentQuestionnaire.Name = questionnaire.Name;
+            currentQuestionnaire.IsActive = questionnaire.IsActive;
+
+            return await _questionnaireRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), 
+                currentQuestionnaire);
         }
 
         // add question and answers to questionnaire
@@ -81,21 +93,12 @@ namespace GRA.Domain.Service
                 await _answerRepository.SaveAsync();
             }
 
-            return await GetFullQuestionnaireAsync(questionnaireId);
+            return await _questionnaireRepository.GetFullQuestionnaireAsync(questionnaireId);
         }
 
-        private async Task<Questionnaire> GetFullQuestionnaireAsync(int questionnaireId)
+        public async Task<Questionnaire> GetByIdAsync(int questionnaireId)
         {
-            var questionnaire = await _questionnaireRepository.GetByIdAsync(questionnaireId);
-
-            var questions = await _questionRepository.GetByQuestionnaireIdAsync(questionnaireId);
-
-            foreach(var question in questions)
-            {
-                question.Answers = await _answerRepository.GetByQuestionIdAsync(question.Id);
-            }
-            questionnaire.Questions = questions;
-            return questionnaire;
+            return await _questionnaireRepository.GetFullQuestionnaireAsync(questionnaireId);
         }
     }
 }

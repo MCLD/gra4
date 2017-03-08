@@ -59,5 +59,55 @@ namespace GRA.Controllers.MissionControl
 
             return View(viewModel);
         }
+
+        public IActionResult Create()
+        {
+            PageTitle = "Create Questionnaire";
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Questionnaire model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var questionnaire = await _questionnaireServce.AddAsync(model);
+                    ShowAlertSuccess($"Questionnaire '{questionnaire.Name}' successfully created!");
+                    return RedirectToAction("Edit", new { id = questionnaire.Id });
+                }
+                catch (GraException gex)
+                {
+                    ShowAlertDanger("Unable to create questionnaire: ", gex);
+                }
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var model = await _questionnaireServce.GetByIdAsync(id);
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Questionnaire model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var questionnaire = await _questionnaireServce.UpdateAsync(model);
+                    ShowAlertSuccess($"Questionnaire '{questionnaire.Name}' successfully updated!");
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+                catch (GraException gex)
+                {
+                    ShowAlertDanger("Unable to create questionnaire: ", gex);
+                }
+            }
+            return View(model);
+        }
     }
 }

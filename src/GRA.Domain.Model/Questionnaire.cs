@@ -11,6 +11,7 @@ namespace GRA.Domain.Model
         public bool IsDeleted { get; set; }
 
         [MaxLength(255)]
+        [Required]
         public string Name { get; set; }
         public ICollection<Question> Questions { get; set; }
         public bool IsActive { get; set; }
