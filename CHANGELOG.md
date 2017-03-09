@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - Reformat trigger creation page in Mission Control.
+- Upgraded to .NET Core Tools 1.0 and VS2017 project format.
 
 ### Fixed
 - Fix household minute logging error when signed in as another user.
