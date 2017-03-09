@@ -21,15 +21,15 @@ Initial database setup and configuration can be done utilizing the [`dotnet ef`]
   1. Navigate to the appropriate project directory for your database provider (e.g. `src/GRA.Data.SqlServer` or `src/GRA.Data.SQLite`).
   2. Check if a database migration exists:
 
-    `dotnet ef --startup-project ../GRA.Web migrations list`
+    `dotnet ef -s ../GRA.Web migrations list`
 
   3. If no migrations exist, create one:
 
-    `dotnet ef --startup-project ../GRA.Web migrations add initial`
+    `dotnet ef -s ../GRA.Web migrations add initial`
 
-  4. Create or update the database to the migration:
+  4. Create or update the database to the migration (necessary for SQLite, possibly not for SQL Server but won't hurt):
 
-    `dotnet ef --startup-project ../GRA.Web database update`
+    `dotnet ef -s ../GRA.Web database update`
 
 ### Configuration
 
