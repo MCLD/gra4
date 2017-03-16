@@ -9,6 +9,7 @@ namespace GRA.Domain.Repository
     {
         Task<int> CountAsync(BaseFilter filter);
         Task<ICollection<Questionnaire>> PageAsync(BaseFilter filter);
-        Task<Questionnaire> GetFullQuestionnaireAsync(int id);
+        Task<Questionnaire> GetByIdAsync(int id, bool includeAnswers);
+        new Task RemoveSaveAsync(int userId, int id);
     }
 }

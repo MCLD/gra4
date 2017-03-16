@@ -20,14 +20,21 @@ namespace GRA.Data.Repository
 
         public async Task<ICollection<Question>> GetByQuestionnaireIdAsync(int questionnaireId)
         {
-            var questions = await DbSet
+            return await DbSet
                 .AsNoTracking()
-                .Where(_ => _.QuestionnaireId == questionnaireId)
+                .Where(_ => _.QuestionnaireId == questionnaireId && _.IsDeleted == false)
                 .ProjectTo<Question>()
                 .ToListAsync();
+        }
 
-            throw new NotImplementedException();
-            //return questions;
+        public override async Task RemoveSaveAsync(int userId, int id)
+        {
+            var entity = await DbSet
+                .Where(_ => _.IsDeleted == false && _.Id == id)
+                .SingleAsync();
+            entity.IsDeleted = true;
+            await base.UpdateAsync(userId, entity, null);
+            await base.SaveAsync();
         }
     }
 }

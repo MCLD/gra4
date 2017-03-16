@@ -4,6 +4,7 @@ using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GRA.Domain.Service
@@ -65,40 +66,124 @@ namespace GRA.Domain.Service
         public async Task<Questionnaire> UpdateAsync(Questionnaire questionnaire)
         {
             VerifyManagementPermission();
+            int authId = GetClaimId(ClaimType.UserId);
 
             var currentQuestionnaire = await _questionnaireRepository.GetByIdAsync(questionnaire.Id);
+
             currentQuestionnaire.Name = questionnaire.Name;
             currentQuestionnaire.IsActive = questionnaire.IsActive;
+            return await _questionnaireRepository.UpdateSaveAsync(authId, currentQuestionnaire);
+        }
 
-            return await _questionnaireRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), 
-                currentQuestionnaire);
+        public async Task UpdateQuestionListAsync(int questionnaireId, List<int> questionOrderList)
+        {
+            VerifyManagementPermission();
+            int authId = GetClaimId(ClaimType.UserId);
+
+            var questions = await _questionRepository.GetByQuestionnaireIdAsync(questionnaireId);
+            var questionsIdList = questions.Select(_ => _.Id);
+            var invalidQuestions = questionOrderList.Except(questionsIdList);
+            if (invalidQuestions.Any())
+            {
+                _logger.LogError($"User {authId} cannot update question {invalidQuestions.First()} for questionnaire {questionnaireId}.");
+                throw new GraException("Invalid question selection.");
+            }
+
+            var questionUpdateList = questions.Where(_ => questionOrderList.Contains(_.Id));
+            foreach (var question in questionUpdateList)
+            {
+                question.SortOrder = questionOrderList.IndexOf(question.Id);
+                await _questionRepository.UpdateSaveAsync(authId, question);
+            }
+
+            var questionDeleteList = questions.Except(questionUpdateList);
+            foreach (var question in questionDeleteList)
+            {
+                await _questionRepository.RemoveSaveAsync(authId, question.Id);
+            }
         }
 
         // add question and answers to questionnaire
-        public async Task<Questionnaire> AddQuestionsAsync(int questionnaireId, 
+        public async Task<Questionnaire> AddQuestionsAsync(int questionnaireId,
             IEnumerable<Question> questions)
         {
             VerifyManagementPermission();
-            int userId = GetClaimId(ClaimType.UserId);
+            int authId = GetClaimId(ClaimType.UserId);
 
             foreach (var question in questions)
             {
                 question.QuestionnaireId = questionnaireId;
-                var addedQuestion = await _questionRepository.AddSaveAsync(userId, question);
+                var addedQuestion = await _questionRepository.AddSaveAsync(authId, question);
                 foreach (var answer in question.Answers)
                 {
                     answer.QuestionId = addedQuestion.Id;
-                    await _answerRepository.AddAsync(userId, answer);
+                    await _answerRepository.AddAsync(authId, answer);
                 }
                 await _answerRepository.SaveAsync();
             }
 
-            return await _questionnaireRepository.GetFullQuestionnaireAsync(questionnaireId);
+            return await _questionnaireRepository.GetByIdAsync(questionnaireId);
         }
 
-        public async Task<Questionnaire> GetByIdAsync(int questionnaireId)
+        public async Task RemoveAsync(int id)
         {
-            return await _questionnaireRepository.GetFullQuestionnaireAsync(questionnaireId);
+            VerifyManagementPermission();
+            await _questionnaireRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId), id);
+        }
+
+        public async Task<Questionnaire> GetByIdAsync(int questionnaireId, bool includeAnswers)
+        {
+            var questionnaire = await _questionnaireRepository
+                .GetByIdAsync(questionnaireId, includeAnswers);
+
+            if (questionnaire == null)
+            {
+                throw new GraException("The requested questionnaire could not be accessed or does not exist.");
+            }
+
+            return questionnaire;
+        }
+
+        public async Task<ICollection<Answer>> GetAnswersByQuestionIdAsync(int questionId)
+        {
+            return await _answerRepository.GetByQuestionIdAsync(questionId);
+        }
+
+        public async Task<Question> GetQuestionByIdAsync(int questionId)
+        {
+            return await _questionRepository.GetByIdAsync(questionId);
+        }
+
+        public async Task<Question> AddQuestionAsync(Question question)
+        {
+            VerifyManagementPermission();
+            return await _questionRepository.AddSaveAsync(GetClaimId(ClaimType.UserId), question);
+        }
+
+        public async Task<Question> UpdateQuestionAsync(Question question)
+        {
+            VerifyManagementPermission();
+            int authId = GetClaimId(ClaimType.UserId);
+
+            return await _questionRepository.UpdateSaveAsync(authId, question);
+        }
+
+        public async Task<Answer> AddAnswerAsync(Answer answer)
+        {
+            VerifyManagementPermission();
+            return await _answerRepository.AddSaveAsync(GetClaimId(ClaimType.UserId), answer);
+        }
+
+        public async Task UpdateAnswerAsync(Answer answer)
+        {
+            VerifyManagementPermission();
+            await _answerRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), answer);
+        }
+
+        public async Task RemoveAnswerAsync(int answerId)
+        {
+            VerifyManagementPermission();
+            await _answerRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId), answerId);
         }
     }
 }

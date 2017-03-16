@@ -9,6 +9,7 @@ namespace GRA.Data.Model
         public Question Question { get; set; }
         public int SortOrder { get; set; }
         [MaxLength(1500)]
+        [Required]
         public string Text { get; set; }
     }
 }

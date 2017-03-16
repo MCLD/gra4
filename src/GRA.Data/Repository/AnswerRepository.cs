@@ -27,5 +27,13 @@ namespace GRA.Data.Repository
 
             return answers;
         }
+
+        public override async Task<Answer> AddSaveAsync(int userId, Answer answer)
+        {
+            var dbAnswer = _mapper.Map<Answer, Model.Answer>(answer);
+            var newAnswer = await base.AddSaveAsync(userId, dbAnswer);
+            _context.Entry(dbAnswer).State = EntityState.Detached;
+            return newAnswer;
+        }
     }
 }

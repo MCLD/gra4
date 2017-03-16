@@ -42,14 +42,34 @@ namespace GRA.Data.Repository
                 .Where(_ => _.IsDeleted == false && _.SiteId == filter.SiteId);
         }
 
-        public async Task<Questionnaire> GetFullQuestionnaireAsync(int id)
+        public async Task<Questionnaire> GetByIdAsync(int id, bool includeAnswers)
         {
-            return await DbSet
+            var questionnaire = DbSet
                 .AsNoTracking()
-                .Include(_ => _.Questions)
-                .Where(_ => _.Id == id && _.IsDeleted == false)
-                .ProjectTo<Questionnaire>()
-                .SingleOrDefaultAsync();
+                .Where(_ => _.Id == id && _.IsDeleted == false);
+
+            if (includeAnswers)
+            {
+                return await questionnaire
+                    .ProjectTo<Questionnaire>(_ => _.Questions.Select(a => a.Answers))
+                    .SingleOrDefaultAsync();
+            }
+            else
+            {
+                return await questionnaire
+                    .ProjectTo<Questionnaire>()
+                    .SingleOrDefaultAsync();
+            }
+        }
+
+        public override async Task RemoveSaveAsync(int userId, int id)
+        {
+            var entity = await DbSet
+                .Where(_ => _.IsDeleted == false && _.Id == id)
+                .SingleAsync();
+            entity.IsDeleted = true;
+            await base.UpdateAsync(userId, entity, null);
+            await base.SaveAsync();
         }
     }
 }
