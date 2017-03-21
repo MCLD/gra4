@@ -195,7 +195,6 @@ namespace GRA.Data.Repository
             {
                 userList = userList.Where(_ => filter.SystemIds.Contains(_.SystemId));
             }
-
             else if (filter.BranchIds?.Any() == true)
             {
                 userList = userList.Where(_ => filter.BranchIds.Contains(_.BranchId));
