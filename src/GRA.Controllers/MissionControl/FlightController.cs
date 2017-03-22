@@ -198,7 +198,7 @@ namespace GRA.Controllers.MissionControl
         {
             var questionnaire = new Questionnaire
             {
-                IsActive = true,
+                IsLocked = false,
                 IsDeleted = false,
                 Name = "Test questionnaire",
                 Questions = new List<Question>()

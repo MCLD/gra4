@@ -131,6 +131,7 @@ namespace GRA.Controllers.MissionControl
                 catch (GraException gex)
                 {
                     ShowAlertDanger("Unable to edit questionnaire: ", gex);
+                    return RedirectToAction("Edit", new { id = model.Questionnaire.Id });
                 }
             }
             return View(model);
@@ -162,6 +163,16 @@ namespace GRA.Controllers.MissionControl
                     var parameterDictionary =
                         Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(parameters);
                     var questionId = Int32.Parse(parameterDictionary["Question.Id"]);
+
+                    // Ensure the questionnaire isn't locked
+                    var questionnaireId = Int32.Parse(parameterDictionary["Questionnaire.Id"]);
+                    var questionnaire = await _questionnaireService
+                        .GetByIdAsync(questionnaireId, false);
+                    if (questionnaire.IsLocked)
+                    {
+                        _logger.LogError($"User {GetId(ClaimType.UserId)} cannot edit {questionId} for locked questionnaire {questionnaireId}.");
+                        throw new GraException("Questionnaire is locked and cannot be edited.");
+                    }
 
                     // Create lists and validate
                     var newAnswersList = parameterDictionary
@@ -209,9 +220,6 @@ namespace GRA.Controllers.MissionControl
                     }
                     else
                     {
-                        var questionnaireId = Int32.Parse(parameterDictionary["Questionnaire.Id"]);
-                        var questionnaire = await _questionnaireService
-                            .GetByIdAsync(questionnaireId, false);
                         question.QuestionnaireId = questionnaire.Id;
                         question.SortOrder = questionnaire.Questions.Count;
                         question.Name = parameterDictionary["Question.Name"];

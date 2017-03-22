@@ -69,9 +69,14 @@ namespace GRA.Domain.Service
             int authId = GetClaimId(ClaimType.UserId);
 
             var currentQuestionnaire = await _questionnaireRepository.GetByIdAsync(questionnaire.Id);
+            if (currentQuestionnaire.IsLocked)
+            {
+                _logger.LogError($"User {authId} cannot update locked questionnaire {currentQuestionnaire.Id}.");
+                throw new GraException("Questionnaire is locked and cannot be edited.");
+            }
 
             currentQuestionnaire.Name = questionnaire.Name;
-            currentQuestionnaire.IsActive = questionnaire.IsActive;
+            currentQuestionnaire.IsLocked = questionnaire.IsLocked;
             return await _questionnaireRepository.UpdateSaveAsync(authId, currentQuestionnaire);
         }
 

@@ -14,6 +14,6 @@ namespace GRA.Domain.Model
         [Required]
         public string Name { get; set; }
         public ICollection<Question> Questions { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsLocked { get; set; }
     }
 }

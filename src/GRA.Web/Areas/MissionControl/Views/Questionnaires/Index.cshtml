@@ -47,7 +47,7 @@
                         <tr>
                             <th>Name</th>
                             <th># of Questions</th>
-                            <th>Active</th>
+                            <th>Status</th>
                             <th>&nbsp;</th>
                         </tr>
                     </thead>
@@ -62,13 +62,13 @@
                                 </td>
                                 <td>@questionnaire.Questions.Count</td>
                                 <td>
-                                    @if (questionnaire.IsActive)
+                                    @if (questionnaire.IsLocked)
                                     {
-                                        <span class="fa fa-lg fa-check text-success"></span>
+                                        <span class="fa fa-lg fa-lock"></span>
                                     }
                                     else
                                     {
-                                        <span class="fa fa-lg fa-ban text-danger"></span>
+                                        <span class="fa fa-lg fa-unlock"></span>
                                     }
                                 </td>
                                 <td class="on-top">
