@@ -54,6 +54,8 @@ namespace GRA.Data
                 .HasKey(_ => new { _.UserId, _.BookId });
             modelBuilder.Entity<Model.UserChallengeTask>()
                 .HasKey(_ => new { _.UserId, _.ChallengeTaskId });
+            modelBuilder.Entity<Model.UserQuestionnaire>()
+                .HasKey(_ => new { _.UserId, _.QuestionnaireId });
             modelBuilder.Entity<Model.UserRole>()
                 .HasKey(_ => new { _.UserId, _.RoleId });
             modelBuilder.Entity<Model.UserTrigger>()
@@ -134,6 +136,7 @@ namespace GRA.Data
         public DbSet<Model.Questionnaire> Questionnaires { get; set; }
         public DbSet<Model.Question> Questions { get; set; }
         public DbSet<Model.RecoveryToken> RecoveryTokens { get; set; }
+        public DbSet<Model.RequiredQuestionnaire> RequiredQuestionnaires { get; set; }
         public DbSet<Model.Role> Roles { get; set; }
         public DbSet<Model.RolePermission> RolePermissions { get; set; }
         public DbSet<Model.School> Schools { get; set; }
@@ -151,6 +154,7 @@ namespace GRA.Data
         public DbSet<Model.UserChallengeTask> UserChallengeTasks { get; set; }
         public DbSet<Model.UserBadge> UserBadges { get; set; }
         public DbSet<Model.UserBook> UserBooks { get; set; }
+        public DbSet<Model.UserQuestionnaire> UserQuestionnaires { get; set; }
         public DbSet<Model.UserRole> UserRoles { get; set; }
         public DbSet<Model.UserTrigger> UserTriggers { get; set; }
         public DbSet<Model.VendorCode> VendorCodes { get; set; }

@@ -14,11 +14,13 @@ namespace GRA.Domain.Service
         private readonly IAnswerRepository _answerRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IQuestionnaireRepository _questionnaireRepository;
+        private readonly IRequiredQuestionnaireRepository _requiredQuestionnaireRepository;
         public QuestionnaireService(ILogger<QuestionnaireService> logger,
             IUserContextProvider userContextProvider,
             IAnswerRepository answerRepository,
             IQuestionRepository questionRepository,
-            IQuestionnaireRepository questionnaireRepository) : base(logger, userContextProvider)
+            IQuestionnaireRepository questionnaireRepository,
+            IRequiredQuestionnaireRepository requiredQuestionnaireRepository) : base(logger, userContextProvider)
         {
             SetManagementPermission(Permission.ManageQuestionnaires);
             _answerRepository = Require.IsNotNull(answerRepository, nameof(answerRepository));
@@ -26,6 +28,8 @@ namespace GRA.Domain.Service
                 nameof(questionRepository));
             _questionnaireRepository = Require.IsNotNull(questionnaireRepository,
                 nameof(questionnaireRepository));
+            _requiredQuestionnaireRepository = Require.IsNotNull(requiredQuestionnaireRepository,
+                nameof(requiredQuestionnaireRepository));
         }
 
         public async Task<DataWithCount<ICollection<Questionnaire>>> GetPaginatedListAsync(
@@ -189,6 +193,12 @@ namespace GRA.Domain.Service
         {
             VerifyManagementPermission();
             await _answerRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId), answerId);
+        }
+
+        public async Task<int?> GetRequiredQuestionnaire(int userId, int? userAge)
+        {
+            return await _requiredQuestionnaireRepository
+                .GetForUser(GetCurrentSiteId(), userId, userAge);
         }
     }
 }
