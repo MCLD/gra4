@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using System.Reflection;
+using System.Linq;
 
 namespace GRA.Controllers.Filter
 {
@@ -23,14 +26,26 @@ namespace GRA.Controllers.Filter
             var httpContext = context.HttpContext;
             if (httpContext.User.Identity.IsAuthenticated)
             {
+                // Check if user can access mission control and the user Id matches the active user id
+                if (httpContext.User.HasClaim(GRA.ClaimType.Permission, 
+                        GRA.Domain.Model.Permission.AccessMissionControl.ToString())
+                    && httpContext.Session.GetInt32(SessionKey.ActiveUserId) ==
+                        new UserClaimLookup(httpContext.User).GetId(ClaimType.UserId))
+                {
+                    httpContext.Items.Add(ItemKey.ShowMissionControl, true);
+                }
+
                 var pendingQuestionnaire = httpContext.Session.GetInt32(SessionKey.PendingQuestionnaire);
                 if (pendingQuestionnaire.HasValue)
                 {
-                    context.ActionDescriptor.RouteValues.TryGetValue("action", out string action);
-                    if (action != "Signout")
+                    var controllerActionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
+                    if (!controllerActionDescriptor.ControllerTypeInfo
+                            .IsDefined(typeof(Attributes.PreventQuestionnaireRedirect)) 
+                        && !controllerActionDescriptor.MethodInfo
+                            .IsDefined(typeof(Attributes.PreventQuestionnaireRedirect)))
                     {
                         var controller = (Base.Controller)context.Controller;
-                        context.Result = controller.RedirectToAction("Index", "Questionnaires", new { id = pendingQuestionnaire });
+                        context.Result = controller.RedirectToAction("Index", "Questionnaire", new { id = pendingQuestionnaire });
                         return;
                     }
                 }

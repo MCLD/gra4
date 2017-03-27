@@ -649,7 +649,7 @@ namespace GRA.Domain.Service
                     if (includePendingQuestionnaire)
                     {
                         member.HasPendingQuestionnaire = (await _requireQuestionnaireRepository
-                            .GetForUser(siteId, member.Id, member.Age)).HasValue;
+                            .GetForUser(siteId, member.Id, member.Age)).Any();
                     }
                 }
             }

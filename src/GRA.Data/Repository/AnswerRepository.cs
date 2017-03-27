@@ -22,6 +22,7 @@ namespace GRA.Data.Repository
             var answers = await DbSet
                 .AsNoTracking()
                 .Where(_ => _.QuestionId == questionId)
+                .OrderBy(_ => _.SortOrder)
                 .ProjectTo<Answer>()
                 .ToListAsync();
 

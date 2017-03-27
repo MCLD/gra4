@@ -23,12 +23,12 @@ namespace GRA.Controllers.MissionControl
         private readonly QuestionnaireService _questionnaireService;
         public QuestionnairesController(ILogger<QuestionnairesController> logger,
            ServiceFacade.Controller context,
-           QuestionnaireService questionaireService)
+           QuestionnaireService questionnaireService)
             : base(context)
         {
             _logger = Require.IsNotNull(logger, nameof(logger));
-            _questionnaireService = Require.IsNotNull(questionaireService,
-                nameof(questionaireService));
+            _questionnaireService = Require.IsNotNull(questionnaireService,
+                nameof(questionnaireService));
             PageTitle = "Questionnaires";
         }
 
@@ -288,7 +288,7 @@ namespace GRA.Controllers.MissionControl
 
                     // Get the updated answer list and return question and answers
                     var answerList = await _questionnaireService.GetAnswersByQuestionIdAsync(question.Id);
-                    return Json(new { success = true, question = question, answers = answerList.OrderBy(_ => _.SortOrder) });
+                    return Json(new { success = true, question = question, answers = answerList });
                 }
                 catch (GraException gex)
                 {

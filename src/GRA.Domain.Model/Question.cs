@@ -19,5 +19,7 @@ namespace GRA.Domain.Model
         public int CorrectAnswerId { get; set; }
 
         public ICollection<Answer> Answers;
+
+        public int ParticipantAnswer { get; set; }
     }
 }

@@ -111,7 +111,7 @@ namespace GRA.Domain.Service
             }
 
             if ((await _requiredQuestionnaireRepository.GetForUser(GetCurrentSiteId(), userToLog.Id,
-                userToLog.Age)).HasValue)
+                userToLog.Age)).Any())
             {
                 string error = $"User id {activeUserId} cannot log activity for user id {userIdToLog} who has a pending questionnaire.";
                 _logger.LogError(error);
@@ -235,7 +235,7 @@ namespace GRA.Domain.Service
             var user = await _userRepository.GetByIdAsync(userId);
 
             if ((await _requiredQuestionnaireRepository.GetForUser(GetCurrentSiteId(), user.Id,
-                user.Age)).HasValue)
+                user.Age)).Any())
             {
                 string error = $"User id {activeUserId} cannot add a book for user {userId} who has a pending questionnaire.";
                 _logger.LogError(error);
@@ -286,7 +286,7 @@ namespace GRA.Domain.Service
             var activeUser = await _userRepository.GetByIdAsync(activeUserId);
 
             if ((await _requiredQuestionnaireRepository.GetForUser(GetCurrentSiteId(), activeUser.Id,
-                activeUser.Age)).HasValue)
+                activeUser.Age)).Any())
             {
                 string error = $"User id {activeUserId} cannot complete challenges tasks while having a pending questionnaire.";
                 _logger.LogError(error);
@@ -686,7 +686,7 @@ namespace GRA.Domain.Service
             }
 
             if ((await _requiredQuestionnaireRepository.GetForUser(GetCurrentSiteId(), userToLog.Id,
-                userToLog.Age)).HasValue)
+                userToLog.Age)).Any())
             {
                 string error = $"User id {activeUserId} cannot log secret code for user {userToLog} who has a pending questionnaire.";
                 _logger.LogError(error);

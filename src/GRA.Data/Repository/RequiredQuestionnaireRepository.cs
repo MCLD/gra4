@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GRA.Data.Repository
 {
-    public class RequiredQuestionnaireRepository 
+    public class RequiredQuestionnaireRepository
         : AuditingRepository<Model.RequiredQuestionnaire, RequiredQuestionnaire>, IRequiredQuestionnaireRepository
     {
         public RequiredQuestionnaireRepository(ServiceFacade.Repository repositoryFacade,
@@ -17,10 +18,10 @@ namespace GRA.Data.Repository
         {
         }
 
-        public async Task<int?> GetForUser(int siteId, int userId, int? userAge)
+        public async Task<ICollection<int>> GetForUser(int siteId, int userId, int? userAge)
         {
             var time = DateTime.Now;
-            var questionnaireId = await DbSet.AsNoTracking()
+            return await DbSet.AsNoTracking()
                                     .Where(_ => _.SiteId == siteId
                                         && (_.AgeMinimum.HasValue == false || _.AgeMinimum <= userAge)
                                         && (_.AgeMaximum.HasValue == false || _.AgeMaximum >= userAge)
@@ -30,15 +31,47 @@ namespace GRA.Data.Repository
                                     .Except(_context.UserQuestionnaires
                                                 .Where(_ => _.UserId == userId)
                                                 .Select(_ => _.QuestionnaireId))
-                                    .FirstOrDefaultAsync();
-            if (questionnaireId > 0)
+                                    .ToListAsync();
+        }
+
+        public async Task<bool> UserHasRequiredQuestionnaire(int siteId, int userId, int? userAge,
+            int questionnaireId)
+        {
+            var time = DateTime.Now;
+            return await DbSet.AsNoTracking()
+                                    .Where(_ => _.SiteId == siteId
+                                        && _.QuestionnaireId == questionnaireId
+                                        && (_.AgeMinimum.HasValue == false || _.AgeMinimum <= userAge)
+                                        && (_.AgeMaximum.HasValue == false || _.AgeMaximum >= userAge)
+                                        && (_.StartDate.HasValue == false || _.StartDate <= time)
+                                        && (_.EndDate.HasValue == false || _.EndDate >= time))
+                                    .Select(_ => _.QuestionnaireId)
+                                    .Except(_context.UserQuestionnaires
+                                                .Where(_ => _.UserId == userId)
+                                                .Select(_ => _.QuestionnaireId))
+                                    .AnyAsync();
+        }
+
+        public async Task SubmitQuestionnaire(int questionnaireId, int userId, 
+            IList<Question> questions)
+        {
+            var time = DateTime.Now;
+            foreach (var question in questions)
             {
-                return questionnaireId;
+                await _context.UserAnswers.AddAsync(
+                    new Model.UserAnswer {
+                        AnswerId = question.ParticipantAnswer,
+                        UserId = userId,
+                        CreatedAt = time
+                    });
             }
-            else
+            await _context.UserQuestionnaires.AddAsync(new Model.UserQuestionnaire
             {
-                return null;
-            }
+                QuestionnaireId = questionnaireId,
+                UserId = userId,
+                CreatedAt = time
+            });
+            await _context.SaveChangesAsync();
         }
     }
 }

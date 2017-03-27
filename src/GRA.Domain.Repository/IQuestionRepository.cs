@@ -6,7 +6,7 @@ namespace GRA.Domain.Repository
 {
     public interface IQuestionRepository : IRepository<Question>
     {
-        Task<ICollection<Question>> GetByQuestionnaireIdAsync(int questionnaireId);
+        Task<IList<Question>> GetByQuestionnaireIdAsync(int questionnaireId, bool includeAnswer);
         new Task RemoveSaveAsync(int userId, int id);
     }
 }

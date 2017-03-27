@@ -20,7 +20,8 @@ namespace GRA.Domain.Service
             IAnswerRepository answerRepository,
             IQuestionRepository questionRepository,
             IQuestionnaireRepository questionnaireRepository,
-            IRequiredQuestionnaireRepository requiredQuestionnaireRepository) : base(logger, userContextProvider)
+            IRequiredQuestionnaireRepository requiredQuestionnaireRepository) 
+            : base(logger, userContextProvider)
         {
             SetManagementPermission(Permission.ManageQuestionnaires);
             _answerRepository = Require.IsNotNull(answerRepository, nameof(answerRepository));
@@ -89,7 +90,14 @@ namespace GRA.Domain.Service
             VerifyManagementPermission();
             int authId = GetClaimId(ClaimType.UserId);
 
-            var questions = await _questionRepository.GetByQuestionnaireIdAsync(questionnaireId);
+            var questionnaire = await _questionnaireRepository.GetByIdAsync(questionnaireId, false);
+            if (questionnaire.IsLocked)
+            {
+                _logger.LogError($"User {authId} cannot update locked questionnaire {questionnaire.Id}.");
+                throw new GraException("Questionnaire is locked and cannot be edited.");
+            }
+
+            var questions = questionnaire.Questions;
             var questionsIdList = questions.Select(_ => _.Id);
             var invalidQuestions = questionOrderList.Except(questionsIdList);
             if (invalidQuestions.Any())
@@ -163,6 +171,12 @@ namespace GRA.Domain.Service
             return await _questionRepository.GetByIdAsync(questionId);
         }
 
+        public async Task<IList<Question>> GetQuestionsByQuestionnaireIdAsync(int questionnaireId, 
+            bool includeAnswers)
+        {
+            return await _questionRepository.GetByQuestionnaireIdAsync(questionnaireId, includeAnswers);
+        }
+
         public async Task<Question> AddQuestionAsync(Question question)
         {
             VerifyManagementPermission();
@@ -197,8 +211,59 @@ namespace GRA.Domain.Service
 
         public async Task<int?> GetRequiredQuestionnaire(int userId, int? userAge)
         {
-            return await _requiredQuestionnaireRepository
+            var questionnaires = await _requiredQuestionnaireRepository
                 .GetForUser(GetCurrentSiteId(), userId, userAge);
+            if (questionnaires.Count > 0)
+            {
+                return questionnaires.First();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<bool> HasRequiredQuestionnaire(int userId, int? userAge, 
+            int questionnaireId)
+        {
+            return await _requiredQuestionnaireRepository
+                .UserHasRequiredQuestionnaire(GetCurrentSiteId(), userId, userAge, questionnaireId);
+        }
+
+        public async Task SubmitQuestionnaire(int questionnaireId, int userId, int? userAge, 
+            IList<Question> questions)
+        {
+            var requiredQuestionnaires = await _requiredQuestionnaireRepository.
+                GetForUser(GetCurrentSiteId(), userId, userAge);
+            if (!requiredQuestionnaires.Contains(questionnaireId))
+            {
+                _logger.LogError($"User {userId} is not eligible to answer questionnaire {questionnaireId}.");
+                throw new GraException("Not eligible to answer that questionnaire.");
+            }
+
+            var questionnaire = await _questionnaireRepository.GetByIdAsync(questionnaireId, true);
+            var questionnaireQuestions = questionnaire.Questions.Where(_ => _.Answers.Count > 0);
+
+            if (questions.Select(_ => _.Id).Except(questionnaireQuestions.Select(_ => _.Id)).Any()
+                || questionnaireQuestions.Count() != questions.Count)
+            {
+                _logger.LogError($"User {userId} submitted invalid questions for questionnaire {questionnaireId}.");
+                throw new GraException("Invalid questions answered.");
+            }
+
+            foreach (var question in questionnaireQuestions)
+            {
+                if (!question.Answers.Select(_ => _.Id).Contains(questions
+                    .Where(_ => _.Id == question.Id)
+                    .Select(_ => _.ParticipantAnswer)
+                    .SingleOrDefault()))
+                {
+                    _logger.LogError($"User {userId} submitted invalid answers for question {question.Id}.");
+                    throw new GraException("Invalid answer selected.");
+                }
+            }
+
+            await _requiredQuestionnaireRepository.SubmitQuestionnaire(questionnaireId, userId, 
+                questions);
         }
     }
 }
