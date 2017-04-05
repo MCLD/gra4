@@ -219,7 +219,7 @@
                 <label asp-for="Trigger.SecretCode" class="control-label col-sm-3"></label>
                 <div class="col-sm-9">
                     <input asp-for="Trigger.SecretCode" class="form-control" />
-                    <span asp-validation-for="Trigger.SecretCode" class="text-danger"></span>
+                    <span id="SecretCode-Validation" asp-validation-for="Trigger.SecretCode" class="text-danger"></span>
                 </div>
             </div>
             <br style="clear: both;" />
@@ -754,6 +754,23 @@
         $("#collapseMail").on("hide.bs.collapse", function() {
             $("#AwardsMail").val("false");
             $("#mailIcon").removeClass("fa-caret-down").addClass("fa-caret-right");
+        });
+
+        $("#Trigger_SecretCode").on("change", function () {
+            var secretCode = $(this).val();
+            if (secretCode != "" && secretCode != "@Model.Trigger?.SecretCode") {
+
+                var codeCheckUrl = "@Url.Action("SecretCodeInUse", "Lookup")";
+                $.post(codeCheckUrl, { secretCode: secretCode }, function (response) {
+                    if (response) {
+                        $("#Trigger_SecretCode").removeClass("valid");
+                        $("#Trigger_SecretCode").addClass("input-validation-error");
+                        $("#SecretCode-Validation").removeClass("field-validation-valid");
+                        $("#SecretCode-Validation").addClass("field-validation-error");
+                        $("#SecretCode-Validation").text("That secret code is already in use.");
+                    }
+                });
+            }
         });
     </script>
 }
