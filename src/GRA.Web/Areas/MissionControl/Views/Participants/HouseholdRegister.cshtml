@@ -11,7 +11,7 @@
                     <label asp-for="Username" class="control-label"></label>
                     <span id="Username-Icon" class="fa colored-icon hide"></span>
                     <input asp-for="Username" class="form-control" autofocus />
-                    <span id="Username-Validation" asp-validation-for="Username" class="text-danger"></span>
+                    <span id="Username-Validation" asp-validation-for="Username" class="text-success"></span>
                 </div>
             </div>
 
@@ -48,7 +48,7 @@
             ignore: ".ignore"
         });
 
-        $("#Username").on("change", function () {
+        $("#Username").on("blur", function () {
             if (!$(this).hasClass("input-validation-error")) {
                 var usernameCheckUrl = "@Url.Action("UsernameInUse", "Lookup", new { Area = string.Empty })";
                 var icon = $("#Username-Icon");
