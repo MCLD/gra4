@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## [Unreleased]
 ### Changed
 - Changed trigger mail to require mail permissions
+- Remove maximum length from question text
 
 ### Fixed
 - Fix 'assets' directory to deploy properly with default avatars
