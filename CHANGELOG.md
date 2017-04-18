@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Rudimentary ability to import events from a CSV file
+
 ### Fixed
 - Fix alert spacing
 - Fix signup empty program exception
