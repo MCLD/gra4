@@ -102,6 +102,8 @@ namespace GRA.Domain.Service
                                 AwardMessage = $"Thanks for attending: {record.Name}!",
                                 AwardPoints = record.Points,
                                 AwardBadgeId = addedBadge.Id,
+                                RelatedBranchId = branch.Id,
+                                RelatedSystemId = branch.SystemId
                             });
 
                             var addedEvent = await _eventService.Add(new Event
@@ -112,7 +114,9 @@ namespace GRA.Domain.Service
                                 RelatedBranchId = branch.Id,
                                 RelatedSystemId = branch.SystemId,
                                 RelatedTriggerId = addedTrigger.Id,
-                                StartDate = record.Start
+                                StartDate = record.Start,
+                                IsActive = true,
+                                IsValid = true
                             });
 
                             count++;
