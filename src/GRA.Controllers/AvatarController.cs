@@ -8,6 +8,9 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using GRA.Domain.Model;
+using System.IO;
 
 namespace GRA.Controllers
 {
@@ -15,6 +18,7 @@ namespace GRA.Controllers
     public class AvatarController : Base.UserController
     {
         private readonly ILogger<AvatarController> _logger;
+        private readonly AutoMapper.IMapper _mapper;
         private readonly DynamicAvatarService _dynamicAvatarService;
         private readonly StaticAvatarService _staticAvatarService;
         private readonly UserService _userService;
@@ -27,6 +31,7 @@ namespace GRA.Controllers
             : base(context)
         {
             _logger = Require.IsNotNull(logger, nameof(logger));
+            _mapper = context.Mapper;
             _dynamicAvatarService = Require.IsNotNull(dynamicAvatarService,
                 nameof(dynamicAvatarService));
             _staticAvatarService = Require.IsNotNull(staticAvatarService,
@@ -35,33 +40,43 @@ namespace GRA.Controllers
             PageTitle = "Avatar";
         }
 
-        public async Task<IActionResult> Index(string id)
+        public async Task<IActionResult> Index(int? id)
         {
             var currentSite = await GetCurrentSiteAsync();
             if (currentSite.UseDynamicAvatars)
             {
-                if (string.IsNullOrEmpty(id))
+                var renameThis = await _dynamicAvatarService.GetRenameThisAsync();
+                DynamicAvatarModel model = new DynamicAvatarModel();
+                model.Layers = _mapper.Map<ICollection<DynamicAvatarModel.DynamicAvatarLayer>>(renameThis);
+                DynamicAvatarViewModel viewModel = new DynamicAvatarViewModel()
                 {
-                    var currentUser = await _userService.GetDetails(GetActiveUserId());
-                    if (!string.IsNullOrEmpty(currentUser.DynamicAvatar))
+                    Layers = renameThis,
+                    ImagePath = _pathResolver.ResolveContentPath($"site{currentSite.Id}/dynamicavatars/"),
+                    Json = Newtonsoft.Json.JsonConvert.SerializeObject(model)
+                };
+                foreach (var layer in viewModel.Layers)
+                {
+                    if (layer.SelectedItem.HasValue)
                     {
-                        return RedirectToRoute(new
+                        var fileName = layer.SelectedItem.ToString();
+                        if (!string.IsNullOrWhiteSpace(layer.SelectedColor))
                         {
-                            controller = "Avatar",
-                            action = "Index",
-                            id = currentUser.DynamicAvatar
-                        });
+                            fileName += $"_{layer.SelectedColor}";
+                        }
+                        fileName += ".png";
+                        layer.FilePath = Path.Combine(viewModel.ImagePath, $"layer{layer.Id}", $"item{layer.SelectedItem}", fileName);
                     }
+
                 }
-                return await DynamicIndex(id);
+                return View("DynamicIndex", viewModel);
             }
             else
             {
-                int? numericId = id == null ? null : (int?)Convert.ToInt32(id);
-                return await StaticIndex(numericId);
+                return null;
             }
         }
 
+        /*
         [HttpPost]
         public async Task<IActionResult> Index(AvatarSelectionViewModel model)
         {
@@ -252,5 +267,6 @@ namespace GRA.Controllers
             await _userService.Update(currentUser);
             return RedirectToRoute(new { controller = "Home", action = "Index" });
         }
+        */
     }
 }

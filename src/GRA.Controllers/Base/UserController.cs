@@ -17,7 +17,7 @@ namespace GRA.Controllers.Base
         {
         }
 
-        protected async Task<DynamicAvatarDetails> GetDynamicAvatarDetailsAsync(string dynamicAvatar,
+        /*protected async Task<DynamicAvatarDetails> GetDynamicAvatarDetailsAsync(string dynamicAvatar,
             DynamicAvatarService dynamicAvatarService)
         {
             bool problem = false;
@@ -66,6 +66,6 @@ namespace GRA.Controllers.Base
                 details.DynamicAvatarString = dynamicAvatarString.ToString();
             }
             return details;
-        }
+        }*/
     }
 }

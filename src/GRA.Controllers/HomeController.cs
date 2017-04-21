@@ -60,12 +60,12 @@ namespace GRA.Controllers
                 // signed-in users can view the dashboard
                 var user = await _userService.GetDetails(GetActiveUserId());
                 string staticAvatarPath = null;
-                DynamicAvatarDetails dynamicAvatarDetails = null;
+                //DynamicAvatarDetails dynamicAvatarDetails = null;
 
                 if (site.UseDynamicAvatars)
                 {
-                    dynamicAvatarDetails = await GetDynamicAvatarDetailsAsync(user.DynamicAvatar,
-                        _dynamicAvatarService);
+                    /*dynamicAvatarDetails = await GetDynamicAvatarDetailsAsync(user.DynamicAvatar,
+                        _dynamicAvatarService);*/
                 }
                 else
                 {
@@ -97,11 +97,12 @@ namespace GRA.Controllers
                 {
                     viewModel.AvatarPath = staticAvatarPath;
                 }
+                /*
                 if (dynamicAvatarDetails != null
                     && dynamicAvatarDetails.DynamicAvatarPaths.Count > 0)
                 {
                     viewModel.DynamicAvatarPaths = dynamicAvatarDetails.DynamicAvatarPaths;
-                }
+                }*/
 
                 if (TempData.ContainsKey(ModelData))
                 {

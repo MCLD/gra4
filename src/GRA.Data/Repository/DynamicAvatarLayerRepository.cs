@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper.QueryableExtensions;
 using System.Linq;
-
+using System.Collections.ObjectModel;
 
 namespace GRA.Data.Repository
 {
@@ -19,22 +19,15 @@ namespace GRA.Data.Repository
         {
         }
 
-        public async Task<ICollection<DynamicAvatarLayer>> GetAllAsync()
+        public async Task<ICollection<DynamicAvatarLayer>> GetRenameThisAsync(int siteId, int userId)
         {
-            return await DbSet
-               .AsNoTracking()
-               .OrderBy(_ => _.Position)
-               .ProjectTo<DynamicAvatarLayer>()
-               .ToListAsync();
+            return await DbSet.AsNoTracking()
+                .Where(_ => _.SiteId == siteId)
+                .OrderBy(_ => _.Position)
+                .ProjectTo<DynamicAvatarLayer>()
+                .ToListAsync();
+
         }
 
-        public async Task<ICollection<int>> GetLayerIdsAsync()
-        {
-            return await DbSet
-                .AsNoTracking()
-                .OrderBy(_ => _.Id)
-                .Select(_ => _.Id)
-                .ToListAsync();
-        }
     }
 }

@@ -1,67 +1,200 @@
-﻿@model GRA.Controllers.DynamicAvatarDetails
+﻿@model GRA.Controllers.ViewModel.Avatar.DynamicAvatarViewModel
+
 <form asp-controller="Avatar" asp-action="DynamicIndex" method="post" role="form">
-    <input asp-for="DynamicAvatarString" type="hidden" />
     <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+        <div class="col-xs-3">
+            <table>
+                @foreach (var layer in Model.Layers)
+                {
+                    <tr>
+                        <td>
+                            <div class="btn-group btn-group-lg" role="group">
+                                <button type="button"
+                                        id="@($"selector{layer.Id}")"
+                                        class="btn btn-default layerSelector"
+                                        style="width: 100px;"
+                                        data-layer="@layer.Id"
+                                        data-removable="@layer.CanBeEmpty"
+                                        data-selectiontype="@layer.SelectionType"
+                                        data-item="@layer.SelectedItem"
+                                        data-color="@layer.SelectedColor">
+                                    @layer.Name
+                                </button>
+                                @if (layer.CanBeEmpty)
+                                {
+                                    <button type="button" class="btn btn-danger removeLayer" data-layer="@layer.Id">
+                                        <span class="fa fa-remove"></span>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col-xs-6">
             <div class="row">
                 <table style="margin-left:auto; margin-right:auto">
                     <tr>
                         <td>
-                            <button asp-action="Decrease" asp-controller="Avatar" asp-route-id="3" class="btn btn-link">
+                            <button type="button" id="decrease" class="btn btn-link itemSelector">
                                 <span class="fa fa-lg fa-chevron-left"></span>
                             </button>
                         </td>
                         <td rowspan="3">
-                            <div class="dynamic-avatar-container">
-                                @foreach (var zIndex in Model.DynamicAvatarPaths.Keys)
+                            <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
+                                @foreach (var layer in Model.Layers)
                                 {
-                                    <img src="~/@Model.DynamicAvatarPaths[zIndex]" style="z-index: @zIndex" class="dynamic-avatar" />
+                                    <img src="@layer.FilePath" id="@($"image{layer.Id}")" class="dynamic-avatar-layer" style="z-index: @layer.Position" />
                                 }
                             </div>
                         </td>
                         <td>
-                            <button asp-action="Increase" asp-controller="Avatar" asp-route-id="3" class="btn btn-link">
-                                <span class="fa fa-lg fa-chevron-right"></span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button asp-action="Decrease" asp-controller="Avatar" asp-route-id="2" class="btn btn-link">
-                                <span class="fa fa-lg fa-chevron-left"></span>
-                            </button>
-                        </td>
-                        <td>
-                            <button asp-action="Increase" asp-controller="Avatar" asp-route-id="2" class="btn btn-link">
-                                <span class="fa fa-lg fa-chevron-right"></span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button asp-action="Decrease" asp-controller="Avatar" asp-route-id="1" class="btn btn-link">
-                                <span class="fa fa-lg fa-chevron-left"></span>
-                            </button>
-                        </td>
-                        <td>
-                            <button asp-action="Increase" asp-controller="Avatar" asp-route-id="1" class="btn btn-link">
+                            <button type="button" id="increase" class="btn btn-link itemSelector">
                                 <span class="fa fa-lg fa-chevron-right"></span>
                             </button>
                         </td>
                     </tr>
                 </table>
             </div>
-            <div class="row" style="width:100%; text-align:center;">
-                <div class="col-sm-6 col-sm-push-6" style="margin-bottom:10px;">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Select Avatar
-                    </button>
-                </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="row">
+                <div class="well colorSelector">
 
-                <div class="col-sm-6 col-sm-pull-6">
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-default btn-lg">Return to Dashboard</a>
                 </div>
             </div>
         </div>
     </div>
 </form>
+@section scripts
+{
+    <script>
+        var baseImagePath = "@Model.ImagePath";
+        var layers = $.parseJSON('@Html.Raw(Model.Json)').Layers;
+        var currentLayerImage;
+        var currentLayerSelector;
+        var currentLayer;
+        var currentIndex;
+        var layerPath;
+        var selectedItem;
+        var selectedColor;
+        SetLayer(6);
+
+        function GetLayerById(layerId) {
+            for (var i = 0; i < layers.length; i++) {
+                if (layers[i].Id == layerId) {
+                    return (layers[i]);
+                }
+            }
+            return '';
+        }
+
+        function SetLayer(layerId) {
+            currentLayerImage = $("#image" + layerId);
+            currentLayerSelector = $("#selector" + layerId);
+            $(".layerSelector").removeClass("selected");
+            currentLayerSelector.addClass("selected");
+            currentLayer = GetLayerById(layerId);
+            layerPath = baseImagePath + "layer" + layerId + "/item"
+
+            selectedItem = currentLayerSelector.data("item");
+            selectedColor = currentLayerSelector.data("color");
+            if (selectedItem != "") {
+                currentIndex = currentLayer.Items.indexOf(selectedItem);
+            }
+            else {
+                currentIndex = undefined;
+            }
+            $(".colorSelector").empty();
+            if (currentLayer.Colors.length > 0) {
+                $.each(currentLayer.Colors, function (i, color) {
+                    $(".colorSelector").append("<span class='dynamic-avatar-color-selection' style='background-color:#" + color + ";'data-color='" + color + "'></span");
+
+                });
+
+            }
+
+            var selectionType = currentLayerSelector.data("selectiontype");
+            if (selectionType & 1) {
+                $(".itemSelector").show();
+            }
+            else {
+                $(".itemSelector").hide();
+            }
+            if (selectionType & 2) {
+                $(".colorSelector").show();
+            }
+            else {
+                $(".colorSelector").hide();
+            }
+        }
+
+        function SetSelectedItem(item) {
+            selectedItem = item;
+            currentLayerSelector.data("item", item);
+            SetLayerImage();
+        }
+
+        function SetSelectedColor(color) {
+            selectedColor = color;
+            currentLayerSelector.data("color", color);
+            SetLayerImage();
+        }
+
+        function SetLayerImage() {
+            var imagePath = layerPath + selectedItem + "/" + selectedItem;
+            if (selectedColor != "") {
+                imagePath += "_" + selectedColor;
+            }
+            imagePath += ".png";
+            currentLayerImage.attr("src", imagePath);
+        }
+
+        $(".layerSelector").on("click", function () {
+            SetLayer($(this).data("layer"));
+        });
+
+        $(".removeLayer").on("click", function () {
+            var layerId = $(this).data("layer");
+            $("#selector" + layerId).data("item", "");
+            $("#image" + layerId).removeAttr("src");
+            if (layerId == currentLayer.Id) {
+                currentIndex = undefined;
+            }
+
+        });
+
+        $("#increase").on("click", function () {
+            if (currentIndex != undefined) {
+                currentIndex++;
+                if (currentIndex > currentLayer.Items.length - 1) {
+                    currentIndex = 0;
+                }
+                SetSelectedItem(currentLayer.Items[currentIndex]);
+            }
+            else {
+                currentIndex = 0;
+                SetSelectedItem(currentLayer.Items[currentIndex]);
+            }
+        });
+
+        $("#decrease").on("click", function () {
+            if (currentIndex != undefined) {
+                currentIndex--;
+                if (currentIndex < 0) {
+                    currentIndex = currentLayer.Items.length - 1;
+                }
+                SetSelectedItem(currentLayer.Items[currentIndex]);
+            }
+            else {
+                currentIndex = currentLayer.Items.length - 1;
+                SetSelectedItem(currentLayer.Items[currentIndex]);
+            }
+        });
+
+        $(document).on("click", ".dynamic-avatar-color-selection", function () {
+            SetSelectedColor($(this).data("color"));
+        });
+    </script>
+}
