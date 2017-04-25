@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## [Unreleased]
 ### Added
 - Rudimentary ability to import events from a CSV file
+- Rudimentary ability to import schools from a CSV file
 
 ### Fixed
 - Fix alert spacing

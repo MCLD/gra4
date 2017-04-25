@@ -179,6 +179,7 @@ namespace GRA.Web
             services.AddScoped<QuestionnaireService>();
             services.AddScoped<ReportService>();
             services.AddScoped<SampleDataService>();
+            services.AddScoped<SchoolImportService>();
             services.AddScoped<SchoolService>();
             services.AddScoped<SiteLookupService>();
             services.AddScoped<SiteService>();
