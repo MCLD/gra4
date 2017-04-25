@@ -192,7 +192,7 @@ namespace GRA.Controllers.MissionControl
                             elementList.Add(element);
                             System.IO.File.Copy(
                                 Path.Combine(layerAssetPath, $"{item.Name} {color.Color}.png"),
-                                Path.Combine(itemPath, $"{item.Id}_{color.Color}.png"));
+                                Path.Combine(itemPath, $"{item.Id}_{color.Id}.png"));
                         }
                     }
                     else

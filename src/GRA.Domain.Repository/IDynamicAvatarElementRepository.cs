@@ -6,6 +6,8 @@ namespace GRA.Domain.Repository
 {
     public interface IDynamicAvatarElementRepository : IRepository<Model.DynamicAvatarElement>
     {
+        Task<DynamicAvatarElement> GetByItemAndColorAsync(int item, int? color);
         Task<ICollection<DynamicAvatarElement>> GetUserAvatar(int userId);
+        Task SetUserAvatar(int userId, List<int> elementIds);
     }
 }

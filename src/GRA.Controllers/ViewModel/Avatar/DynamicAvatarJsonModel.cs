@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GRA.Controllers.ViewModel.Avatar
 {
-    public class DynamicAvatarModel
+    public class DynamicAvatarJsonModel
     {
         public ICollection<DynamicAvatarLayer> Layers { get; set; }
 
@@ -13,7 +13,13 @@ namespace GRA.Controllers.ViewModel.Avatar
             public int Id { get; set; }
 
             public ICollection<int> Items { get; set; }
-            public ICollection<string> Colors { get; set; }
+            public ICollection<DynamicAvatarColor> Colors { get; set; }
+        }
+
+        public class DynamicAvatarColor
+        {
+            public int Id { get; set; }
+            public string Value { get; set; }
         }
     }
 }

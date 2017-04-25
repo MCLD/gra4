@@ -54,7 +54,8 @@ namespace GRA.Domain.Service
                 if (layerSelection != null)
                 {
                     layer.SelectedItem = layerSelection.DynamicAvatarItemId;
-                    layer.SelectedColor = layerSelection.DynamicAvatarColor?.Color;
+                    layer.SelectedColor = layerSelection.DynamicAvatarColorId;
+                    layer.FilePath = _pathResolver.ResolveContentPath(layerSelection.Filename);
                 }
             }
             return layers;
@@ -136,6 +137,37 @@ namespace GRA.Domain.Service
             VerifyManagementPermission();
             return await _dynamicAvatarElementRepository.UpdateSaveAsync(
                 GetClaimId(ClaimType.UserId), element);
+        }
+
+        public async Task UpdateUserAvatar(ICollection<DynamicAvatarLayer> selectionLayers)
+        {
+            var activeUserId = GetActiveUserId();
+            var layers = await _dynamicAvatarLayerRepository.GetAllAsync(GetCurrentSiteId());
+            var elementList = new List<int>();
+            foreach (var layer in layers)
+            {
+                var selection = selectionLayers.Where(_ => _.Id == layer.Id).FirstOrDefault();
+                if (selection != default(DynamicAvatarLayer))
+                {
+                    var element = await _dynamicAvatarElementRepository.GetByItemAndColorAsync(
+                        selection.SelectedItem.Value, selection.SelectedColor);
+                    if (element != default(DynamicAvatarElement))
+                    {
+                        elementList.Add(element.Id);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"User {activeUserId} can't select item {selection.SelectedItem.Value} and color {selection.SelectedColor} for layer {layer.Id}.");
+                        throw new GraException($"Invalid selection for {layer.Name}");
+                    }
+                }
+                else if (!layer.CanBeEmpty)
+                {
+                    _logger.LogWarning($"User {activeUserId} can't have an empty selection for layer {layer.Id}.");
+                    throw new GraException($"A selection must be made for {layer.Name}");
+                }
+            }
+            await _dynamicAvatarElementRepository.SetUserAvatar(activeUserId, elementList);
         }
     }
 }

@@ -21,10 +21,15 @@ namespace GRA.Data.Profile
             CreateMap<Model.DynamicAvatarElement, Domain.Model.DynamicAvatarElement>().ReverseMap();
             CreateMap<Model.DynamicAvatarItem, Domain.Model.DynamicAvatarItem>().ReverseMap();
             CreateMap<Model.DynamicAvatarLayer, Domain.Model.DynamicAvatarLayer>()
-                .ForMember(dest => dest.DynamicAvatarColors, opt => { opt.MapFrom(src => src.DynamicAvatarColors.OrderBy(_ => _.SortOrder)); })
-                .ForMember(dest => dest.DynamicAvatarItems, opt => { opt.MapFrom(src => src.DynamicAvatarItems.OrderBy(_ => _.SortOrder)); })
+                .ForMember(dest => dest.DynamicAvatarColors, opt => {
+                    opt.MapFrom(src => src.DynamicAvatarColors.OrderBy(_ => _.SortOrder));
+                    opt.ExplicitExpansion();
+                })
+                .ForMember(dest => dest.DynamicAvatarItems, opt => {
+                    opt.MapFrom(src => src.DynamicAvatarItems.OrderBy(_ => _.SortOrder));
+                    opt.ExplicitExpansion();
+                })
                 .ReverseMap();
-
             CreateMap<Model.EmailReminder, Domain.Model.EmailReminder>().ReverseMap();
             CreateMap<Model.EnteredSchool, Domain.Model.EnteredSchool>().ReverseMap();
             CreateMap<Model.Event, Domain.Model.Event>().ReverseMap();

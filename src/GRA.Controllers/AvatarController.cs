@@ -46,29 +46,64 @@ namespace GRA.Controllers
             if (currentSite.UseDynamicAvatars)
             {
                 var renameThis = await _dynamicAvatarService.GetRenameThisAsync();
-                DynamicAvatarModel model = new DynamicAvatarModel();
-                model.Layers = _mapper.Map<ICollection<DynamicAvatarModel.DynamicAvatarLayer>>(renameThis);
+                DynamicAvatarJsonModel model = new DynamicAvatarJsonModel();
+                model.Layers = _mapper.Map<ICollection<DynamicAvatarJsonModel.DynamicAvatarLayer>>(renameThis);
                 DynamicAvatarViewModel viewModel = new DynamicAvatarViewModel()
                 {
                     Layers = renameThis,
+                    GroupIds = renameThis.Select(_ => _.GroupId).Distinct(),
+                    DefaultLayer = renameThis.Where(_ => _.DefaultLayer).Select(_ => _.Id).First(),
                     ImagePath = _pathResolver.ResolveContentPath($"site{currentSite.Id}/dynamicavatars/"),
-                    Json = Newtonsoft.Json.JsonConvert.SerializeObject(model)
+                    AvatarPiecesJson = Newtonsoft.Json.JsonConvert.SerializeObject(model)
                 };
                 foreach (var layer in viewModel.Layers)
                 {
-                    if (layer.SelectedItem.HasValue)
+                    if (!layer.SelectedItem.HasValue)
                     {
-                        var fileName = layer.SelectedItem.ToString();
-                        if (!string.IsNullOrWhiteSpace(layer.SelectedColor))
+                        if (layer.DynamicAvatarColors.Count > 0)
                         {
-                            fileName += $"_{layer.SelectedColor}";
+                            layer.SelectedColor = layer.DynamicAvatarColors.ElementAt(new Random().Next(0, layer.DynamicAvatarColors.Count)).Id;
                         }
-                        fileName += ".png";
-                        layer.FilePath = Path.Combine(viewModel.ImagePath, $"layer{layer.Id}", $"item{layer.SelectedItem}", fileName);
-                    }
+                        if (!layer.CanBeEmpty)
+                        {
+                            layer.SelectedItem = layer.DynamicAvatarItems.First().Id;
 
+                            var fileName = layer.SelectedItem.ToString();
+                            if (layer.SelectedColor.HasValue)
+                            {
+                                fileName += $"_{layer.SelectedColor}";
+                            }
+                            fileName += ".png";
+                            layer.FilePath = Path.Combine(viewModel.ImagePath, $"layer{layer.Id}", $"item{layer.SelectedItem}", fileName);
+                        }
+                    }
                 }
                 return View("DynamicIndex", viewModel);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveAvatar(string selectionJson)
+        {
+            var currentSite = await GetCurrentSiteAsync();
+            if (currentSite.UseDynamicAvatars)
+            {
+                try
+                {
+                    var selection = Newtonsoft.Json.JsonConvert
+                        .DeserializeObject<ICollection<DynamicAvatarLayer>>(selectionJson);
+                    selection = selection.Where(_ => _.SelectedItem.HasValue).ToList();
+                    await _dynamicAvatarService.UpdateUserAvatar(selection);
+                    return Json(new { success = true });
+                }
+                catch (GraException gex)
+                {
+                    return Json(new { success = false, message = gex.Message });
+                }
             }
             else
             {

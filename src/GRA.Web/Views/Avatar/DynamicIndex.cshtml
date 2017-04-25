@@ -1,10 +1,34 @@
 ﻿@model GRA.Controllers.ViewModel.Avatar.DynamicAvatarViewModel
 
-<form asp-controller="Avatar" asp-action="DynamicIndex" method="post" role="form">
-    <div class="row">
-        <div class="col-xs-3">
+@section styles {
+    <style>
+        .selected-color {
+            border: 4px solid yellow;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-xs-3">
+        @foreach (var groupId in Model.GroupIds)
+        {
+            /*<div class="btn-group btn-group-vertical btn-group-lg" style="vertical-align:top;">
+                @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
+                {
+                    <button type="button"
+                            id="@($"selector{layer.Id}")"
+                            class="btn btn-default layerSelector"
+                            data-layer="@layer.Id"
+                            data-removable="@layer.CanBeEmpty"
+                            data-selectiontype="@layer.SelectionType"
+                            data-item="@layer.SelectedItem"
+                            data-color="@layer.SelectedColor">
+                        @layer.Name
+                    </button>
+                }
+            </div>*/
             <table>
-                @foreach (var layer in Model.Layers)
+                @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
                 {
                     <tr>
                         <td>
@@ -23,7 +47,7 @@
                                 @if (layer.CanBeEmpty)
                                 {
                                     <button type="button" class="btn btn-danger removeLayer" data-layer="@layer.Id">
-                                        <span class="fa fa-remove"></span>
+                                        <span class="fa fa-minus"></span>
                                     </button>
                                 }
                             </div>
@@ -31,47 +55,44 @@
                     </tr>
                 }
             </table>
-        </div>
-        <div class="col-xs-6">
-            <div class="row">
-                <table style="margin-left:auto; margin-right:auto">
-                    <tr>
-                        <td>
-                            <button type="button" id="decrease" class="btn btn-link itemSelector">
-                                <span class="fa fa-lg fa-chevron-left"></span>
-                            </button>
-                        </td>
-                        <td rowspan="3">
-                            <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
-                                @foreach (var layer in Model.Layers)
-                                {
-                                    <img src="@layer.FilePath" id="@($"image{layer.Id}")" class="dynamic-avatar-layer" style="z-index: @layer.Position" />
-                                }
-                            </div>
-                        </td>
-                        <td>
-                            <button type="button" id="increase" class="btn btn-link itemSelector">
-                                <span class="fa fa-lg fa-chevron-right"></span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <div class="col-xs-3">
-            <div class="row">
-                <div class="well colorSelector">
-
-                </div>
-            </div>
+        }
+        <button id="testbutton">test</button>
+    </div>
+    <div class="col-xs-6">
+        <table style="margin-left:auto; margin-right:auto">
+            <tr>
+                <td>
+                    <button type="button" id="decrease" class="btn btn-link itemSelector" style="display:none;">
+                        <span class="fa fa-lg fa-chevron-left"></span>
+                    </button>
+                </td>
+                <td rowspan="3">
+                    <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
+                        @foreach (var layer in Model.Layers)
+                        {
+                            <img src="@layer.FilePath" id="@($"image{layer.Id}")" class="dynamic-avatar-layer" style="z-index: @layer.Position" />
+                        }
+                    </div>
+                </td>
+                <td>
+                    <button type="button" id="increase" class="btn btn-link itemSelector" style="display:none;">
+                        <span class="fa fa-lg fa-chevron-right"></span>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-xs-3">
+        <div class="well colorSelector" style="display:none;">
         </div>
     </div>
-</form>
+</div>
+
 @section scripts
 {
     <script>
         var baseImagePath = "@Model.ImagePath";
-        var layers = $.parseJSON('@Html.Raw(Model.Json)').Layers;
+        var layers = $.parseJSON('@Html.Raw(Model.AvatarPiecesJson)').Layers;
         var currentLayerImage;
         var currentLayerSelector;
         var currentLayer;
@@ -79,7 +100,7 @@
         var layerPath;
         var selectedItem;
         var selectedColor;
-        SetLayer(6);
+        SetLayer(@Model.DefaultLayer);
 
         function GetLayerById(layerId) {
             for (var i = 0; i < layers.length; i++) {
@@ -87,46 +108,49 @@
                     return (layers[i]);
                 }
             }
-            return '';
         }
 
         function SetLayer(layerId) {
-            currentLayerImage = $("#image" + layerId);
-            currentLayerSelector = $("#selector" + layerId);
-            $(".layerSelector").removeClass("selected");
-            currentLayerSelector.addClass("selected");
-            currentLayer = GetLayerById(layerId);
-            layerPath = baseImagePath + "layer" + layerId + "/item"
+            if (currentLayer == undefined || layerId != currentLayer.Id) {
+                currentLayerImage = $("#image" + layerId);
+                currentLayerSelector = $("#selector" + layerId);
+                $(".layerSelector").removeClass("selected");
+                currentLayerSelector.addClass("selected");
+                currentLayer = GetLayerById(layerId);
+                layerPath = baseImagePath + "layer" + layerId + "/item"
 
-            selectedItem = currentLayerSelector.data("item");
-            selectedColor = currentLayerSelector.data("color");
-            if (selectedItem != "") {
-                currentIndex = currentLayer.Items.indexOf(selectedItem);
-            }
-            else {
-                currentIndex = undefined;
-            }
-            $(".colorSelector").empty();
-            if (currentLayer.Colors.length > 0) {
-                $.each(currentLayer.Colors, function (i, color) {
-                    $(".colorSelector").append("<span class='dynamic-avatar-color-selection' style='background-color:#" + color + ";'data-color='" + color + "'></span");
+                selectedItem = currentLayerSelector.data("item");
+                selectedColor = currentLayerSelector.data("color");
+                if (selectedItem != "") {
+                    currentIndex = currentLayer.Items.indexOf(selectedItem);
+                }
+                else {
+                    currentIndex = undefined;
+                }
+                $(".colorSelector").empty();
+                if (currentLayer.Colors.length > 0) {
+                    $.each(currentLayer.Colors, function (i, color) {
+                        var colorSpan = $("<span>", { "class": "dynamic-avatar-color-selection", "style": "background-color:#" + color.Value, "data-color": color.Id });
+                        if (selectedColor == color) {
+                            colorSpan.addClass("selected-color");
+                        }
+                        $(".colorSelector").append(colorSpan);
+                    });
+                }
 
-                });
-
-            }
-
-            var selectionType = currentLayerSelector.data("selectiontype");
-            if (selectionType & 1) {
-                $(".itemSelector").show();
-            }
-            else {
-                $(".itemSelector").hide();
-            }
-            if (selectionType & 2) {
-                $(".colorSelector").show();
-            }
-            else {
-                $(".colorSelector").hide();
+                var selectionType = currentLayerSelector.data("selectiontype");
+                if (selectionType & 1) {
+                    $(".itemSelector").show();
+                }
+                else {
+                    $(".itemSelector").hide();
+                }
+                if (selectionType & 2) {
+                    $(".colorSelector").show();
+                }
+                else {
+                    $(".colorSelector").hide();
+                }
             }
         }
 
@@ -162,7 +186,6 @@
             if (layerId == currentLayer.Id) {
                 currentIndex = undefined;
             }
-
         });
 
         $("#increase").on("click", function () {
@@ -195,6 +218,30 @@
 
         $(document).on("click", ".dynamic-avatar-color-selection", function () {
             SetSelectedColor($(this).data("color"));
+            $(".selected-color").removeClass("selected-color");
+            $(this).addClass("selected-color")
+        });
+
+        $("#testbutton").on("click", function (e) {
+            var data_array = new Array();
+            $(".layerSelector").each(function () {
+                var layer = {};
+                layer['Id'] = $(this).data("layer");
+                layer['SelectedItem'] = $(this).data("item");
+                layer['SelectedColor'] = $(this).data("color");
+                data_array.push(layer);
+            })
+            var selectionJson = JSON.stringify(data_array);
+            $.post("@Url.Action("SaveAvatar")", { selectionJson: selectionJson }, function (response) {
+                if (response.success == true) {
+                    alert("yay");
+                }
+                else {
+                    alert("nope");
+                }
+            }).fail(function () {
+                alert("uh oh");
+            });
         });
     </script>
 }
