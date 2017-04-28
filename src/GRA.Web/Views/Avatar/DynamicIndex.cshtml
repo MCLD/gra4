@@ -5,49 +5,85 @@
         .selected-color {
             border: 4px solid yellow;
         }
+
+        .selected-layer, .selected-layer:hover, .selected-layer:focus {
+            color: #fff;
+            background-color: #337ab7;
+        }
+
+        .avatarSaveMessage {
+            display: none;
+            width: 400px;
+            left: 50%;
+            margin-left: -200px; /*this is 50% value for width of the element*/
+            position: absolute;
+            text-align: center;
+            font-size: x-large;
+            font-weight: bold;
+        }
+
+        .colorSelection {
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: inline-block;
+            border-radius: 5px;
+            margin: 4px;
+            vertical-align: top;
+            text-align: center;
+        }
+
+        .xsColorSelection {
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: inline-block;
+            border-radius: 5px;
+            margin: 10px;
+            vertical-align: top;
+            text-align: center;
+        }
+
+        .flat-border-right {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
     </style>
 }
 
+<div id="xsColorModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document" style="overflow-y:initial;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="fa fa-lg fa-times"></span></button>
+                <button type="button" id="xsSelectColorButton" class="btn btn-lg btn-primary">Select Color</button>
+            </div>
+            <div id="xsColorSelector" class="modal-body" style="overflow-y:scroll;height:360px;">
+
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
-    <div class="col-xs-3">
+    <div class="col-sm-3 visible-sm visible-md visible-lg">
         @foreach (var groupId in Model.GroupIds)
         {
-            /*<div class="btn-group btn-group-vertical btn-group-lg" style="vertical-align:top;">
-                @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
-                {
-                    <button type="button"
-                            id="@($"selector{layer.Id}")"
-                            class="btn btn-default layerSelector"
-                            data-layer="@layer.Id"
-                            data-removable="@layer.CanBeEmpty"
-                            data-selectiontype="@layer.SelectionType"
-                            data-item="@layer.SelectedItem"
-                            data-color="@layer.SelectedColor">
-                        @layer.Name
-                    </button>
-                }
-            </div>*/
-            <table>
+            <table style="margin-bottom:10px;">
                 @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
                 {
                     <tr>
                         <td>
-                            <div class="btn-group btn-group-lg" role="group">
+                            <div class="btn-group" role="group">
                                 <button type="button"
                                         id="@($"selector{layer.Id}")"
-                                        class="btn btn-default layerSelector"
-                                        style="width: 100px;"
-                                        data-layer="@layer.Id"
-                                        data-removable="@layer.CanBeEmpty"
-                                        data-selectiontype="@layer.SelectionType"
-                                        data-item="@layer.SelectedItem"
-                                        data-color="@layer.SelectedColor">
+                                        class="btn btn-default dynamic-avatar-layer-button dynamic-avatar-layer-selector"
+                                        data-layer="@layer.Id">
                                     @layer.Name
                                 </button>
                                 @if (layer.CanBeEmpty)
                                 {
-                                    <button type="button" class="btn btn-danger removeLayer" data-layer="@layer.Id">
-                                        <span class="fa fa-minus"></span>
+                                    <button type="button" id="@($"remove{layer.Id}")" class="btn btn-default dynamic-avatar-layer-button removeLayer" style="@(!layer.SelectedItem.HasValue ? "display:none;" : "")" data-layer="@layer.Id">
+                                        <span class="text-danger fa fa-times-circle fa-lg"></span>
                                     </button>
                                 }
                             </div>
@@ -56,34 +92,92 @@
                 }
             </table>
         }
-        <button id="testbutton">test</button>
     </div>
-    <div class="col-xs-6">
-        <table style="margin-left:auto; margin-right:auto">
-            <tr>
-                <td>
-                    <button type="button" id="decrease" class="btn btn-link itemSelector" style="display:none;">
-                        <span class="fa fa-lg fa-chevron-left"></span>
+    <div class="col-xs-12 col-sm-6">
+        <div class="row">
+            <div class="visible-xs" style="display: block;height:60px;margin-bottom:10px;">
+                <div class="dropdown">
+                    <button type="button" id="xsLayerDropdown" class="btn btn-default dropdown-toggle" style="height:60px;width:120px;float:left;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <span id="xsLayerSelection" style="font-size:x-large;"></span>
+                        <span class="fa fa-caret-down fa-lg"></span>
                     </button>
-                </td>
-                <td rowspan="3">
-                    <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
-                        @foreach (var layer in Model.Layers)
-                        {
-                            <img src="@layer.FilePath" id="@($"image{layer.Id}")" class="dynamic-avatar-layer" style="z-index: @layer.Position" />
+                    <ul class="dropdown-menu" aria-labelledby="xsLayerDropdown">
+                        @{
+                            bool addSeparater = false;
+                            foreach (var groupId in Model.GroupIds)
+                            {
+                                if (addSeparater)
+                                {
+                                    <li role="separator" class="divider"></li>
+                                }
+                                foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
+                                {
+                                    <li>
+                                        <a href="#"
+                                           class="xsLayerSelector"
+                                           style="font-size:large;"
+                                           data-layer="@layer.Id">
+                                            @layer.Name
+                                        </a>
+                                    </li>
+                                }
+                                addSeparater = true;
+                            }
                         }
-                    </div>
-                </td>
-                <td>
-                    <button type="button" id="increase" class="btn btn-link itemSelector" style="display:none;">
-                        <span class="fa fa-lg fa-chevron-right"></span>
-                    </button>
-                </td>
-            </tr>
-        </table>
+                    </ul>
+                </div>
+                <button type="button" id="xsRemoveLayer" class="btn btn-default" style="height:60px;border-top-left-radius:0;border-bottom-left-radius:0px;float:left;margin-left:-1px;">
+                    <span class="text-danger fa fa-times-circle fa-2x"></span>
+                </button>
+                <button type="button" id="xsColorButton" class="btn btn-lg btn-default pull-right" style="height:60px;width:120px;display:none;">
+                    <span style="font-size:x-large;">Color</span>
+                    <span class="fa fa-paint-brush"></span>
+                </button>
+            </div>
+            <div class="avatarSaveMessage">
+            </div>
+            <table style="margin-left:auto; margin-right:auto">
+                <tr>
+                    <td>
+                        <button type="button" id="decrease" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
+                            <span class="fa fa-2x fa-chevron-left"></span>
+                        </button>
+                    </td>
+                    <td rowspan="3">
+                        <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
+                            @foreach (var layer in Model.Layers)
+                            {
+                                <img src="@layer.FilePath"
+                                     id="@($"image{layer.Id}")"
+                                     class="dynamic-avatar-layer"
+                                     style="z-index: @(layer.Position + 1); @(string.IsNullOrWhiteSpace(layer.FilePath) ? "visibility:hidden;" : "")"
+                                     data-layer="@layer.Id"
+                                     data-removable="@layer.CanBeEmpty"
+                                     data-showitemselector="@layer.ShowItemSelector"
+                                     data-showcolorselector="@layer.ShowColorSelector"
+                                     data-item="@layer.SelectedItem"
+                                     data-color="@layer.SelectedColor" />
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" id="increase" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
+                            <span class="fa fa-2x fa-chevron-right"></span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            <div style="text-align:center;vertical-align:top;">
+                <button id="saveAvatar" class="btn btn-lg btn-default" style="margin:5px;">
+                    <span class="fa fa-floppy-o"></span>
+                    Save Avatar
+                </button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-lg btn-default" style="margin:5px;">Return to Dashboard</a>
+            </div>
+        </div>
     </div>
-    <div class="col-xs-3">
-        <div class="well colorSelector" style="display:none;">
+    <div class="col-sm-3 visible-sm visible-md visible-lg">
+        <div class="well dynamic-avatar-color-selector" style="display:none;">
         </div>
     </div>
 </div>
@@ -94,12 +188,14 @@
         var baseImagePath = "@Model.ImagePath";
         var layers = $.parseJSON('@Html.Raw(Model.AvatarPiecesJson)').Layers;
         var currentLayerImage;
+        var currentLayerRemover;
         var currentLayerSelector;
         var currentLayer;
         var currentIndex;
         var layerPath;
         var selectedItem;
         var selectedColor;
+        var unsavedChanges = false;
         SetLayer(@Model.DefaultLayer);
 
         function GetLayerById(layerId) {
@@ -113,57 +209,91 @@
         function SetLayer(layerId) {
             if (currentLayer == undefined || layerId != currentLayer.Id) {
                 currentLayerImage = $("#image" + layerId);
+                currentLayerRemover = $("#remove" + layerId)
                 currentLayerSelector = $("#selector" + layerId);
-                $(".layerSelector").removeClass("selected");
-                currentLayerSelector.addClass("selected");
+                $(".selected-layer").removeClass("selected-layer");
+                currentLayerSelector.addClass("selected-layer");
+                $("#xsLayerSelection").text(currentLayerSelector.text());
                 currentLayer = GetLayerById(layerId);
+
                 layerPath = baseImagePath + "layer" + layerId + "/item"
 
-                selectedItem = currentLayerSelector.data("item");
-                selectedColor = currentLayerSelector.data("color");
+                selectedItem = currentLayerImage.data("item");
+                selectedColor = currentLayerImage.data("color");
                 if (selectedItem != "") {
                     currentIndex = currentLayer.Items.indexOf(selectedItem);
                 }
                 else {
                     currentIndex = undefined;
                 }
-                $(".colorSelector").empty();
+                $(".dynamic-avatar-color-selector").empty();
+                $("#xsColorSelector").empty();
                 if (currentLayer.Colors.length > 0) {
                     $.each(currentLayer.Colors, function (i, color) {
-                        var colorSpan = $("<span>", { "class": "dynamic-avatar-color-selection", "style": "background-color:#" + color.Value, "data-color": color.Id });
-                        if (selectedColor == color) {
+                        var colorSpan = $("<span>", { "class": "color" + color.Id, "style": "background-color:#" + color.Value, "data-color": color.Id });
+                        if (selectedColor == color.Id) {
                             colorSpan.addClass("selected-color");
                         }
-                        $(".colorSelector").append(colorSpan);
+                        $(".dynamic-avatar-color-selector").append(colorSpan.clone().addClass("colorSelection"));
+                        $("#xsColorSelector").append(colorSpan.addClass("xsColorSelection"));
                     });
                 }
 
-                var selectionType = currentLayerSelector.data("selectiontype");
-                if (selectionType & 1) {
-                    $(".itemSelector").show();
+                if (currentLayerImage.data("showitemselector") == "True") {
+                    $(".dynamic-avatar-item-selector").show();
                 }
                 else {
-                    $(".itemSelector").hide();
+                    $(".dynamic-avatar-item-selector").hide();
                 }
-                if (selectionType & 2) {
-                    $(".colorSelector").show();
+                if (currentLayerImage.data("showcolorselector") == "True") {
+                    $(".dynamic-avatar-color-selector").show();
+                    $("#xsColorButton").show();
                 }
                 else {
-                    $(".colorSelector").hide();
+                    $(".dynamic-avatar-color-selector").hide();
+                    $("#xsColorButton").hide();
+                }
+                if (currentLayerImage.data("removable") == "True" && selectedItem != "") {
+                    $("#xsLayerDropdown").addClass("flat-border-right");
+                    $("#xsRemoveLayer").show();
+                }
+                else {
+                    $("#xsLayerDropdown").removeClass("flat-border-right");
+                    $("#xsRemoveLayer").hide();
+                }
+            }
+        }
+
+        function SetUnsavedChanges(bool) {
+            if (unsavedChanges != bool) {
+                if (bool == true) {
+                    $("#saveAvatar").removeClass("btn-default").addClass("btn-success");
+                    unsavedChanges = true;
+                }
+                else {
+                    $("#saveAvatar").removeClass("btn-success").addClass("btn-default");
+                    unsavedChanges = false;
                 }
             }
         }
 
         function SetSelectedItem(item) {
             selectedItem = item;
-            currentLayerSelector.data("item", item);
+            currentLayerImage.data("item", item);
             SetLayerImage();
+            currentLayerRemover.show();
+            $("#xsLayerDropdown").addClass("flat-border-right");
+            $("#xsRemoveLayer").show();
         }
 
         function SetSelectedColor(color) {
             selectedColor = color;
-            currentLayerSelector.data("color", color);
-            SetLayerImage();
+            currentLayerImage.data("color", color);
+            $(".selected-color").removeClass("selected-color");
+            $(".color" + color).addClass("selected-color");
+            if (selectedItem != "") {
+                SetLayerImage();
+            }
         }
 
         function SetLayerImage() {
@@ -172,20 +302,32 @@
                 imagePath += "_" + selectedColor;
             }
             imagePath += ".png";
-            currentLayerImage.attr("src", imagePath);
+            currentLayerImage.attr("src", imagePath).css("visibility", "");
+            SetUnsavedChanges(true);
         }
 
-        $(".layerSelector").on("click", function () {
+        function RemoveLayerImage(layerId) {
+            $("#image" + layerId).data("item", "").css("visibility", "hidden").removeAttr("src");
+            if (layerId == currentLayer.Id) {
+                currentIndex = undefined;
+                selectedItem = "";
+            }
+            SetUnsavedChanges(true);
+            $("#remove" + layerId).hide();
+            $("#xsRemoveLayer").hide();
+            $("#xsLayerDropdown").removeClass("flat-border-right");
+        }
+
+        $(".dynamic-avatar-layer-selector, .xsLayerSelector").on("click", function () {
             SetLayer($(this).data("layer"));
         });
 
         $(".removeLayer").on("click", function () {
-            var layerId = $(this).data("layer");
-            $("#selector" + layerId).data("item", "");
-            $("#image" + layerId).removeAttr("src");
-            if (layerId == currentLayer.Id) {
-                currentIndex = undefined;
-            }
+            RemoveLayerImage($(this).data("layer"));
+        });
+
+        $("#xsRemoveLayer").on("click", function () {
+            RemoveLayerImage(currentLayer.Id);
         });
 
         $("#increase").on("click", function () {
@@ -216,15 +358,35 @@
             }
         });
 
-        $(document).on("click", ".dynamic-avatar-color-selection", function () {
-            SetSelectedColor($(this).data("color"));
-            $(".selected-color").removeClass("selected-color");
-            $(this).addClass("selected-color")
+        $(document).on("click", ".colorSelection", function () {
+            var color = $(this).data("color");
+            if (color != selectedColor) {
+                SetSelectedColor(color);
+            }
         });
 
-        $("#testbutton").on("click", function (e) {
+        $("#xsColorButton").on("click", function () {
+            $(".xsColorSelection.selected-color").removeClass("selected-color");
+            $(".color" + selectedColor).addClass("selected-color");
+            $("#xsColorModal").modal("show");
+        })
+
+        $("#xsSelectColorButton").on("click", function () {
+            var color = $(".xsColorSelection.selected-color").data("color");
+            if (color != selectedColor) {
+                SetSelectedColor(color);
+            }
+            $("#xsColorModal").modal("hide");
+        });
+
+        $(document).on("click", ".xsColorSelection", function () {
+            $(".xsColorSelection.selected-color").removeClass("selected-color");
+            $(this).addClass("selected-color");
+        });
+
+        $("#saveAvatar").on("click", function (e) {
             var data_array = new Array();
-            $(".layerSelector").each(function () {
+            $(".dynamic-avatar-layer").each(function () {
                 var layer = {};
                 layer['Id'] = $(this).data("layer");
                 layer['SelectedItem'] = $(this).data("item");
@@ -234,13 +396,20 @@
             var selectionJson = JSON.stringify(data_array);
             $.post("@Url.Action("SaveAvatar")", { selectionJson: selectionJson }, function (response) {
                 if (response.success == true) {
-                    alert("yay");
+                    SetUnsavedChanges(false);
+                    $(".avatarSaveMessage").removeClass("text-danger").addClass("text-success");
+                    $(".avatarSaveMessage").text("Avatar Saved!");
+                    $(".avatarSaveMessage").show().delay(2000).fadeOut("slow");
                 }
                 else {
-                    alert("nope");
+                    $(".avatarSaveMessage").removeClass("text-success").addClass("text-danger");
+                    $(".avatarSaveMessage").text(response.message);
+                    $(".avatarSaveMessage").show();
                 }
             }).fail(function () {
-                alert("uh oh");
+                $(".avatarSaveMessage").removeClass("text-success").addClass("text-danger");
+                $(".avatarSaveMessage").text("Error saving Avatar");
+                $(".avatarSaveMessage").show();
             });
         });
     </script>

@@ -27,7 +27,7 @@ namespace GRA.Data.Repository
                 .SingleOrDefaultAsync();
         }
 
-        public async Task<ICollection<DynamicAvatarElement>> GetUserAvatar(int userId)
+        public async Task<ICollection<DynamicAvatarElement>> GetUserAvatarAsync(int userId)
         {
             return await _context.UserDynamicAvatars.AsNoTracking()
                 .Where(_ => _.UserId == userId)
@@ -36,7 +36,7 @@ namespace GRA.Data.Repository
                 .ToListAsync();
         }
 
-        public async Task SetUserAvatar(int userId, List<int> elementIds)
+        public async Task SetUserAvatarAsync(int userId, List<int> elementIds)
         {
             var userAvatar = await _context.UserDynamicAvatars
                 .Where(_ => _.UserId == userId)

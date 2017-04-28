@@ -13,10 +13,11 @@ namespace GRA.Domain.Model
         [Required]
         public int Position { get; set; }
         public bool CanBeEmpty { get; set; }
-        public int SelectionType { get; set; }
         public int GroupId { get; set; }
         public int SortOrder { get; set; }
         public bool DefaultLayer { get; set; }
+        public bool ShowItemSelector { get; set; }
+        public bool ShowColorSelector { get; set; }
 
         public int? SelectedItem { get; set; }
         public int? SelectedColor { get; set; }

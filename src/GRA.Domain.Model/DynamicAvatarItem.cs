@@ -6,6 +6,7 @@ namespace GRA.Domain.Model
     {
         [Required]
         public int DynamicAvatarLayerId { get; set; }
+        public int DynamicAvatarLayerPosition { get; set; }
 
         [MaxLength(255)]
         [Required]

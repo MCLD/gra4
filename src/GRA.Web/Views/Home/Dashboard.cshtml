@@ -3,15 +3,15 @@
 <div class="row" style="font-size: larger;">
     <div class="col-sm-3" style="text-align: center;">
         <p>
-            @if (Model.DynamicAvatarPaths != null && Model.DynamicAvatarPaths.Count() > 0)
+            @if (Model.DynamicAvatarElements?.Count > 0)
             {
                 <a asp-controller="Avatar" asp-action="Index">
                     <div class="dynamic-avatar-container-dashboard">
-                        @foreach (var zIndex in Model.DynamicAvatarPaths.Keys)
+                        @foreach (var layer in Model.DynamicAvatarElements)
                         {
-                            <img src="~/@Model.DynamicAvatarPaths[zIndex]"
-                                 style="z-index: @zIndex"
-                                 class="dynamic-avatar" />
+                            <img src="@layer.Filename"
+                                 style="z-index: @(layer.DynamicAvatarItem.DynamicAvatarLayerPosition + 1)"
+                                 class="dynamic-avatar-layer-dashboard" />
                         }
                     </div>
                 </a>

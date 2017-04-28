@@ -40,15 +40,18 @@ namespace GRA.Domain.Service
             SetManagementPermission(Permission.ManageAvatars);
         }
 
-        public async Task<ICollection<DynamicAvatarLayer>> GetRenameThisAsync()
+        public async Task<ICollection<DynamicAvatarLayer>> GetUserWardrobeAsync()
         {
             var activeUserId = GetActiveUserId();
-            var layers = await _dynamicAvatarLayerRepository.GetRenameThisAsync(
+            var layers = await _dynamicAvatarLayerRepository.GetAllWithColorsAsync(
                 GetCurrentSiteId(), activeUserId);
 
-            var userAvatar = await _dynamicAvatarElementRepository.GetUserAvatar(activeUserId);
+            var userAvatar = await _dynamicAvatarElementRepository.GetUserAvatarAsync(activeUserId);
             foreach (var layer in layers)
             {
+                layer.DynamicAvatarItems = await _dynamicAvatarItemRepository
+                    .GetUserItemsByLayerAsync(activeUserId, layer.Id);
+
                 var layerSelection = userAvatar.Where(_ =>
                 _.DynamicAvatarItem.DynamicAvatarLayerId == layer.Id).SingleOrDefault();
                 if (layerSelection != null)
@@ -139,7 +142,12 @@ namespace GRA.Domain.Service
                 GetClaimId(ClaimType.UserId), element);
         }
 
-        public async Task UpdateUserAvatar(ICollection<DynamicAvatarLayer> selectionLayers)
+        public async Task<ICollection<DynamicAvatarElement>> GetUserAvatarAsync()
+        {
+            return await _dynamicAvatarElementRepository.GetUserAvatarAsync(GetActiveUserId());
+        }
+
+        public async Task UpdateUserAvatarAsync(ICollection<DynamicAvatarLayer> selectionLayers)
         {
             var activeUserId = GetActiveUserId();
             var layers = await _dynamicAvatarLayerRepository.GetAllAsync(GetCurrentSiteId());
@@ -151,7 +159,7 @@ namespace GRA.Domain.Service
                 {
                     var element = await _dynamicAvatarElementRepository.GetByItemAndColorAsync(
                         selection.SelectedItem.Value, selection.SelectedColor);
-                    if (element != default(DynamicAvatarElement))
+                    if (element != default(DynamicAvatarElement) && element.DynamicAvatarItem.Unlockable == false)
                     {
                         elementList.Add(element.Id);
                     }
@@ -164,10 +172,10 @@ namespace GRA.Domain.Service
                 else if (!layer.CanBeEmpty)
                 {
                     _logger.LogWarning($"User {activeUserId} can't have an empty selection for layer {layer.Id}.");
-                    throw new GraException($"A selection must be made for {layer.Name}");
+                    throw new GraException($"A {layer.Name} must be selected");
                 }
             }
-            await _dynamicAvatarElementRepository.SetUserAvatar(activeUserId, elementList);
+            await _dynamicAvatarElementRepository.SetUserAvatarAsync(activeUserId, elementList);
         }
     }
 }

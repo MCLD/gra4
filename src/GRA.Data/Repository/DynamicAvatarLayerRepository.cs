@@ -29,13 +29,13 @@ namespace GRA.Data.Repository
                .ToListAsync();
         }
 
-        public async Task<ICollection<DynamicAvatarLayer>> GetRenameThisAsync(int siteId, int userId)
+        public async Task<ICollection<DynamicAvatarLayer>> GetAllWithColorsAsync(int siteId, int userId)
         {
             return await DbSet.AsNoTracking()
                 .Where(_ => _.SiteId == siteId)
                 .OrderBy(_ => _.GroupId)
                 .ThenBy(_ => _.SortOrder)
-                .ProjectTo<DynamicAvatarLayer>(_ => _.DynamicAvatarColors, _ => _.DynamicAvatarItems)
+                .ProjectTo<DynamicAvatarLayer>(_ => _.DynamicAvatarColors)
                 .ToListAsync();
         }
     }
