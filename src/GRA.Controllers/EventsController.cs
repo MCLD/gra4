@@ -29,8 +29,7 @@ namespace GRA.Controllers
             _siteService = Require.IsNotNull(siteService, nameof(SiteService));
             PageTitle = "Events";
         }
-
-        public async Task<IActionResult> Index(int page = 1,
+        public async Task<IActionResult> CommunityExperiences(int page = 1,
             string search = null,
             int? branch = null,
             int? location = null,
@@ -38,9 +37,22 @@ namespace GRA.Controllers
             string StartDate = null,
             string EndDate = null)
         {
+            return await Index(page, search, branch, location, program, StartDate, EndDate, true);
+        }
+
+        public async Task<IActionResult> Index(int page = 1,
+            string search = null,
+            int? branch = null,
+            int? location = null,
+            int? program = null,
+            string StartDate = null,
+            string EndDate = null,
+            bool communityExperiences = false)
+        {
             EventFilter filter = new EventFilter(page)
             {
                 Search = search,
+                EventType = communityExperiences ? 1 : 0
             };
 
             // ignore location if branch has value
@@ -93,7 +105,8 @@ namespace GRA.Controllers
                 ProgramId = program,
                 SystemList = new SelectList((await _siteService.GetSystemList()), "Id", "Name"),
                 LocationList = new SelectList((await _eventService.GetLocations()), "Id", "Name"),
-                ProgramList = new SelectList((await _siteService.GetProgramList()), "Id", "Name")
+                ProgramList = new SelectList((await _siteService.GetProgramList()), "Id", "Name"),
+                CommunityExperiences = communityExperiences
             };
             if (branch.HasValue)
             {
@@ -114,7 +127,7 @@ namespace GRA.Controllers
                 viewModel.UseLocation = true;
             }
 
-            return View(viewModel);
+            return View("Index", viewModel);
         }
 
         [HttpPost]
