@@ -47,12 +47,12 @@ namespace GRA.Controllers
             int? program = null,
             string StartDate = null,
             string EndDate = null,
-            bool communityExperiences = false)
+            bool CommunityExperiences = false)
         {
             EventFilter filter = new EventFilter(page)
             {
                 Search = search,
-                EventType = communityExperiences ? 1 : 0
+                EventType = CommunityExperiences ? 1 : 0
             };
 
             // ignore location if branch has value
@@ -106,7 +106,7 @@ namespace GRA.Controllers
                 SystemList = new SelectList((await _siteService.GetSystemList()), "Id", "Name"),
                 LocationList = new SelectList((await _eventService.GetLocations()), "Id", "Name"),
                 ProgramList = new SelectList((await _siteService.GetProgramList()), "Id", "Name"),
-                CommunityExperiences = communityExperiences
+                CommunityExperiences = CommunityExperiences
             };
             if (branch.HasValue)
             {
@@ -155,7 +155,7 @@ namespace GRA.Controllers
                 endDate = model.EndDate.Value.ToString("MM-dd-yyyy");
             }
 
-            return RedirectToAction("Index", new { Search = model.Search, Branch = model.BranchId, Location = model.LocationId, Program = model.ProgramId, StartDate = startDate, EndDate = endDate });
+            return RedirectToAction("Index", new { Search = model.Search, Branch = model.BranchId, Location = model.LocationId, Program = model.ProgramId, StartDate = startDate, EndDate = endDate, CommunityExperiences = model.CommunityExperiences });
         }
 
         public async Task<IActionResult> Detail(int id)
