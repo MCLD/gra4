@@ -384,6 +384,8 @@ input.form-checkbox {
     .dynamic-avatar-color-selector {
         width: 256px;
     }
+}
+
 .colored-icon.fa-times {
     color: red;
 }
