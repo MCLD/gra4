@@ -134,7 +134,7 @@ namespace GRA.Controllers.MissionControl
                 AlertDanger = $"Asset directory not found at: {assetPath}";
                 return View("Index");
             }
-
+            
             IEnumerable<DynamicAvatarLayer> avatarList;
             var jsonPath = Path.Combine(assetPath, "default avatars.json");
             using (StreamReader file = System.IO.File.OpenText(jsonPath))
@@ -209,8 +209,26 @@ namespace GRA.Controllers.MissionControl
                 }
                 await _dynamicAvatarService.AddElementListAsync(elementList);
             }
+            
+            IEnumerable<DynamicAvatarBundle> bundleList;
+            var bundleJsonPath = Path.Combine(assetPath, "default bundles.json");
+            using (StreamReader file = System.IO.File.OpenText(bundleJsonPath))
+            {
+                var jsonString = await file.ReadToEndAsync();
+                bundleList = JsonConvert.DeserializeObject<IEnumerable<DynamicAvatarBundle>>(jsonString);
+            }
 
-            ShowAlertSuccess("Default dynamic avatars have been successfully added.");
+            foreach (var bundle in bundleList)
+            {
+                List<int> items = bundle.DynamicAvatarItems.Select(_ => _.Id).ToList();
+                bundle.DynamicAvatarItems = null;
+                var newBundle = await _dynamicAvatarService.AddBundleAsync(bundle);
+                foreach (var item in items)
+                {
+                    await _dynamicAvatarService.AddBundleItemAsync(newBundle.Id, item);
+                }
+            }
+                ShowAlertSuccess("Default dynamic avatars have been successfully added.");
             return View("Index");
         }
 

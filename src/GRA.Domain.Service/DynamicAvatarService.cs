@@ -1,18 +1,19 @@
-﻿using GRA.Domain.Model;
+﻿using GRA.Abstract;
+using GRA.Domain.Model;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
-using GRA.Abstract;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
-using System.Collections;
 
 namespace GRA.Domain.Service
 {
     public class DynamicAvatarService : BaseUserService<DynamicAvatarService>
     {
+        private readonly IDynamicAvatarBundleRepository _dynamicAvatarBundleRepository;
         private readonly IDynamicAvatarColorRepository _dynamicAvatarColorRepository;
         private readonly IDynamicAvatarElementRepository _dynamicAvatarElementRepository;
         private readonly IDynamicAvatarItemRepository _dynamicAvatarItemRepository;
@@ -20,6 +21,7 @@ namespace GRA.Domain.Service
         private readonly IPathResolver _pathResolver;
         public DynamicAvatarService(ILogger<DynamicAvatarService> logger,
             IUserContextProvider userContextProvider,
+            IDynamicAvatarBundleRepository dynamicAvatarBundleRepository,
             IDynamicAvatarColorRepository dynamicAvatarColorRepository,
             IDynamicAvatarElementRepository dynamicAvatarElementRepository,
             IDynamicAvatarItemRepository dynamicAvatarItemRepository,
@@ -27,6 +29,8 @@ namespace GRA.Domain.Service
             IPathResolver pathResolver)
             : base(logger, userContextProvider)
         {
+            _dynamicAvatarBundleRepository = Require.IsNotNull(dynamicAvatarBundleRepository,
+                nameof(dynamicAvatarBundleRepository));
             _dynamicAvatarColorRepository = Require.IsNotNull(dynamicAvatarColorRepository,
                 nameof(dynamicAvatarColorRepository));
             _dynamicAvatarElementRepository = Require.IsNotNull(dynamicAvatarElementRepository,
@@ -43,22 +47,69 @@ namespace GRA.Domain.Service
         public async Task<ICollection<DynamicAvatarLayer>> GetUserWardrobeAsync()
         {
             var activeUserId = GetActiveUserId();
+            var siteId = GetCurrentSiteId();
             var layers = await _dynamicAvatarLayerRepository.GetAllWithColorsAsync(
-                GetCurrentSiteId(), activeUserId);
+                siteId, activeUserId);
 
-            var userAvatar = await _dynamicAvatarElementRepository.GetUserAvatarAsync(activeUserId);
-            foreach (var layer in layers)
+            if (layers.Count > 0)
             {
-                layer.DynamicAvatarItems = await _dynamicAvatarItemRepository
-                    .GetUserItemsByLayerAsync(activeUserId, layer.Id);
-
-                var layerSelection = userAvatar.Where(_ =>
-                _.DynamicAvatarItem.DynamicAvatarLayerId == layer.Id).SingleOrDefault();
-                if (layerSelection != null)
+                var userAvatar = await _dynamicAvatarElementRepository.GetUserAvatarAsync(activeUserId);
+                var bundleItems = new List<DynamicAvatarItem>();
+                if (userAvatar.Count == 0)
                 {
-                    layer.SelectedItem = layerSelection.DynamicAvatarItemId;
-                    layer.SelectedColor = layerSelection.DynamicAvatarColorId;
-                    layer.FilePath = _pathResolver.ResolveContentPath(layerSelection.Filename);
+                    bundleItems = (await _dynamicAvatarBundleRepository.GetRandomDefaultBundleAsync(siteId)).ToList();
+                }
+                foreach (var layer in layers)
+                {
+                    layer.DynamicAvatarItems = await _dynamicAvatarItemRepository
+                               .GetUserItemsByLayerAsync(activeUserId, layer.Id);
+
+                    if (userAvatar.Count > 0)
+                    {
+                        var layerSelection = userAvatar.Where(_ =>
+                        _.DynamicAvatarItem.DynamicAvatarLayerId == layer.Id).SingleOrDefault();
+                        if (layerSelection != null)
+                        {
+                            layer.SelectedItem = layerSelection.DynamicAvatarItemId;
+                            layer.SelectedColor = layerSelection.DynamicAvatarColorId;
+                            layer.FilePath = _pathResolver.ResolveContentPath(layerSelection.Filename);
+                        }
+                    }
+                    else
+                    {
+                        if (layer.DynamicAvatarColors.Count > 0)
+                        {
+                            layer.SelectedColor = layer.DynamicAvatarColors
+                                .ElementAt(new Random().Next(0, layer.DynamicAvatarColors.Count)).Id;
+                        }
+
+                        if (bundleItems.Count > 0)
+                        {
+                            var layerSelection = bundleItems.Where(_ =>
+                            _.DynamicAvatarLayerId == layer.Id).SingleOrDefault();
+                            if (layerSelection != null)
+                            {
+                                layer.SelectedItem = layerSelection.Id;
+                            }
+                        }
+
+                        if (!layer.SelectedItem.HasValue && !layer.CanBeEmpty)
+                        {
+                            layer.SelectedItem = layer.DynamicAvatarItems.First().Id;
+                        }
+
+                        if (layer.SelectedItem.HasValue)
+                        {
+                            var filePath = _pathResolver.ResolveContentPath($"site{siteId}/dynamicavatars/");
+                            var fileName = layer.SelectedItem.ToString();
+                            if (layer.SelectedColor.HasValue)
+                            {
+                                fileName += $"_{layer.SelectedColor}";
+                            }
+                            fileName += ".png";
+                            layer.FilePath = Path.Combine(filePath, $"layer{layer.Id}", $"item{layer.SelectedItem}", fileName);
+                        }
+                    }
                 }
             }
             return layers;
@@ -140,6 +191,20 @@ namespace GRA.Domain.Service
             VerifyManagementPermission();
             return await _dynamicAvatarElementRepository.UpdateSaveAsync(
                 GetClaimId(ClaimType.UserId), element);
+        }
+
+        public async Task<DynamicAvatarBundle> AddBundleAsync(DynamicAvatarBundle bundle)
+        {
+            VerifyManagementPermission();
+            bundle.SiteId = GetCurrentSiteId();
+            return await _dynamicAvatarBundleRepository.AddSaveAsync(
+                GetClaimId(ClaimType.UserId), bundle);
+        }
+
+        public async Task AddBundleItemAsync(int bundleId, int itemId)
+        {
+            VerifyManagementPermission();
+            await _dynamicAvatarBundleRepository.AddItemAsync(bundleId, itemId);
         }
 
         public async Task<ICollection<DynamicAvatarElement>> GetUserAvatarAsync()

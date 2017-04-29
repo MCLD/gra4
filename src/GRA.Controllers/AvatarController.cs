@@ -59,28 +59,6 @@ namespace GRA.Controllers
                         ImagePath = _pathResolver.ResolveContentPath($"site{currentSite.Id}/dynamicavatars/"),
                         AvatarPiecesJson = Newtonsoft.Json.JsonConvert.SerializeObject(model)
                     };
-                    foreach (var layer in viewModel.Layers)
-                    {
-                        if (!layer.SelectedItem.HasValue)
-                        {
-                            if (layer.DynamicAvatarColors.Count > 0)
-                            {
-                                layer.SelectedColor = layer.DynamicAvatarColors.ElementAt(new Random().Next(0, layer.DynamicAvatarColors.Count)).Id;
-                            }
-                            if (!layer.CanBeEmpty)
-                            {
-                                layer.SelectedItem = layer.DynamicAvatarItems.First().Id;
-
-                                var fileName = layer.SelectedItem.ToString();
-                                if (layer.SelectedColor.HasValue)
-                                {
-                                    fileName += $"_{layer.SelectedColor}";
-                                }
-                                fileName += ".png";
-                                layer.FilePath = Path.Combine(viewModel.ImagePath, $"layer{layer.Id}", $"item{layer.SelectedItem}", fileName);
-                            }
-                        }
-                    }
                     return View("DynamicIndex", viewModel);
                 }
                 else

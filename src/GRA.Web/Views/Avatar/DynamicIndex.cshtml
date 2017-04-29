@@ -64,120 +64,122 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-sm-3 visible-sm visible-md visible-lg">
-        @foreach (var groupId in Model.GroupIds)
-        {
-            <table style="margin-bottom:10px;">
-                @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
+<div class="avatar-background">
+    <div class="row">
+        <div class="col-sm-3 visible-sm visible-md visible-lg">
+            @foreach (var groupId in Model.GroupIds)
+            {
+                <table style="margin-bottom:10px;">
+                    @foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
                 {
+                        <tr>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button"
+                                            id="@($"selector{layer.Id}")"
+                                            class="btn btn-default dynamic-avatar-layer-button dynamic-avatar-layer-selector"
+                                            data-layer="@layer.Id">
+                                        @layer.Name
+                                    </button>
+                                    @if (layer.CanBeEmpty)
+                                    {
+                                        <button type="button" id="@($"remove{layer.Id}")" class="btn btn-default dynamic-avatar-layer-button removeLayer" style="@(!layer.SelectedItem.HasValue ? "display:none;" : "")" data-layer="@layer.Id">
+                                            <span class="text-danger fa fa-times-circle fa-lg"></span>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+        <div class="col-xs-12 col-sm-6">
+            <div class="row">
+                <div class="visible-xs" style="display: block;height:60px;margin-bottom:10px;">
+                    <div class="dropdown">
+                        <button type="button" id="xsLayerDropdown" class="btn btn-default dropdown-toggle" style="height:60px;width:120px;float:left;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <span id="xsLayerSelection" style="font-size:x-large;"></span>
+                            <span class="fa fa-caret-down fa-lg"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="xsLayerDropdown">
+                            @{
+                                bool addSeparater = false;
+                                foreach (var groupId in Model.GroupIds)
+                                {
+                                    if (addSeparater)
+                                    {
+                                        <li role="separator" class="divider"></li>
+                                    }
+                                    foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
+                                    {
+                                        <li>
+                                            <a href="#"
+                                               class="xsLayerSelector"
+                                               style="font-size:large;"
+                                               data-layer="@layer.Id">
+                                                @layer.Name
+                                            </a>
+                                        </li>
+                                    }
+                                    addSeparater = true;
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <button type="button" id="xsRemoveLayer" class="btn btn-default" style="height:60px;border-top-left-radius:0;border-bottom-left-radius:0px;float:left;margin-left:-1px;">
+                        <span class="text-danger fa fa-times-circle fa-2x"></span>
+                    </button>
+                    <button type="button" id="xsColorButton" class="btn btn-lg btn-default pull-right" style="height:60px;width:120px;display:none;">
+                        <span style="font-size:x-large;">Color</span>
+                        <span class="fa fa-paint-brush"></span>
+                    </button>
+                </div>
+                <div class="avatarSaveMessage">
+                </div>
+                <table style="margin-left:auto; margin-right:auto">
                     <tr>
                         <td>
-                            <div class="btn-group" role="group">
-                                <button type="button"
-                                        id="@($"selector{layer.Id}")"
-                                        class="btn btn-default dynamic-avatar-layer-button dynamic-avatar-layer-selector"
-                                        data-layer="@layer.Id">
-                                    @layer.Name
-                                </button>
-                                @if (layer.CanBeEmpty)
+                            <button type="button" id="decrease" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
+                                <span class="fa fa-2x fa-chevron-left"></span>
+                            </button>
+                        </td>
+                        <td rowspan="3">
+                            <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
+                                @foreach (var layer in Model.Layers)
                                 {
-                                    <button type="button" id="@($"remove{layer.Id}")" class="btn btn-default dynamic-avatar-layer-button removeLayer" style="@(!layer.SelectedItem.HasValue ? "display:none;" : "")" data-layer="@layer.Id">
-                                        <span class="text-danger fa fa-times-circle fa-lg"></span>
-                                    </button>
+                                    <img src="@layer.FilePath"
+                                         id="@($"image{layer.Id}")"
+                                         class="dynamic-avatar-layer"
+                                         style="z-index: @(layer.Position + 1); @(string.IsNullOrWhiteSpace(layer.FilePath) ? "visibility:hidden;" : "")"
+                                         data-layer="@layer.Id"
+                                         data-removable="@layer.CanBeEmpty"
+                                         data-showitemselector="@layer.ShowItemSelector"
+                                         data-showcolorselector="@layer.ShowColorSelector"
+                                         data-item="@layer.SelectedItem"
+                                         data-color="@layer.SelectedColor" />
                                 }
                             </div>
                         </td>
+                        <td>
+                            <button type="button" id="increase" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
+                                <span class="fa fa-2x fa-chevron-right"></span>
+                            </button>
+                        </td>
                     </tr>
-                }
-            </table>
-        }
-    </div>
-    <div class="col-xs-12 col-sm-6">
-        <div class="row">
-            <div class="visible-xs" style="display: block;height:60px;margin-bottom:10px;">
-                <div class="dropdown">
-                    <button type="button" id="xsLayerDropdown" class="btn btn-default dropdown-toggle" style="height:60px;width:120px;float:left;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        <span id="xsLayerSelection" style="font-size:x-large;"></span>
-                        <span class="fa fa-caret-down fa-lg"></span>
+                </table>
+                <div style="text-align:center;vertical-align:top;">
+                    <button id="saveAvatar" class="btn btn-lg btn-default" style="margin:5px;">
+                        <span class="fa fa-floppy-o"></span>
+                        Save Avatar
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="xsLayerDropdown">
-                        @{
-                            bool addSeparater = false;
-                            foreach (var groupId in Model.GroupIds)
-                            {
-                                if (addSeparater)
-                                {
-                                    <li role="separator" class="divider"></li>
-                                }
-                                foreach (var layer in Model.Layers.Where(_ => _.GroupId == groupId))
-                                {
-                                    <li>
-                                        <a href="#"
-                                           class="xsLayerSelector"
-                                           style="font-size:large;"
-                                           data-layer="@layer.Id">
-                                            @layer.Name
-                                        </a>
-                                    </li>
-                                }
-                                addSeparater = true;
-                            }
-                        }
-                    </ul>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-lg btn-default" style="margin:5px;">Return to Dashboard</a>
                 </div>
-                <button type="button" id="xsRemoveLayer" class="btn btn-default" style="height:60px;border-top-left-radius:0;border-bottom-left-radius:0px;float:left;margin-left:-1px;">
-                    <span class="text-danger fa fa-times-circle fa-2x"></span>
-                </button>
-                <button type="button" id="xsColorButton" class="btn btn-lg btn-default pull-right" style="height:60px;width:120px;display:none;">
-                    <span style="font-size:x-large;">Color</span>
-                    <span class="fa fa-paint-brush"></span>
-                </button>
-            </div>
-            <div class="avatarSaveMessage">
-            </div>
-            <table style="margin-left:auto; margin-right:auto">
-                <tr>
-                    <td>
-                        <button type="button" id="decrease" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
-                            <span class="fa fa-2x fa-chevron-left"></span>
-                        </button>
-                    </td>
-                    <td rowspan="3">
-                        <div class="dynamic-avatar-container" style="margin-left: auto;margin-right:auto">
-                            @foreach (var layer in Model.Layers)
-                            {
-                                <img src="@layer.FilePath"
-                                     id="@($"image{layer.Id}")"
-                                     class="dynamic-avatar-layer"
-                                     style="z-index: @(layer.Position + 1); @(string.IsNullOrWhiteSpace(layer.FilePath) ? "visibility:hidden;" : "")"
-                                     data-layer="@layer.Id"
-                                     data-removable="@layer.CanBeEmpty"
-                                     data-showitemselector="@layer.ShowItemSelector"
-                                     data-showcolorselector="@layer.ShowColorSelector"
-                                     data-item="@layer.SelectedItem"
-                                     data-color="@layer.SelectedColor" />
-                            }
-                        </div>
-                    </td>
-                    <td>
-                        <button type="button" id="increase" class="btn btn-link dynamic-avatar-item-selector" style="display:none;">
-                            <span class="fa fa-2x fa-chevron-right"></span>
-                        </button>
-                    </td>
-                </tr>
-            </table>
-            <div style="text-align:center;vertical-align:top;">
-                <button id="saveAvatar" class="btn btn-lg btn-default" style="margin:5px;">
-                    <span class="fa fa-floppy-o"></span>
-                    Save Avatar
-                </button>
-                <a asp-controller="Home" asp-action="Index" class="btn btn-lg btn-default" style="margin:5px;">Return to Dashboard</a>
             </div>
         </div>
-    </div>
-    <div class="col-sm-3 visible-sm visible-md visible-lg">
-        <div class="well dynamic-avatar-color-selector" style="display:none;">
+        <div class="col-sm-3 visible-sm visible-md visible-lg">
+            <div class="well dynamic-avatar-color-selector" style="display:none;">
+            </div>
         </div>
     </div>
 </div>
