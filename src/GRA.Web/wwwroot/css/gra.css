@@ -472,3 +472,12 @@ input.form-checkbox {
         .sign-up-step.active p {
             color: white;
         }
+
+.info-page {
+    background: white;
+    border-radius: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+}
