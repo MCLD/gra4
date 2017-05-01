@@ -482,3 +482,9 @@ input.form-checkbox {
 .dashboard-badge {
     padding: 0.25rem;
 }
+
+.dashboard-avatar {
+    background-color: white;
+    border-radius: 1rem;
+    padding-bottom: 0.5rem;
+}
