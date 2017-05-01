@@ -481,3 +481,7 @@ input.form-checkbox {
     padding-top: 0.25rem;
     padding-bottom: 0.5rem;
 }
+
+.dashboard-badge {
+    padding: 0.25rem;
+}
