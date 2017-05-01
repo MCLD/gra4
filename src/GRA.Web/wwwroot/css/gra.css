@@ -476,10 +476,7 @@ input.form-checkbox {
 .info-page {
     background: white;
     border-radius: 1rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    padding-top: 0.25rem;
-    padding-bottom: 0.5rem;
+    padding: 0.25rem 2rem 0.5rem 2rem;
 }
 
 .dashboard-badge {
