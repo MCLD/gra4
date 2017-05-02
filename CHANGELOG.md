@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Added ajax username/secret code available checking
 - Added suppress notifications attribute
 - Add disable and spinner to join submit buttons
-- Fix quesistionnaire controller not requiring authorization
+- Fix questionnaire controller not requiring authorization
 - Fix jquery validation message not displaying on questionnaire
 
 ### Changed
