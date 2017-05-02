@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
+- Fix questionnaire controller not requiring authorization
+- Fix jquery validation message not displaying on questionnaire
 
 ## [4.0.0-alpha5] 2017-05-01
 ### Added
@@ -18,8 +20,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Added ajax username/secret code available checking
 - Added suppress notifications attribute
 - Add disable and spinner to join submit buttons
-- Fix questionnaire controller not requiring authorization
-- Fix jquery validation message not displaying on questionnaire
 
 ### Changed
 - Changed dynamic avatars
