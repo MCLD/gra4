@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Add disable and spinner to questionnaire submit buttons
+
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
 
@@ -15,6 +18,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Added ajax username/secret code available checking
 - Added suppress notifications attribute
 - Add disable and spinner to join submit buttons
+- Fix quesistionnaire controller not requiring authorization
+- Fix jquery validation message not displaying on questionnaire
 
 ### Changed
 - Changed dynamic avatars
