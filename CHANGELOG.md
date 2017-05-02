@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## [Unreleased]
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
+- Fix missing hair colors
 
 ## [4.0.0-alpha5] 2017-05-01
 ### Added
