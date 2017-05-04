@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+
+### Added
+- Add error message when trying to apply a role twice
+
 ### Changed
 - Change join branch list to be populated with all branches
 
