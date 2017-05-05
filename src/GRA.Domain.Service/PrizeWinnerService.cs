@@ -27,7 +27,8 @@ namespace GRA.Domain.Service
             SetManagementPermission(Permission.ViewUserPrizes);
         }
 
-        public async Task<PrizeWinner> AddPrizeWinnerAsync(PrizeWinner prizeWinner)
+        public async Task<PrizeWinner> AddPrizeWinnerAsync(PrizeWinner prizeWinner, 
+            bool useUserIdAsCreatedBy = false)
         {
             if (prizeWinner.DrawingId == null && prizeWinner.TriggerId == null)
             {
@@ -36,7 +37,7 @@ namespace GRA.Domain.Service
             prizeWinner.SiteId = GetCurrentSiteId();
             prizeWinner.CreatedAt = DateTime.Now;
             prizeWinner.CreatedBy = prizeWinner.UserId;
-            int authUserId = GetClaimId(ClaimType.UserId);
+            int authUserId = useUserIdAsCreatedBy ? prizeWinner.UserId : GetClaimId(ClaimType.UserId);
             return await _prizeWinnerRepository.AddSaveAsync(authUserId, prizeWinner);
         }
 
