@@ -576,7 +576,7 @@ namespace GRA.Domain.Service
         }
 
         private async Task AwardTriggersAsync(int userId, bool logPoints = true, int? siteId = null,
-            bool useUserIdAsCreatedBy = false)
+            bool userIdIsCurrentUser = false)
         {
             // load the initial list of triggers that might have been achieved
             var triggers = await _triggerRepository.GetTriggersAsync(userId);
@@ -636,7 +636,7 @@ namespace GRA.Domain.Service
                 int? mailId = await SendMailAsync(userId, trigger, siteId);
 
                 // award prize if applicable
-                await AwardPrizeAsync(userId, trigger, mailId, useUserIdAsCreatedBy);
+                await AwardPrizeAsync(userId, trigger, mailId, userIdIsCurrentUser);
             }
             // this call will recursively call this method in case any additional
             // triggers are fired by this action
@@ -901,7 +901,7 @@ namespace GRA.Domain.Service
         }
 
         private async Task AwardPrizeAsync(int userId, Trigger trigger, int? mailId, 
-            bool useUserIdAsCreatedBy = false)
+            bool userIdIsCurrentUser = false)
         {
             if (!string.IsNullOrEmpty(trigger.AwardPrizeName))
             {
@@ -920,7 +920,7 @@ namespace GRA.Domain.Service
                     prize.MailId = mailId;
                 }
 
-                await _prizeWinnerService.AddPrizeWinnerAsync(prize, useUserIdAsCreatedBy);
+                await _prizeWinnerService.AddPrizeWinnerAsync(prize, userIdIsCurrentUser);
             }
         }
     }
