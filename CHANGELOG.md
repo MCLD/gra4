@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add badges to questionnaires
 - Add audit logging of removals
 - Add branch validation to join step 1
+- Add household shortcut to navbar
 
 ### Changed
 - Change join branch list to be populated with all branches
