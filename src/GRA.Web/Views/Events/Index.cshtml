@@ -137,7 +137,14 @@
                                                         @eventItem.Name
                                                     </a>
                                                 </td>
-                                                <td>@eventItem.StartDate.ToString("d") @(!eventItem.AllDay ? "at " + eventItem.StartDate.ToString("t") : "")</td>
+                                                @if (eventItem.AllDay)
+                                                {
+                                                    <td>@eventItem.StartDate.ToString("d") @(eventItem.EndDate.HasValue ? "– " + eventItem.EndDate.Value.ToString("d") : "")</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@eventItem.StartDate.ToString("d") at @eventItem.StartDate.ToString("t")</td>
+                                                }
                                                 <td>@eventItem.EventLocationName</td>
                                             </tr>
                                         }
