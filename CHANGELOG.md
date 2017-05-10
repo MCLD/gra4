@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
-
 ### Added
 - Add disable and spinner to questionnaire submit buttons
 - Add error message when trying to apply a role twice
@@ -21,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Change join branch list to be populated with all branches
 - Change trigger requirement list styling
 - Change recovery token log level to info
+- Ability to browse community experiences from the events section
 
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
@@ -44,9 +44,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - Changed dynamic avatars
 - Move profile, dashboard, and sign-up to be inside containers to make the site compatible with having a background color/image
-
-### Changed
-- Ability to browse community experiences from the events section
 
 ### Fixed
 - Fix alert spacing
