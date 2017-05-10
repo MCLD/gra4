@@ -13,11 +13,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add badges to questionnaires
 - Add audit logging of removals
 - Add branch validation to join step 1
+- Add merging entered schools
+- Add edit username to mission control
 - Add household shortcut to navbar
 
 ### Changed
 - Change join branch list to be populated with all branches
 - Change trigger requirement list styling
+- Change recovery token log level to info
 
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
@@ -27,6 +30,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Fix not being able to submit action tasks
 - Fix participant sorting
 - Fix joining and logging in while logged in
+- Fix trigger badge creation exception
 
 ## [4.0.0-alpha5] 2017-05-01
 ### Added
