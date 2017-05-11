@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add edit username to mission control
 - Add household shortcut to navbar
 - Add url to action tasks
+- Add url hyperlink to challenge task list
 
 ### Changed
 - Change join branch list to be populated with all branches
