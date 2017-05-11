@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using GRA.Domain.Service;
+using GRA.Domain.Service.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +17,7 @@ namespace GRA.CommandLine
         public ServiceFacade(CommandLineApplication app,
             IConfigurationRoot config,
             IHttpContextAccessor httpContextAccessor,
+            IUserContextProvider userContextProvider,
             SiteLookupService siteLookupService,
             UserService userService)
         {
@@ -28,7 +28,6 @@ namespace GRA.CommandLine
             SiteLookupService = siteLookupService
                 ?? throw new ArgumentNullException(nameof(siteLookupService));
             UserService = userService ?? throw new ArgumentNullException(nameof(userService));
-
         }
     }
 }

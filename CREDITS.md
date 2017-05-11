@@ -58,6 +58,10 @@ The Great Reading Adventure uses open source components. You can find informatio
 - [AutoMapper](http://automapper.org/): A convention-based object-object mapper.
 - Source on GitHub: [automapper/automapper](https://github.com/AutoMapper/AutoMapper) - [MIT License](https://github.com/AutoMapper/AutoMapper/blob/master/LICENSE.txt)
 
+### Bogus
+- [Bogus](https://github.com/bchavez/Bogus): A simple and sane fake data generator for C#. Based on and ported from the famed faker.js.
+- Source on GitHub [bchavez/Bogus](https://github.com/bchavez/Bogus) - [MIT License](https://github.com/bchavez/Bogus/blob/master/LICENSE)
+
 ### Bootstrap-DatetimePicker 
 - Date/time picker widget based on twitter bootstrap [Bootstrap-DatetimePicker](http://eonasdan.github.io/bootstrap-datetimepicker/) 
 - Source on GitHub: [Eonasdan/bootstrap-datetimepicker](https://github.com/Eonasdan/bootstrap-datetimepicker) - [MIT License](https://github.com/Eonasdan/bootstrap-datetimepicker/blob/master/LICENSE)

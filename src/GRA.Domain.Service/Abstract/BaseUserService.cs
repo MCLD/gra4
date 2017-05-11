@@ -120,5 +120,10 @@ namespace GRA.Domain.Service.Abstract
                 throw new GraException("Permission denied.");
             }
         }
+
+        public void ClearCachedUserContext()
+        {
+            _userContext = null;
+        }
     }
 }

@@ -75,6 +75,9 @@ namespace GRA.CommandLine
             services.AddSingleton<IHttpContextAccessor, FakeHttpContext>();
             services.AddSingleton<ServiceFacade>();
 
+            // data generation
+            services.AddSingleton<DataGenerator.User>();
+
             #region Dependency Injection brought from GRA.Web
             /**************************************************************************************/
             // service facades
