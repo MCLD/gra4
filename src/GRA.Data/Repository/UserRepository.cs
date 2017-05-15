@@ -40,7 +40,7 @@ namespace GRA.Data.Repository
                 UserId = userLookup.Id,
                 RoleId = roleId,
                 CreatedBy = currentUserId,
-                CreatedAt = DateTime.Now
+                CreatedAt = _dateTimeProvider.Now
             };
             await _context.UserRoles.AddAsync(userRoleAssignment);
         }
@@ -96,7 +96,7 @@ namespace GRA.Data.Repository
                 if (result.PasswordIsValid)
                 {
                     result.User = _mapper.Map<Model.User, User>(lookupUser);
-                    lookupUser.LastAccess = DateTime.Now;
+                    lookupUser.LastAccess = _dateTimeProvider.Now;
                     await SaveAsync();
                 }
             }
