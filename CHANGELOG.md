@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add trigger mail permission
 - Add showing original message when replying to mail in Mission Control
 - Add mail permission requirement to drawing mails
+- Add ability for users to edit books
 
 ### Changed
 - Change join branch list to be populated with all branches
