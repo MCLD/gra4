@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Fix removing drawing winners
 - Fix service broadcast mail permission
 - Fix prize redemption exceptions not being caught
+- Add event not found handling
 
 ## [4.0.0-alpha5] 2017-05-01
 ### Added
