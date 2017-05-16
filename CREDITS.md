@@ -74,6 +74,10 @@ The Great Reading Adventure uses open source components. You can find informatio
 - Implementation of [CommonMark](http://commonmark.org/) specification in C# for converting Markdown documents to HTML. Optimized for maximum performance and portability.
 - Source on GitHub: [Knagis/CommonMark.NET](https://github.com/Knagis/CommonMark.NET) - [BSD-3-Clause](https://github.com/Knagis/CommonMark.NET/blob/master/LICENSE.md)
 
+### Console Progress Bar
+- Display progress in console applications.
+- Source on GitHub Gist: [DanielSWolf/Program.cs](https://gist.github.com/DanielSWolf/0ab6a96899cc5377bf54) - [MIT License](https://opensource.org/licenses/MIT)
+
 ### CsvHelper
 - Library to help reading and writing CSV files [CsvHelper](https://joshclose.github.io/CsvHelper/)
 - Source on GitHub: [JoshClose/CsvHelper](https://github.com/joshclose/csvhelper) - [Apache License, Version 2.0](https://github.com/JoshClose/CsvHelper/blob/master/LICENSE.txt)

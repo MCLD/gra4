@@ -236,12 +236,17 @@ namespace GRA.Data.Repository
             return userList;
         }
 
-        public async Task<int> GetCountAsync(StatusSummary request)
+        public async Task<int> GetCountAsync(StatusSummary request, bool isAchiever = false)
         {
             IQueryable<Model.User> userCount = null;
             userCount = DbSet
                 .AsNoTracking()
                 .Where(_ => _.IsDeleted == false && _.SiteId == request.SiteId);
+
+            if(isAchiever)
+            {
+                userCount = userCount.Where(_ => _.IsAchiever == true);
+            }
 
             if (request.StartDate != null)
             {

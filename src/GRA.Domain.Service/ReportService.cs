@@ -54,6 +54,7 @@ namespace GRA.Domain.Service
                      .CompletedChallengeCountAsync(request);
                 summary.BadgesEarned = await _userLogRepository.EarnedBadgeCountAsync(request);
                 summary.DaysUntilEnd = await GetDaysUntilEnd();
+                summary.Achievers = await _userRepository.GetCountAsync(request, isAchiever: true);
                 _memoryCache.Set(cacheKey,
                     summary,
                     new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(5)));
