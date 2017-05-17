@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add trigger mail permission
 - Add showing original message when replying to mail in Mission Control
 - Add mail permission requirement to drawing mails
+- Add ability for users to edit books
+- Add exclude previous winners drawing option
 
 ### Changed
 - Change join branch list to be populated with all branches
@@ -27,6 +29,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Ability to browse community experiences from the events section
 - Change events system dropdown to filter events
 - Change recovery token log level to info
+- Change MC book editing to match non-MC book editing
 
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
@@ -41,6 +44,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Fix service broadcast mail permission
 - Fix prize redemption exceptions not being caught
 - Add event not found handling
+- Fix dynamic avatar layer removability at extra small
 
 ## [4.0.0-alpha5] 2017-05-01
 ### Added
