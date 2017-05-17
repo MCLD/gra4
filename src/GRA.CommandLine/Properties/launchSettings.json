@@ -2,7 +2,6 @@
   "profiles": {
     "GRA.CommandLine": {
       "commandName": "Project",
-      "commandLineArgs": "user -hh -cr 8000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
