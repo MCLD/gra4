@@ -45,7 +45,7 @@ namespace GRA.CommandLine.DataGenerator
                     User = randomUser,
                 };
 
-                if (rand.Int(0, 100) <= -1)
+                if (rand.Int(1, 100) <= -1)
                 {
                     // TODO fix secret code activity entry
                     var randomTrigger = (await _triggerService.GetPaginatedListAsync(new BaseFilter
@@ -59,7 +59,7 @@ namespace GRA.CommandLine.DataGenerator
                 }
                 else
                 {
-                    int choice = rand.Int(0, 100);
+                    int choice = rand.Int(1, 100);
                     if (choice <= 5)
                     {
                         act.ActivityAmount = rand.Int(1, 500);

@@ -13,6 +13,8 @@ namespace GRA.CommandLine.Commands
         private readonly DataGenerator.DateTime _dateTimeDataGenerator;
         private readonly DataGenerator.User _userDataGenerator;
         private readonly ReportService _reportService;
+        private const int FamilyRandomIndicator = -1;
+        private const int GroupRandomIndicator = -2;
         public UserCommand(ServiceFacade facade,
             DataGenerator.DateTime dateTimeDataGenerator,
             DataGenerator.User userDataGenerator,
@@ -38,6 +40,10 @@ namespace GRA.CommandLine.Commands
                     "Suppress status while creating users",
                     CommandOptionType.NoValue);
 
+                var householdOption = _.Option("-hh|--household",
+                    "Also create households when inserting random users",
+                    CommandOptionType.NoValue);
+
                 var countCommand = _.Command("count", _c =>
                 {
                     _c.Description = "Get a total number of users in a site.";
@@ -55,13 +61,16 @@ namespace GRA.CommandLine.Commands
                     bool quiet = displayStatusOption.HasValue()
                         && displayStatusOption.Value().Equals("on", StringComparison.CurrentCultureIgnoreCase);
 
+                    bool household = householdOption.HasValue()
+                        && householdOption.Value().Equals("on", StringComparison.CurrentCultureIgnoreCase);
+
                     if (createRandomOption.HasValue())
                     {
                         if (!int.TryParse(createRandomOption.Value(), out int howMany))
                         {
                             throw new ArgumentException("Error: <count> must be a number of users to create.");
                         }
-                        return await CreateUsers(howMany, quiet);
+                        return await CreateUsers(howMany, household, quiet);
                     }
                     else
                     {
@@ -81,9 +90,12 @@ namespace GRA.CommandLine.Commands
             return 0;
         }
 
-        private async Task<int> CreateUsers(int howMany, bool quiet)
+        private async Task<int> CreateUsers(int howMany, bool household, bool quiet)
         {
             int created = 0;
+
+            int[] familyOptions = { 1, 2, 3, 4, 5, FamilyRandomIndicator, GroupRandomIndicator };
+            float[] familyWeights = { 0.25F, 0.35F, 0.21F, 0.10F, 0.04F, 0.047F, 0.003F };
 
             var issues = new List<string>();
 
@@ -101,9 +113,15 @@ namespace GRA.CommandLine.Commands
             ProgressBar progress = quiet ? null : new ProgressBar();
             try
             {
+                var rand = new Bogus.Randomizer();
+                int familyMembers = 0;
+                Domain.Model.User parent = null;
+
                 // insert the participants
                 foreach (var user in users)
                 {
+                    bool currentUserParent = false;
+
                     // set an appropriate random date and time for insertion
                     var setDateTime = _dateTimeDataGenerator.SetRandom(Site);
 
@@ -116,18 +134,67 @@ namespace GRA.CommandLine.Commands
                         maxDateTime = setDateTime;
                     }
 
-                    // insert the created user
-                    try
+                    if (familyMembers > 0)
                     {
-                        await _facade
-                            .UserService
-                            .RegisterUserAsync(user.User, user.Password, user.SchoolDistrictId);
-                        created++;
+                        // we are processing family members
+                        user.User.LastName = parent.LastName;
+                        if (rand.Int(1, 100) > 5)
+                        {
+                            user.User.Username = null;
+                        }
+
+                        // insert the family member
+                        try
+                        {
+                            await _facade
+                                .UserService
+                                .AddHouseholdMemberAsync(parent.Id,
+                                    user.User,
+                                    user.SchoolDistrictId);
+                            created++;
+                        }
+                        catch (GraException gex)
+                        {
+                            issues.Add($"Household username: {user.User.Username} - {gex.Message}");
+                        }
+                        familyMembers--;
                     }
-                    catch (GraException gex)
+                    else
                     {
-                        issues.Add($"Username: {user.User.Username} - {gex.Message}");
+                        // not processing family members, should this person be a head of household?
+                        if (household && rand.Int(1, 100) <= 31)
+                        {
+                            currentUserParent = true;
+
+                            familyMembers = rand.WeightedRandom<int>(familyOptions, familyWeights);
+                            if (familyMembers == FamilyRandomIndicator)
+                            {
+                                familyMembers = rand.Int(6, 10);
+                            }
+                            else if (familyMembers == GroupRandomIndicator)
+                            {
+                                familyMembers = rand.Int(11, 100);
+                            }
+                        }
+
+                        // insert the created user
+                        try
+                        {
+                            var inserted = await _facade
+                                .UserService
+                                .RegisterUserAsync(user.User, user.Password, user.SchoolDistrictId);
+                            if (currentUserParent)
+                            {
+                                parent = inserted;
+                            }
+                            created++;
+                        }
+                        catch (GraException gex)
+                        {
+                            issues.Add($"Username: {user.User.Username} - {gex.Message}");
+                        }
                     }
+
                     if (progress != null)
                     {
                         progress.Report((double)created / howMany);

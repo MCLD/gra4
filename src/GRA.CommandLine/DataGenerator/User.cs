@@ -32,10 +32,16 @@ namespace GRA.CommandLine.DataGenerator
                     var branch = f.PickRandom(branches);
                     var program = f.PickRandom(programs);
                     u.BranchId = branch.Id;
-                    u.Email = f.Person.Email;
+                    if (f.Random.Bool())
+                    {
+                        u.Email = f.Person.Email;
+                    }
                     u.FirstName = f.Person.FirstName;
                     u.LastName = f.Person.LastName;
-                    u.PhoneNumber = f.Phone.PhoneNumber("###-###-####");
+                    if (f.Random.Bool())
+                    {
+                        u.PhoneNumber = f.Phone.PhoneNumber("###-###-####");
+                    }
                     u.PostalCode = f.Address.ZipCode();
                     u.ProgramId = program.Id;
                     u.SiteId = siteId;
@@ -71,8 +77,6 @@ namespace GRA.CommandLine.DataGenerator
                     var school = rand.ListItem<School>(schools.ToList());
                     schoolDistrictId = school.SchoolDistrictId;
                 }
-
-                // some of these should be families!
 
                 users.Add(new GeneratedUser
                 {
