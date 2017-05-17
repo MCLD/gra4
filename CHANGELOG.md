@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add showing original message when replying to mail in Mission Control
 - Add mail permission requirement to drawing mails
 - Add ability for users to edit books
+- Add exclude previous winners drawing option
 
 ### Changed
 - Change join branch list to be populated with all branches
