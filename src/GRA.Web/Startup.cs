@@ -291,10 +291,6 @@ namespace GRA.Web
             }
 
             string pathString = pathResolver.ResolveContentPath();
-            if (!pathString.StartsWith("/"))
-            {
-                pathString = "/" + pathString;
-            }
 
             // configure /content with 7 day cache
             app.UseStaticFiles(new StaticFileOptions()

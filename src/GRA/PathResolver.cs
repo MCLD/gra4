@@ -21,7 +21,11 @@ namespace GRA
             string path = _config[ConfigurationKey.ContentPath];
             if (string.IsNullOrEmpty(path))
             {
-                path = "content";
+                path = "/content";
+            }
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
             }
             if (!string.IsNullOrEmpty(filePath))
             {
