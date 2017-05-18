@@ -179,7 +179,7 @@
                                                         <button type="button"
                                                                 class="btn btn-primary btn-xs viewDailyImage"
                                                                 style="display: inline-block;vertical-align:top;"
-                                                                data-src="@Model.DailyImageDictionary[Model.Head.ProgramId].DailyImagePath">
+                                                                data-src="@Url.Content($"~/{Model.DailyImageDictionary[Model.Head.ProgramId].DailyImagePath}")">
                                                             @Model.DailyImageDictionary[Model.Head.ProgramId].DailyImageMessage
                                                         </button>
                                                     }
@@ -277,7 +277,7 @@
                                                             <button type="button"
                                                                     class="btn btn-primary btn-xs viewDailyImage"
                                                                     style="display: inline-block;vertical-align:top;"
-                                                                    data-src="@Model.DailyImageDictionary[user.ProgramId].DailyImagePath">
+                                                                    data-src="@Url.Content($"~/{Model.DailyImageDictionary[user.ProgramId].DailyImagePath}")">
                                                                 @Model.DailyImageDictionary[user.ProgramId].DailyImageMessage
                                                             </button>
                                                         }
