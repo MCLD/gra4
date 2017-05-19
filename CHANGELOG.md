@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Change challenge tasks to add books without points
 - Remove reliance on content delivery networks
 - Remove username when users deleted
+- Remove secret code when trigger deleted
 
 ### Fixed
 - Add field to site object to allow forcing https even if the Web server believes the request came in via http.
