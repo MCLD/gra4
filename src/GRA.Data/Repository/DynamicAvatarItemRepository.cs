@@ -17,6 +17,15 @@ namespace GRA.Data.Repository
         {
         }
 
+        public async Task<ICollection<DynamicAvatarItem>> GetItemsByLayerAsync(int layerId)
+        {
+            return await DbSet.AsNoTracking()
+                .Where(_ => _.DynamicAvatarLayerId == layerId)
+                .OrderBy(_ => _.SortOrder)
+                .ProjectTo<DynamicAvatarItem>()
+                .ToListAsync();
+        }
+
         public async Task<ICollection<DynamicAvatarItem>> GetUserItemsByLayerAsync(int userId,
             int layerId)
         {

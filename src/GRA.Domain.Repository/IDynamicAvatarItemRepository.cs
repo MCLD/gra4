@@ -6,6 +6,7 @@ namespace GRA.Domain.Repository
 {
     public interface IDynamicAvatarItemRepository : IRepository<DynamicAvatarItem>
     {
+        Task<ICollection<DynamicAvatarItem>> GetItemsByLayerAsync(int layerId);
         Task<ICollection<DynamicAvatarItem>> GetUserItemsByLayerAsync(int userId, int layerId);
     }
 }

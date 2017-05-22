@@ -121,6 +121,12 @@ namespace GRA.Domain.Service
             return layers;
         }
 
+        public async Task<IEnumerable<DynamicAvatarLayer>> GetLayersAsync()
+        {
+            VerifyManagementPermission();
+            return await _dynamicAvatarLayerRepository.GetAllAsync(GetCurrentSiteId());
+        }
+
         public async Task<DynamicAvatarLayer> AddLayerAsync(DynamicAvatarLayer layer)
         {
             VerifyManagementPermission();
@@ -135,6 +141,11 @@ namespace GRA.Domain.Service
             layer.SiteId = GetCurrentSiteId();
             return await _dynamicAvatarLayerRepository.UpdateSaveAsync(
                 GetClaimId(ClaimType.UserId), layer);
+        }
+
+        public async Task<IEnumerable<DynamicAvatarItem>> GetItemsByLayerAsync(int layerId)
+        {
+            return await _dynamicAvatarItemRepository.GetItemsByLayerAsync(layerId);
         }
 
         public async Task<DynamicAvatarItem> AddItemAsync(DynamicAvatarItem item)
