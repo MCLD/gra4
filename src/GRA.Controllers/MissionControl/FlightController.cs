@@ -266,6 +266,7 @@ namespace GRA.Controllers.MissionControl
                 }
             }
 
+            ShowAlertSuccess("Default avatar thumbnails have been successfully added.");
             return View("Index");
         }
 

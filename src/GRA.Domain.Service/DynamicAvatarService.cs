@@ -241,7 +241,11 @@ namespace GRA.Domain.Service
                 {
                     var element = await _dynamicAvatarElementRepository.GetByItemAndColorAsync(
                         selection.SelectedItem.Value, selection.SelectedColor);
-                    if (element != default(DynamicAvatarElement) && element.DynamicAvatarItem.Unlockable == false)
+
+                    if (element != default(DynamicAvatarElement)
+                        && (element.DynamicAvatarItem.Unlockable == false
+                        || await _dynamicAvatarItemRepository
+                            .HasUserUnlockedItemAsync(activeUserId, element.DynamicAvatarItemId)))
                     {
                         elementList.Add(element.Id);
                     }
@@ -258,6 +262,18 @@ namespace GRA.Domain.Service
                 }
             }
             await _dynamicAvatarElementRepository.SetUserAvatarAsync(activeUserId, elementList);
+        }
+
+        public async Task<ICollection<DynamicAvatarBundle>> GetAllBundlesAsync(
+            bool? unlockable = null)
+        {
+            VerifyManagementPermission();
+            return await _dynamicAvatarBundleRepository.GetAllAsync(GetCurrentSiteId(), unlockable);
+        }
+
+        public async Task<DynamicAvatarBundle> GetBundleByIdAsync(int id)
+        {
+            return await _dynamicAvatarBundleRepository.GetByIdAsync(id);
         }
     }
 }
