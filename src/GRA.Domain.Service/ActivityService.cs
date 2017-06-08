@@ -536,7 +536,7 @@ namespace GRA.Domain.Service
             }
 
             // cap points at int.MaxValue
-            long totalPoints = Convert.ToInt64(earnedUser.PointsEarned) 
+            long totalPoints = Convert.ToInt64(earnedUser.PointsEarned)
                 + Convert.ToInt64(pointsEarned);
             if (totalPoints > int.MaxValue)
             {
@@ -736,7 +736,8 @@ namespace GRA.Domain.Service
 
                 if (trigger.AwardAvatarBundleId.HasValue)
                 {
-                    await AwardUserBundle(userId, trigger.AwardAvatarBundleId.Value);
+                    await AwardUserBundle(userId, trigger.AwardAvatarBundleId.Value,
+                        userIdIsCurrentUser);
                 }
 
                 // send mail if applicable
@@ -1047,11 +1048,13 @@ namespace GRA.Domain.Service
             }
         }
 
-        private async Task AwardUserBundle(int userId, int bundleId)
+        private async Task AwardUserBundle(int userId, int bundleId,
+            bool userIdIsCurrentUser = false)
         {
             var bundle = await _dynamicAvatarBundleRepository.GetByIdAsync(bundleId);
             if (bundle.DynamicAvatarItems.Count > 0)
             {
+                var loggingUser = (userIdIsCurrentUser ? userId : GetActiveUserId());
                 var userItems = await _dynamicAvatarItemRepository.GetUserUnlockedItemsAsync(userId);
 
                 var newItems = bundle.DynamicAvatarItems.Select(_ => _.Id).Except(userItems).ToList();
@@ -1074,9 +1077,9 @@ namespace GRA.Domain.Service
                     notification.Text += " You can view the full list of pieces unlocked in your Profile History.";
                 }
 
-                await _notificationRepository.AddSaveAsync(userId, notification);
+                await _notificationRepository.AddSaveAsync(loggingUser, notification);
 
-                await _userLogRepository.AddSaveAsync(GetActiveUserId(), new UserLog
+                await _userLogRepository.AddSaveAsync(loggingUser, new UserLog
                 {
                     UserId = userId,
                     PointsEarned = 0,
