@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Exception handling when entering activity on the dashboard
 - "Achieved at" property to Users
 - Report: Badge Report
+- Report: Badge Top Scores Report
 - Report: Current Status By Program Report
 - Report: Current Status Report
 - Report: Participant Progress Report
