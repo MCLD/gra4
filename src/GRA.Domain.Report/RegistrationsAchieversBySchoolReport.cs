@@ -87,17 +87,17 @@ namespace GRA.Domain.Report
 
             ICollection<School> schools = null;
 
-            if (criterion.SchoolDistrictId != null)
-            {
-                schools = await _schoolRepository.GetAllAsync((int)criterion.SiteId,
-                    criterion.SchoolDistrictId);
-            }
-            else if (criterion.SchoolId != null)
+            if (criterion.SchoolId != null)
             {
                 schools = new List<School>()
                 {
                     await _schoolRepository.GetByIdAsync((int)criterion.SchoolId)
                 };
+            }
+            else if (criterion.SchoolDistrictId != null)
+            {
+                schools = await _schoolRepository.GetAllAsync((int)criterion.SiteId,
+                    criterion.SchoolDistrictId);
             }
 
             if (schools == null)
