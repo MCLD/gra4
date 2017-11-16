@@ -61,10 +61,35 @@ namespace GRA.Web
 
             Configuration = builder.Build();
 
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(Configuration)
-                .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
-                .CreateLogger();
+            if (!string.IsNullOrEmpty(Configuration[ConfigurationKey.RollingLogPath]))
+            {
+                string instance =
+                    !string.IsNullOrEmpty(Configuration[ConfigurationKey.InstanceName])
+                    ? Configuration[ConfigurationKey.InstanceName]
+                    : "gra";
+
+                string path = Configuration[ConfigurationKey.RollingLogPath];
+
+                if (!path.EndsWith("/"))
+                {
+                    path = path + "/";
+                }
+
+                string rollingFilename = path + instance + "-{Date}.txt";
+
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(Configuration)
+                    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
+                    .WriteTo.RollingFile(rollingFilename)
+                    .CreateLogger();
+            }
+            else
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(Configuration)
+                    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
+                    .CreateLogger();
+            }
 
             Log.Logger.Warning("Great Reading Adventure v{0} starting up in {1}",
                 Assembly.GetEntryAssembly()

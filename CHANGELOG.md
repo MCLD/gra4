@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Anti-bounce on Mission Control school buttons
 - Allow multiple programs to be selected for drawings
 - Moved content into top-level shared folder for better Docker support
+- Change rolling log configuration to support instances
 
 ### Fixed
 - Remove Entered School type restriction
