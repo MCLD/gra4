@@ -25,6 +25,7 @@ namespace GRA
         public const string InitialProgramSetup = "GraInitialProgramSetup";
         public const string InstanceName = "GraInstanceName";
         public const string RollingLogPath = "GraRollingLogPath";
+        public const string ShowSecretCode = "ShowSecretCode";
         public const string SqlSessionSchemaName = "GraSqlSessionSchemaName";
         public const string SqlSessionTable = "GraSqlSessionTable";
     }
