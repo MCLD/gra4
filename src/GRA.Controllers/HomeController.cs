@@ -79,7 +79,7 @@ namespace GRA.Controllers
                     SingleEvent = pointTranslation.IsSingleEvent,
                     ActivityDescriptionPlural = pointTranslation.ActivityDescriptionPlural,
                     Badges = badges.Data,
-                    ShowSecretCode = _config[ConfigurationKey.ShowSecretCode] == "True"
+                    ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
                 };
 
                 var program = await _siteService.GetProgramByIdAsync(user.ProgramId);
