@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Favoriting Challenges
 - Markdown text entry and images to Challenge Tasks
 - Participant Book list sorting
-- Configuration for showing secret code entry
+- Configuration for hiding secret code entry
 
 ### Changed
 - Show report completion percent in window titlebar
