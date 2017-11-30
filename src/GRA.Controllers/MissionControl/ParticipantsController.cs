@@ -606,7 +606,8 @@ namespace GRA.Controllers.MissionControl
                     .GetRequiredQuestionnaire(user.Id, user.Age)).HasValue,
                 HouseholdCount = await _userService
                     .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
-                HasAccount = !string.IsNullOrWhiteSpace(user.Username)
+                HasAccount = !string.IsNullOrWhiteSpace(user.Username),
+                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
             };
 
             if (UserHasPermission(Permission.ViewUserPrizes))
@@ -778,7 +779,8 @@ namespace GRA.Controllers.MissionControl
                     Head = head,
                     SystemId = systemId,
                     BranchList = branchList,
-                    SystemList = systemList
+                    SystemList = systemList,
+                    ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
                 };
 
                 if (UserHasPermission(Permission.ViewUserPrizes))

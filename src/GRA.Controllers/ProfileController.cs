@@ -277,7 +277,8 @@ namespace GRA.Controllers
                 ActiveUser = activeUserId,
                 CanLogActivity = siteStage == SiteStage.ProgramOpen,
                 CanEditHousehold = siteStage == SiteStage.RegistrationOpen
-                    || siteStage == SiteStage.ProgramOpen
+                    || siteStage == SiteStage.ProgramOpen,
+                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
             };
 
             if (authUserIsHead)

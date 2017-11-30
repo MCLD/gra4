@@ -14,6 +14,7 @@ namespace GRA.Controllers.ViewModel.Profile
         public string UserSelection { get; set; }
         public int MinutesRead { get; set; }
         public string MinutesReadMessage { get; set; }
+        public bool ShowSecretCode { get; set; }
         public string SecretCode { get; set; }
         public string SecretCodeMessage { get; set; }
         public bool CanLogActivity { get; set; }
