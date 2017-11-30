@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Participant Book list sorting
 - Configuration for hiding secret code entry
 - Note about password requirements to join form
+- Linking to an external event list
 
 ### Changed
 - Show report completion percent in window titlebar
