@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Change rolling log configuration to support instances
 - Travis CI automated build now uses Docker
 - Challenge task sorting to now uses Ajax
+- Use configured site-level SiteLogoUrl instead of the GRA logo
 
 ### Fixed
 - Remove Entered School type restriction
