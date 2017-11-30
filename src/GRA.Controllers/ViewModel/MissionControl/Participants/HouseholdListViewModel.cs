@@ -22,6 +22,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Participants
         public bool ShowSecretCode { get; set; }
         public string SecretCode { get; set; }
         public string SecretCodeMessage { get; set; }
+        public bool ShowVendorCodes { get; set; }
 
         public int SystemId { get; set; }
 

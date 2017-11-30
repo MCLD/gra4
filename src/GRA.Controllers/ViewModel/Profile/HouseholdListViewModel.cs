@@ -19,6 +19,7 @@ namespace GRA.Controllers.ViewModel.Profile
         public string SecretCodeMessage { get; set; }
         public bool CanLogActivity { get; set; }
         public bool CanEditHousehold { get; set; }
+        public bool ShowVendorCodes { get; set; }
 
         public Dictionary<int, DailyImageViewModel> DailyImageDictionary { get; set; }
     }

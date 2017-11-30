@@ -714,6 +714,7 @@ namespace GRA.Controllers.MissionControl
             try
             {
                 var user = await _userService.GetDetails(id);
+                var showVendorCodes = await _vendorCodeService.SiteHasCodesAsync();
                 SetPageTitle(user);
 
                 User head = new User();
@@ -727,17 +728,20 @@ namespace GRA.Controllers.MissionControl
                 {
                     head = user;
                 }
-                var headVendorCode = await _vendorCodeService.GetUserVendorCodeAsync(head.Id);
-                if (headVendorCode != null)
+                if (showVendorCodes)
                 {
-                    head.VendorCode = headVendorCode.Code;
-                    if (headVendorCode.ShipDate.HasValue)
+                    var headVendorCode = await _vendorCodeService.GetUserVendorCodeAsync(head.Id);
+                    if (headVendorCode != null)
                     {
-                        head.VendorCodeMessage = $"Shipped: {headVendorCode.ShipDate.Value.ToString("d")}";
-                    }
-                    else if (headVendorCode.OrderDate.HasValue)
-                    {
-                        head.VendorCodeMessage = $"Ordered: {headVendorCode.OrderDate.Value.ToString("d")}";
+                        head.VendorCode = headVendorCode.Code;
+                        if (headVendorCode.ShipDate.HasValue)
+                        {
+                            head.VendorCodeMessage = $"Shipped: {headVendorCode.ShipDate.Value.ToString("d")}";
+                        }
+                        else if (headVendorCode.OrderDate.HasValue)
+                        {
+                            head.VendorCodeMessage = $"Ordered: {headVendorCode.OrderDate.Value.ToString("d")}";
+                        }
                     }
                 }
 
@@ -756,8 +760,8 @@ namespace GRA.Controllers.MissionControl
                         .GetUserWinCount(head.Id, false)) > 0;
                 }
 
-                var household = await _userService.GetHouseholdAsync(head.Id, true, true, ReadAllMail,
-                    ViewUserPrizes);
+                var household = await _userService.GetHouseholdAsync(head.Id, true, showVendorCodes,
+                    ReadAllMail, ViewUserPrizes);
 
                 var systemId = GetId(ClaimType.SystemId);
                 var branchList = (await _siteService.GetBranches(systemId))
@@ -780,7 +784,8 @@ namespace GRA.Controllers.MissionControl
                     SystemId = systemId,
                     BranchList = branchList,
                     SystemList = systemList,
-                    ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
+                    ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True",
+                    ShowVendorCodes = showVendorCodes
                 };
 
                 if (UserHasPermission(Permission.ViewUserPrizes))

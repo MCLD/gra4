@@ -249,7 +249,10 @@
                                 }
                                 <th>User</th>
                                 <th>Points Earned</th>
-                                <th>Book Code</th>
+                                @if (Model.ShowVendorCodes)
+                                {
+                                    <th>Book Code</th>
+                                }
                                 <th>Branch</th>
                                 <th>Program</th>
                                 @if (Model.CanEditDetails)
@@ -317,20 +320,23 @@
                                     </a>
                                 </td>
                                 <td>@Model.Head.PointsEarned</td>
-                                <td>
-                                    <table>
-                                        <tr>
-                                            <td>
-                                                @Model.Head.VendorCode
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                @Model.Head.VendorCodeMessage
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
+                                @if (Model.ShowVendorCodes)
+                                {
+                                    <td>
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    @Model.Head.VendorCode
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    @Model.Head.VendorCodeMessage
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                }
                                 <td>@Model.Head.BranchName</td>
                                 <td>@Model.Head.ProgramName</td>
                                 @if (Model.CanEditDetails)
@@ -415,20 +421,23 @@
                                         </div>
                                     </td>
                                     <td>@user.PointsEarned</td>
-                                    <td>
-                                        <table>
-                                            <tr>
-                                                <td>
-                                                    @user.VendorCode
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    @user.VendorCodeMessage
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
+                                    @if (Model.ShowVendorCodes)
+                                    {
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        @user.VendorCode
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        @user.VendorCodeMessage
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    }
                                     <td>@user.BranchName</td>
                                     <td>@user.ProgramName</td>
                                     @if (Model.CanEditDetails)

@@ -248,6 +248,7 @@ namespace GRA.Controllers
 
             User headUser = null;
             bool authUserIsHead = !authUser.HouseholdHeadUserId.HasValue;
+            bool showVendorCodes = authUserIsHead && await _vendorCodeService.SiteHasCodesAsync();
             if (!authUserIsHead)
             {
                 headUser = await _userService.GetDetails((int)authUser.HouseholdHeadUserId);
@@ -255,16 +256,19 @@ namespace GRA.Controllers
             else
             {
                 authUser.HasNewMail = await _mailService.UserHasUnreadAsync(authUser.Id);
-                var vendorCode = await _vendorCodeService.GetUserVendorCodeAsync(authUser.Id);
-                if (vendorCode != null)
+                if (showVendorCodes)
                 {
-                    authUser.VendorCode = vendorCode.Code;
+                    var vendorCode = await _vendorCodeService.GetUserVendorCodeAsync(authUser.Id);
+                    if (vendorCode != null)
+                    {
+                        authUser.VendorCode = vendorCode.Code;
+                    }
                 }
             }
 
             var household = await _userService
                 .GetHouseholdAsync(authUser.HouseholdHeadUserId ?? authUser.Id, authUserIsHead,
-                authUserIsHead, authUserIsHead);
+                showVendorCodes, authUserIsHead);
 
             var siteStage = GetSiteStage();
             HouseholdListViewModel viewModel = new HouseholdListViewModel()
@@ -278,7 +282,8 @@ namespace GRA.Controllers
                 CanLogActivity = siteStage == SiteStage.ProgramOpen,
                 CanEditHousehold = siteStage == SiteStage.RegistrationOpen
                     || siteStage == SiteStage.ProgramOpen,
-                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
+                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True",
+                ShowVendorCodes = showVendorCodes
             };
 
             if (authUserIsHead)
@@ -317,17 +322,20 @@ namespace GRA.Controllers
                 }
                 viewModel.DailyImageDictionary = dailyImageDictionary;
 
-                var headVendorCode = await _vendorCodeService.GetUserVendorCodeAsync(authUser.Id);
-                if (headVendorCode != null)
+                if (showVendorCodes)
                 {
-                    viewModel.Head.VendorCode = headVendorCode.Code;
-                    if (headVendorCode.ShipDate.HasValue)
+                    var headVendorCode = await _vendorCodeService.GetUserVendorCodeAsync(authUser.Id);
+                    if (headVendorCode != null)
                     {
-                        viewModel.Head.VendorCodeMessage = $"Shipped: {headVendorCode.ShipDate.Value.ToString("d")}";
-                    }
-                    else if (headVendorCode.OrderDate.HasValue)
-                    {
-                        viewModel.Head.VendorCodeMessage = $"Ordered: {headVendorCode.OrderDate.Value.ToString("d")}";
+                        viewModel.Head.VendorCode = headVendorCode.Code;
+                        if (headVendorCode.ShipDate.HasValue)
+                        {
+                            viewModel.Head.VendorCodeMessage = $"Shipped: {headVendorCode.ShipDate.Value.ToString("d")}";
+                        }
+                        else if (headVendorCode.OrderDate.HasValue)
+                        {
+                            viewModel.Head.VendorCodeMessage = $"Ordered: {headVendorCode.OrderDate.Value.ToString("d")}";
+                        }
                     }
                 }
             }

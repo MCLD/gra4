@@ -132,7 +132,7 @@
                                                 }
                                                 <th>User</th>
                                                 <th>Points</th>
-                                                @if (Model.AuthUserIsHead)
+                                                @if (Model.ShowVendorCodes)
                                                 {
                                                     <th>Book Code</th>
                                                 }
@@ -207,7 +207,7 @@
                                                     }
                                                 </td>
                                                 <td>@Model.Head.PointsEarned</td>
-                                                @if (Model.AuthUserIsHead)
+                                                @if (Model.ShowVendorCodes)
                                                 {
                                                     <td>
                                                         <table>
@@ -321,7 +321,7 @@
                                                         }
                                                     </td>
                                                     <td>@user.PointsEarned</td>
-                                                    @if (Model.AuthUserIsHead)
+                                                    @if (Model.ShowVendorCodes)
                                                     {
                                                         <td>
                                                             <table>
