@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Do not show avatar layer selector if only one layer
 - Users without ViewUserPrizes coudln't view participant details
 - Trim usernames so they can't have leading or trailing spaces
+- Do not show vendor code fields showing when site has no vendor codes
 
 ### Removed
 - Remove static avatars; same functionality can be implemented with dynamic avatars
