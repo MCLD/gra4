@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Travis CI automated build now uses Docker
 - Challenge task sorting to now uses Ajax
 - Use configured site-level SiteLogoUrl instead of the GRA logo
+- Household and Mission control activity logging to now use Point Translation values
 
 ### Fixed
 - Remove Entered School type restriction

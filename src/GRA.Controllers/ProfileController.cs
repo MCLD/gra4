@@ -19,7 +19,7 @@ namespace GRA.Controllers
     [Authorize]
     public class ProfileController : Base.UserController
     {
-        private const string MinutesReadMessage = "MinutesReadMessage";
+        private const string ActivityMessage = "ActivityMessage";
         private const string SecretCodeMessage = "SecretCodeMessage";
 
         private readonly ILogger<ProfileController> _logger;
@@ -28,6 +28,7 @@ namespace GRA.Controllers
         private readonly AuthenticationService _authenticationService;
         private readonly DynamicAvatarService _dynamicAvatarService;
         private readonly MailService _mailService;
+        private readonly PointTranslationService _pointTranslationService;
         private readonly QuestionnaireService _questionnaireService;
         private readonly SchoolService _schoolService;
         private readonly SiteService _siteService;
@@ -41,6 +42,7 @@ namespace GRA.Controllers
             AuthenticationService authenticationService,
             DynamicAvatarService dynamicAvatarService,
             MailService mailService,
+            PointTranslationService pointTranslationService,
             QuestionnaireService questionnaireService,
             SchoolService schoolService,
             SiteService siteService,
@@ -55,6 +57,8 @@ namespace GRA.Controllers
             _dynamicAvatarService = Require.IsNotNull(dynamicAvatarService,
                 nameof(dynamicAvatarService));
             _mailService = Require.IsNotNull(mailService, nameof(mailService));
+            _pointTranslationService = Require.IsNotNull(pointTranslationService,
+                nameof(pointTranslationService));
             _questionnaireService = Require.IsNotNull(questionnaireService,
                 nameof(questionnaireService));
             _schoolService = Require.IsNotNull(schoolService, nameof(schoolService));
@@ -283,7 +287,9 @@ namespace GRA.Controllers
                 CanEditHousehold = siteStage == SiteStage.RegistrationOpen
                     || siteStage == SiteStage.ProgramOpen,
                 ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True",
-                ShowVendorCodes = showVendorCodes
+                ShowVendorCodes = showVendorCodes,
+                PointTranslation = await _pointTranslationService
+                        .GetByProgramIdAsync(authUser.ProgramId)
             };
 
             if (authUserIsHead)
@@ -340,9 +346,9 @@ namespace GRA.Controllers
                 }
             }
 
-            if (TempData.ContainsKey(MinutesReadMessage))
+            if (TempData.ContainsKey(ActivityMessage))
             {
-                viewModel.MinutesReadMessage = (string)TempData[MinutesReadMessage];
+                viewModel.ActivityMessage = (string)TempData[ActivityMessage];
             }
             if (TempData.ContainsKey(SecretCodeMessage))
             {
@@ -352,11 +358,14 @@ namespace GRA.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> HouseholdApplyMinutesRead(HouseholdListViewModel model)
+        public async Task<IActionResult> HouseholdApplyActivity(HouseholdListViewModel model)
         {
-            if (model.MinutesRead < 1)
+            var user = await _userService.GetDetails(GetId(ClaimType.UserId));
+            model.PointTranslation = await _pointTranslationService
+                .GetByProgramIdAsync(user.ProgramId);
+            if (model.ActivityAmount < 1 && model.PointTranslation.IsSingleEvent == false)
             {
-                TempData[MinutesReadMessage] = "You must enter how many minutes!";
+                TempData[ActivityMessage] = "You must enter how an amount!";
             }
 
             else if (!string.IsNullOrWhiteSpace(model.UserSelection))
@@ -369,17 +378,22 @@ namespace GRA.Controllers
                     .ToList();
                 try
                 {
-                    await _activityService.LogHouseholdMinutesAsync(userSelection, model.MinutesRead);
-                    ShowAlertSuccess("Minutes applied!");
+                    var activityAmount = 1;
+                    if (model.PointTranslation.IsSingleEvent == false)
+                    {
+                        activityAmount = model.ActivityAmount;
+                    }
+                    await _activityService.LogHouseholdActivityAsync(userSelection, activityAmount);
+                    ShowAlertSuccess("Activity applied!");
                 }
                 catch (GraException gex)
                 {
-                    TempData[MinutesReadMessage] = gex.Message;
+                    TempData[ActivityMessage] = gex.Message;
                 }
             }
             else
             {
-                TempData[MinutesReadMessage] = "No household members selected.";
+                TempData[ActivityMessage] = "No household members selected.";
             }
 
             return RedirectToAction("Household");

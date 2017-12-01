@@ -19,7 +19,7 @@ namespace GRA.Controllers.MissionControl
     [Authorize(Policy = Policy.ViewParticipantList)]
     public class ParticipantsController : Base.MCController
     {
-        private const string MinutesReadMessage = "MinutesReadMessage";
+        private const string ActivityMessage = "ActivityMessage";
         private const string SecretCodeMessage = "SecretCodeMessage";
         private const string VendorCodeMessage = "VendorCodeMessage";
 
@@ -29,6 +29,7 @@ namespace GRA.Controllers.MissionControl
         private readonly AuthenticationService _authenticationService;
         private readonly DynamicAvatarService _dynamicAvatarService;
         private readonly MailService _mailService;
+        private readonly PointTranslationService _pointTranslationService;
         private readonly PrizeWinnerService _prizeWinnerService;
         private readonly QuestionnaireService _questionnaireService;
         private readonly SchoolService _schoolService;
@@ -42,6 +43,7 @@ namespace GRA.Controllers.MissionControl
             AuthenticationService authenticationService,
             DynamicAvatarService dynamicAvatarService,
             MailService mailService,
+            PointTranslationService pointTranslationService,
             PrizeWinnerService prizeWinnerService,
             QuestionnaireService questionnaireService,
             SchoolService schoolService,
@@ -59,6 +61,8 @@ namespace GRA.Controllers.MissionControl
             _dynamicAvatarService = Require.IsNotNull(dynamicAvatarService,
                 nameof(dynamicAvatarService));
             _mailService = Require.IsNotNull(mailService, nameof(mailService));
+            _pointTranslationService = Require.IsNotNull(pointTranslationService,
+                nameof(pointTranslationService));
             _prizeWinnerService = Require.IsNotNull(prizeWinnerService, nameof(prizeWinnerService));
             _questionnaireService = Require.IsNotNull(questionnaireService,
                 nameof(questionnaireService));
@@ -607,7 +611,9 @@ namespace GRA.Controllers.MissionControl
                 HouseholdCount = await _userService
                     .FamilyMemberCountAsync(user.HouseholdHeadUserId ?? id),
                 HasAccount = !string.IsNullOrWhiteSpace(user.Username),
-                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True"
+                ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True",
+                PointTranslation = await _pointTranslationService
+                    .GetByProgramIdAsync(user.ProgramId)
             };
 
             if (UserHasPermission(Permission.ViewUserPrizes))
@@ -635,23 +641,31 @@ namespace GRA.Controllers.MissionControl
         {
             var user = await _userService.GetDetails(model.Id);
             SetPageTitle(user);
+            model.PointTranslation = await _pointTranslationService
+                .GetByProgramIdAsync(user.ProgramId);
 
             if (!model.IsSecretCode)
             {
-                if (!model.MinutesRead.HasValue || model.MinutesRead.Value < 1)
+                if ((!model.ActivityAmount.HasValue || model.ActivityAmount.Value < 1) 
+                    && model.PointTranslation.IsSingleEvent == false)
                 {
-                    ModelState.AddModelError("MinutesRead", "Enter a number greater than 0.");
+                    ModelState.AddModelError("ActivityAmount", "Enter a number greater than 0.");
                 }
                 if (ModelState.IsValid)
                 {
                     try
                     {
-                        await _activityService.LogActivityAsync(model.Id, model.MinutesRead.Value);
-                        ShowAlertSuccess("Minutes applied!");
+                        var activityAmount = 1;
+                        if (model.PointTranslation.IsSingleEvent == false)
+                        {
+                            activityAmount = model.ActivityAmount.Value;
+                        }
+                        await _activityService.LogActivityAsync(model.Id, activityAmount);
+                        ShowAlertSuccess("Activity applied!");
                     }
                     catch (GraException gex)
                     {
-                        ShowAlertDanger("Unable to apply minutes: ", gex.Message);
+                        ShowAlertDanger("Unable to apply activity: ", gex.Message);
                     }
                 }
             }
@@ -673,6 +687,7 @@ namespace GRA.Controllers.MissionControl
                         ShowAlertDanger("Unable to apply secret code: ", gex.Message);
                     }
                 }
+                
             }
             if (UserHasPermission(Permission.ManageVendorCodes))
             {
@@ -785,7 +800,9 @@ namespace GRA.Controllers.MissionControl
                     BranchList = branchList,
                     SystemList = systemList,
                     ShowSecretCode = _config[ConfigurationKey.HideSecretCode] != "True",
-                    ShowVendorCodes = showVendorCodes
+                    ShowVendorCodes = showVendorCodes,
+                    PointTranslation = await _pointTranslationService
+                        .GetByProgramIdAsync(user.ProgramId)
                 };
 
                 if (UserHasPermission(Permission.ViewUserPrizes))
@@ -793,9 +810,9 @@ namespace GRA.Controllers.MissionControl
                     viewModel.PrizeCount = await _prizeWinnerService.GetUserWinCount(id, false);
                 }
 
-                if (TempData.ContainsKey(MinutesReadMessage))
+                if (TempData.ContainsKey(ActivityMessage))
                 {
-                    viewModel.MinutesReadMessage = (string)TempData[MinutesReadMessage];
+                    viewModel.ActivityMessage = (string)TempData[ActivityMessage];
                 }
                 if (TempData.ContainsKey(SecretCodeMessage))
                 {
@@ -813,11 +830,14 @@ namespace GRA.Controllers.MissionControl
 
         [Authorize(Policy = Policy.LogActivityForAny)]
         [HttpPost]
-        public async Task<IActionResult> HouseholdApplyMinutesRead(HouseholdListViewModel model)
+        public async Task<IActionResult> HouseholdApplyActivity(HouseholdListViewModel model)
         {
-            if (model.MinutesRead < 1)
+            var user = await _userService.GetDetails(model.Id);
+            model.PointTranslation = await _pointTranslationService
+                .GetByProgramIdAsync(user.ProgramId);
+            if (model.ActivityAmount < 1 && model.PointTranslation.IsSingleEvent == false)
             {
-                TempData[MinutesReadMessage] = "You must enter how many minutes!";
+                TempData[ActivityMessage] = "You must enter an amonunt!";
             }
 
             else if (!string.IsNullOrWhiteSpace(model.UserSelection))
@@ -830,17 +850,22 @@ namespace GRA.Controllers.MissionControl
                     .ToList();
                 try
                 {
-                    await _activityService.LogHouseholdMinutesAsync(userSelection, model.MinutesRead);
-                    ShowAlertSuccess("Minutes applied!");
+                    var activityAmount = 1;
+                    if (model.PointTranslation.IsSingleEvent == false)
+                    {
+                        activityAmount = model.ActivityAmount;
+                    }
+                    await _activityService.LogHouseholdActivityAsync(userSelection, activityAmount);
+                    ShowAlertSuccess("Activity applied!");
                 }
                 catch (GraException gex)
                 {
-                    TempData[MinutesReadMessage] = gex.Message;
+                    TempData[ActivityMessage] = gex.Message;
                 }
             }
             else
             {
-                TempData[MinutesReadMessage] = "No household members selected.";
+                TempData[ActivityMessage] = "No household members selected.";
             }
 
             return RedirectToAction("Household", new { id = model.Id });
