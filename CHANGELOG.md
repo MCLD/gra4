@@ -5,11 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 ### Added
-- Exception handling to ajax favoriting
+- Better error handling in AJAX favoriting
 
 ### Fixed
-- Favorites list filtering
-- IE favorites spinner
+- Issue with favorites list filtering
+- Issue with favorites spinner in Internet Explorer
 
 ## [4.0.0-alpha8] 2017-12-04
 ### Added
