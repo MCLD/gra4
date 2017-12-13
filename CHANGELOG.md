@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Better error handling in AJAX favoriting
 - The ability to favorite a challenge from its detail page
 - System to apply site-level settings throughout the application
+- System settings for hiding Events and Challenges in nav until registration opens
 
 ### Fixed
 - Issue with favorites list filtering
