@@ -948,5 +948,22 @@ namespace GRA.Controllers
             await _vendorCodeService.ResolveDonationStatusAsync(viewModel.User.Id, false);
             return RedirectToAction("Index", "Profile");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> HouseholdDonateCode(HouseholdListViewModel viewModel, string donateButton)
+        {
+            int userId = int.Parse(donateButton);
+            await _vendorCodeService.ResolveDonationStatusAsync(userId, true);
+            return RedirectToAction("Household", "Profile");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> HouseholdRedeemCode(HouseholdListViewModel viewModel, string redeemButton)
+        {
+            int userId = int.Parse(redeemButton);
+            await _vendorCodeService.ResolveDonationStatusAsync(userId, false);
+            return RedirectToAction("Household", "Profile");
+        }
+
     }
 }
