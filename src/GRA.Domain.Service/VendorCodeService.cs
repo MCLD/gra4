@@ -463,6 +463,7 @@ namespace GRA.Domain.Service
             var vendorCode = await GetUserVendorCodeAsync(user.Id);
             if (vendorCode != null)
             {
+                user.Donated = vendorCode.IsDonated;
                 if (vendorCode.CanBeDonated && vendorCode.IsDonated == null)
                 {
                     user.NeedsToAnswerDonationQuestion = true;

@@ -1802,20 +1802,46 @@ namespace GRA.Controllers.MissionControl
         }
 
         [HttpPost]
-        [Authorize(Policy = Policy.EditParticipants)]
-        public async Task<IActionResult> HouseholdDonateCode(HouseholdListViewModel viewModel, string donateButton)
+        [Authorize(Policy = Policy.UnDonateVendorCode)]
+        public async Task<IActionResult> UndonateCode(ParticipantsDetailViewModel viewModel)
         {
-            int userId = int.Parse(donateButton);
-            await _vendorCodeService.ResolveDonationStatusAsync(userId, true);
-            return RedirectToAction("Household", "Participants", new { id = viewModel.Id });
+            await _vendorCodeService.ResolveDonationStatusAsync(viewModel.User.Id, null);
+            return RedirectToAction("Detail", "Participants", new { id = viewModel.User.Id });
         }
 
         [HttpPost]
         [Authorize(Policy = Policy.EditParticipants)]
-        public async Task<IActionResult> HouseholdRedeemCode(HouseholdListViewModel viewModel, string redeemButton)
+        public async Task<IActionResult> HandleHouseholdDonation(HouseholdListViewModel viewModel,
+            string donateButton,
+            string redeemButton,
+            string undonateButton)
         {
-            int userId = int.Parse(redeemButton);
-            await _vendorCodeService.ResolveDonationStatusAsync(userId, false);
+            int userId = 0;
+            bool? donationStatus = null;
+            if (!string.IsNullOrEmpty(donateButton))
+            {
+                donationStatus = true;
+                userId = int.Parse(donateButton);
+            }
+            if (!string.IsNullOrEmpty(redeemButton))
+            {
+                donationStatus = false;
+                userId = int.Parse(redeemButton);
+            }
+            if (!string.IsNullOrEmpty(undonateButton) && UserHasPermission(Permission.UnDonateVendorCode))
+            {
+                donationStatus = null;
+                userId = int.Parse(undonateButton);
+            }
+            if (userId == 0)
+            {
+                _logger.LogError($"User {GetActiveUserId()} unsuccessfully attempted to change donation for user {userId} to {donationStatus}");
+                AlertDanger = "Could not make requested change.";
+            }
+            else
+            {
+                await _vendorCodeService.ResolveDonationStatusAsync(userId, donationStatus);
+            }
             return RedirectToAction("Household", "Participants", new { id = viewModel.Id });
         }
         #endregion Handle code/dontation selection

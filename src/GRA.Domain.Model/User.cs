@@ -79,5 +79,6 @@ namespace GRA.Domain.Model
         public string VendorCodeMessage { get; set; }
         public bool NeedsToAnswerDonationQuestion { get; set; }
         public string VendorCodeUrl { get; set; }
+        public bool? Donated { get; set; }
     }
 }

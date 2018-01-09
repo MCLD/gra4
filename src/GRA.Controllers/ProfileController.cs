@@ -937,10 +937,31 @@ namespace GRA.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> HouseholdDonateCode(HouseholdListViewModel viewModel, string donateButton)
+        public async Task<IActionResult> HandleHouseholdDonation(HouseholdListViewModel viewModel,
+            string donateButton,
+            string redeemButton)
         {
-            int userId = int.Parse(donateButton);
-            await _vendorCodeService.ResolveDonationStatusAsync(userId, true);
+            int userId = 0;
+            bool? donationStatus = null;
+            if (!string.IsNullOrEmpty(donateButton))
+            {
+                donationStatus = true;
+                userId = int.Parse(donateButton);
+            }
+            if (!string.IsNullOrEmpty(redeemButton))
+            {
+                donationStatus = false;
+                userId = int.Parse(redeemButton);
+            }
+            if (userId == 0)
+            {
+                _logger.LogError($"User {GetActiveUserId()} unsuccessfully attempted to change donation for user {userId} to {donationStatus}");
+                AlertDanger = "Could not register your choice, please mail the administrators.";
+            }
+            else
+            {
+                await _vendorCodeService.ResolveDonationStatusAsync(userId, donationStatus);
+            }
             return RedirectToAction("Household", "Profile");
         }
 
