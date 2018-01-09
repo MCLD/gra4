@@ -326,19 +326,6 @@ namespace GRA.Controllers
                 if (showVendorCodes)
                 {
                     await _vendorCodeService.PopulateVendorCodeStatusAsync(viewModel.Head);
-                    //var headVendorCode = await _vendorCodeService.GetUserVendorCodeAsync(authUser.Id);
-                    //if (headVendorCode != null)
-                    //{
-                    //    viewModel.Head.VendorCode = headVendorCode.Code;
-                    //    if (headVendorCode.ShipDate.HasValue)
-                    //    {
-                    //        viewModel.Head.VendorCodeMessage = $"Shipped: {headVendorCode.ShipDate.Value.ToString("d")}";
-                    //    }
-                    //    else if (headVendorCode.OrderDate.HasValue)
-                    //    {
-                    //        viewModel.Head.VendorCodeMessage = $"Ordered: {headVendorCode.OrderDate.Value.ToString("d")}";
-                    //    }
-                    //}
                 }
             }
 
@@ -964,6 +951,5 @@ namespace GRA.Controllers
             await _vendorCodeService.ResolveDonationStatusAsync(userId, false);
             return RedirectToAction("Household", "Profile");
         }
-
     }
 }
