@@ -958,7 +958,7 @@ namespace GRA.Controllers.MissionControl
                 Action = nameof(EditGroup),
                 RelatedEvents = await _eventService.GetByChallengeGroupIdAsync(challengeGroup.Id),
                 CanManageEvents = UserHasPermission(Permission.ManageEvents),
-                GroupUrl = $"{baseUrl}/{Url.Action("List", "Challenges", new { area = "", id = challengeGroup.Stub })}"
+                GroupUrl = $"{baseUrl}{Url.Action("List", "Challenges", new { area = "", id = challengeGroup.Stub })}"
             };
 
             foreach (var challenge in viewModel.ChallengeGroup.Challenges)
