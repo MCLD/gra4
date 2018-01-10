@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Allow configuration of donation for received vendor codes
 - Show full link on pages with linkable stubs
 
+### Changed
+- Add label and border around rich text previews
+
 ### Fixed
 - Issue with favorites list filtering
 - Issue with favorites spinner in Internet Explorer
