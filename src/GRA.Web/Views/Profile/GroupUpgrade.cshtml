@@ -28,8 +28,17 @@
                 </div>
                 <div class="panel-footer clearfix">
                     <div class="pull-right">
+                        <button type="submit" 
+                                class="btn btn-danger btn-spinner"
+                                asp-action="CancelGroupUpgrade">
+                            <span class="buttonText">Cancel</span>
+                            <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
+                        </button>
                         <a class="btn btn-danger" href="@Url.Action("Household")">Cancel</a>
-                        <button type="submit" class="btn btn-success">Upgrade to group</button>
+                        <button type="submit" id="Submit" name="Submit" value="Submit" class="btn btn-primary btn-spinner">
+                            <span class="buttonText">Upgrade to group</span>
+                            <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
+                        </button>
                     </div>
                 </div>
             </div>

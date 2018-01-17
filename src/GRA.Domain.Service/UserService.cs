@@ -844,6 +844,8 @@ namespace GRA.Domain.Service
             var headUser = await _userRepository.GetByIdAsync(user.HouseholdHeadUserId.Value);
             var household = await _userRepository.GetHouseholdAsync(user.HouseholdHeadUserId.Value);
 
+            int oldHeadUserId = headUser.Id;
+
             user.HouseholdHeadUserId = null;
             await _userRepository.UpdateSaveAsync(authId, user);
             headUser.HouseholdHeadUserId = user.Id;
@@ -856,6 +858,13 @@ namespace GRA.Domain.Service
                     await _userRepository.UpdateAsync(authId, member);
                 }
             }
+
+            var groupInfo = await _groupInfoRepository.GetByUserIdAsync(oldHeadUserId);
+            if(groupInfo != null)
+            {
+                groupInfo.UserId = user.Id;
+            }
+
             await _userRepository.SaveAsync();
         }
 

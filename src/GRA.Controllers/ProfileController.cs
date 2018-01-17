@@ -789,6 +789,16 @@ namespace GRA.Controllers
         }
 
         [HttpPost]
+        public IActionResult CancelGroupUpgrade(GroupUpgradeViewModel viewModel)
+        {
+            if(viewModel.AddExisting == true)
+            {
+                HttpContext.Session.Remove(SessionKey.AbsorbUserId);
+            }
+            return RedirectToAction("Household");
+        }
+
+        [HttpPost]
         public async Task<IActionResult> RegisterHouseholdMember(HouseholdRegisterViewModel model)
         {
             var user = await _userService.GetDetails(model.RegisterId);
