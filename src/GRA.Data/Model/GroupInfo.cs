@@ -5,8 +5,6 @@ namespace GRA.Data.Model
     public class GroupInfo : Abstract.BaseDbEntity
     {
         [Required]
-        public int SiteId { get; set; }
-        [Required]
         public int UserId { get; set; }
         public User User { get; set; }
         [Required]

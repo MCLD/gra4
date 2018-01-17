@@ -17,6 +17,20 @@ namespace GRA.Data.Repository
         {
         }
 
+        public async Task<IEnumerable<GroupType>> GetAllForListAsync(int siteId)
+        {
+            return await DbSet
+                .AsNoTracking()
+                .Where(_ => _.SiteId == siteId)
+                .OrderBy(_ => _.Name)
+                .Select(_ => new GroupType
+                {
+                    Id = _.Id,
+                    Name = _.Name
+                })
+                .ToListAsync();
+        }
+
         public async Task<(IEnumerable<GroupType>, int)> GetAllPagedAsync(int siteId,
             int skip,
             int take)
