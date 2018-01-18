@@ -31,7 +31,7 @@ namespace GRA.Controllers.MissionControl
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _groupTypesService = groupTypesService
                 ?? throw new ArgumentNullException(nameof(groupTypesService));
-            PageTitle = "Group Types Management";
+            PageTitle = "Group Type management";
         }
 
         public async Task<IActionResult> Index(int page = 1)
@@ -55,10 +55,15 @@ namespace GRA.Controllers.MissionControl
                     });
             }
 
+            var (useGroups, maximumHousehold) =
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.MaximumHouseholdSizeBeforeGroup);
+
+
             return View(new GroupTypesListViewModel
             {
                 GroupTypes = data.Data,
-                PaginateModel = paginateModel
+                PaginateModel = paginateModel,
+                MaximumHouseholdMembers = useGroups ? (int?)maximumHousehold : null
             });
         }
 

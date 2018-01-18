@@ -1,17 +1,17 @@
-﻿@model GRA.Controllers.ViewModel.Profile.GroupUpgradeViewModel
+﻿@model GRA.Controllers.ViewModel.MissionControl.Participants.GroupUpgradeViewModel
+
 <div class="row">
     <div class="col-sm-6 col-sm-offset-3">
         <form asp-action="CreateGroup">
-            <input asp-for="AddExisting" type="hidden" />
+            <input asp-for="Id" type="hidden" />
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Upgrade from household to group</h3>
                 </div>
                 <div class="panel-body">
                     <p>
-                        It appears that you have more than @Model.MaximumHouseholdAllowed members in
-                        your household. We'd like you to convert your household to a group in order to
-                        add more members.
+                        In order to add more people this household must be converted to a group.
+                        Please enter a group name and select the appropriate group type.
                     </p>
                     <div class="form-group">
                         <label asp-for="GroupInfo.Name" class="control-label"></label>
@@ -23,17 +23,16 @@
                         <select asp-for="GroupInfo.GroupTypeId"
                                 asp-items="Model.GroupTypes"
                                 class="form-control"></select>
-                        <span asp-validation-for="GroupInfo.GroupTypeId" class="text-danger"></span>
+                        <span asp-validation-for="GroupInfo.GroupTypeId"
+                              class="text-danger"></span>
                     </div>
                 </div>
                 <div class="panel-footer clearfix">
                     <div class="pull-right">
-                        <button type="submit"
-                                class="btn btn-danger btn-spinner"
-                                asp-action="CancelGroupUpgrade">
+                        <a class="btn btn-danger"
+                           asp-action="Household" asp-route-id="@Model.Id">
                             <span class="buttonText">Cancel</span>
-                            <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
-                        </button>
+                        </a>
                         <button type="submit"
                                 id="Submit"
                                 name="Submit"

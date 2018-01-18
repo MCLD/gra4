@@ -75,12 +75,12 @@ namespace GRA.Domain.Service
             }
             catch(Exception ex)
             {
-                return $"Unable to remove group type - cannot tell if any groups are using it: {ex.Message}";
+                return $"Unable to remove group type - cannot tell if any group(s) are using it: {ex.Message}";
             }
 
             if(usingThisType > 0)
             {
-                return $"Unable to remove group type - {usingThisType} groups currently have it selected.";
+                return $"Unable to remove group type - {usingThisType} group(s) currently have it selected.";
             }
 
             try

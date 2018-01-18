@@ -11,5 +11,6 @@ namespace GRA.Controllers.ViewModel.MissionControl.GroupTypes
         public IEnumerable<GroupType> GroupTypes { get; set; }
         public PaginateViewModel PaginateModel { get; set; }
         public GroupType GroupType { get; set; }
+        public int? MaximumHouseholdMembers { get; set; }
     }
 }
