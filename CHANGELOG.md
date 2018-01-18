@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Library/location switch wasn't working right on event create and edit
 - Change "Edit" buttons to "Save"
 - Rename GetSiteStageAsync to GetSiteStage since it wasn't async
+- Issue with duplicate claims throwing an exception unnecessarily
 
 ### Removed
 - "Is achiever" property from Users
