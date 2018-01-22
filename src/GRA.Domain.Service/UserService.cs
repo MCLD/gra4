@@ -651,7 +651,7 @@ namespace GRA.Domain.Service
             await _notificationRepository.RemoveByUserId(GetActiveUserId());
         }
 
-        public async Task<(int totalAddCount, int addUserId)> 
+        public async Task<(int totalAddCount, int addUserId)>
             CountParticipantsToAdd(string username, string password)
         {
             string trimmedUsername = username.Trim();
@@ -860,7 +860,7 @@ namespace GRA.Domain.Service
             }
 
             var groupInfo = await _groupInfoRepository.GetByUserIdAsync(oldHeadUserId);
-            if(groupInfo != null)
+            if (groupInfo != null)
             {
                 groupInfo.UserId = user.Id;
             }
@@ -996,6 +996,17 @@ namespace GRA.Domain.Service
         public async Task<GroupInfo> CreateGroup(int currentUserId,
             GroupInfo groupInfo)
         {
+            if (currentUserId != groupInfo.UserId)
+            {
+                // verify user has modify users permission
+                if (!HasPermission(Permission.EditParticipants))
+                {
+                    int userId = GetClaimId(ClaimType.UserId);
+                    _logger.LogError($"User {userId} doesn't have permission to create a group.");
+                    throw new GraException("Permission denied.");
+                }
+            }
+
             var sanitizedGroupInfo = new GroupInfo
             {
                 Name = groupInfo.Name,
@@ -1008,8 +1019,36 @@ namespace GRA.Domain.Service
 
         public async Task<GroupInfo> UpdateGroupName(int currentUserId, GroupInfo groupInfo)
         {
+            if (currentUserId != groupInfo.UserId)
+            {
+                // verify user has modify users permission
+                if (!HasPermission(Permission.EditParticipants))
+                {
+                    int userId = GetClaimId(ClaimType.UserId);
+                    _logger.LogError($"User {userId} doesn't have permission to update a group name.");
+                    throw new GraException("Permission denied.");
+                }
+            }
+
             var currentGroup = await _groupInfoRepository.GetByUserIdAsync(groupInfo.UserId);
             currentGroup.Name = groupInfo.Name;
+            currentGroup.GroupType = null;
+            currentGroup.User = null;
+            return await _groupInfoRepository.UpdateSaveAsync(currentUserId, currentGroup);
+        }
+
+        public async Task<GroupInfo> UpdateGroup(int currentUserId, GroupInfo groupInfo)
+        {
+            if (!HasPermission(Permission.EditParticipants))
+            {
+                int userId = GetClaimId(ClaimType.UserId);
+                _logger.LogError($"User {userId} doesn't have permission to update a group.");
+                throw new GraException("Permission denied.");
+            }
+
+            var currentGroup = await _groupInfoRepository.GetByUserIdAsync(groupInfo.UserId);
+            currentGroup.Name = groupInfo.Name;
+            currentGroup.GroupTypeId = groupInfo.GroupTypeId;
             currentGroup.GroupType = null;
             currentGroup.User = null;
             return await _groupInfoRepository.UpdateSaveAsync(currentUserId, currentGroup);

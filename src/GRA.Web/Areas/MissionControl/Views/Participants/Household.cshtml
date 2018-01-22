@@ -166,7 +166,14 @@
 @if (!string.IsNullOrEmpty(Model.GroupName))
 {
     <div class="row" style="padding: 10px 0; font-size: larger;">
-        <div class="col-xs-12">
+        @if (Model.CanEditDetails)
+        {
+            <div class="col-sm-2">
+                <a href="@Url.Action(" UpdateGroup", new { id=Model.HeadOfHouseholdId ?? Model.Id })"
+                   class="btn btn-block btn-default">Edit Group</a>
+            </div>
+        }
+        <div class="col-sm-10">
             <strong>Group name:</strong> @Model.GroupName<br />
             <strong>Group type:</strong> @Model.GroupType
         </div>
@@ -197,11 +204,11 @@
                                     {
                                         <td style="padding-right:6px;">@Model.PointTranslation.TranslationDescriptionPastTense.Replace("{0}", "").Trim()</td>
                                         <td width="80px" style="padding-right:6px;">
-                                            <input data-action="@Url.Action("HouseholdApplyActivity")" value="" class="form-control activityInput" />
+                                            <input data-action="@Url.Action(" HouseholdApplyActivity")" value="" class="form-control activityInput" />
                                         </td>
                                     }
                                     <td>
-                                        <button type="submit" class="btn btn-primary btn-spinner activityButton" data-action="@Url.Action("HouseholdApplyActivity")">
+                                        <button type="submit" class="btn btn-primary btn-spinner activityButton" data-action="@Url.Action(" HouseholdApplyActivity")">
                                             <span>
                                                 @if (Model.PointTranslation.IsSingleEvent)
                                                 {
@@ -240,10 +247,10 @@
                                     <tr>
                                         <td style="padding-right:6px;">Apply</td>
                                         <td width="200px">
-                                            <input data-action="@Url.Action("HouseholdApplySecretCode")" class="form-control codeInput" />
+                                            <input data-action="@Url.Action(" HouseholdApplySecretCode")" class="form-control codeInput" />
                                         </td>
                                         <td style="padding-left:6px;">
-                                            <button type="submit" class="btn btn-primary btn-spinner codeButton" data-action="@Url.Action("HouseholdApplySecretCode")">
+                                            <button type="submit" class="btn btn-primary btn-spinner codeButton" data-action="@Url.Action(" HouseholdApplySecretCode")">
                                                 <span class="buttonText">Secret Code</span>
                                                 <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
                                             </button>
@@ -290,7 +297,7 @@
                                     <th width="80px">&nbsp;</th>
                                 }
                             </tr>
-                            <tr class="warning @(Model.Id == Model.Head.Id ? "text-strong" : null)">
+                            <tr class="warning @(Model.Id == Model.Head.Id ? " text-strong" : null)">
                                 @if (Model.CanLogActivity)
                                 {
                                     <td class="on-top" style="vertical-align:middle;">
@@ -384,7 +391,7 @@
                                                 <strong>@Model.Head.VendorCode</strong>
                                             }
                                             if (@Model.Head.Donated == true
-                                                && User.HasClaim(ClaimType.Permission, Permission.PerformDrawing.ToString()))
+                                            && User.HasClaim(ClaimType.Permission, Permission.PerformDrawing.ToString()))
                                             {
                                                 <button class="btn btn-info btn-xs btn-spinner btn-on-top"
                                                         name="undonateButton"
@@ -413,7 +420,7 @@
                         <tbody>
                             @foreach (var user in Model.Users)
                             {
-                                <tr class="@(Model.Id == user.Id ? "info text-strong" : null)">
+                                <tr class="@(Model.Id == user.Id ? " info text-strong" : null)">
                                     @if (Model.CanLogActivity)
                                     {
                                         <td class="on-top" style="vertical-align:middle;">
@@ -590,11 +597,11 @@
                                     {
                                         <td style="padding-right:6px;">@Model.PointTranslation.TranslationDescriptionPastTense.Replace("{0}", "").Trim()</td>
                                         <td width="80px" style="padding-right:6px;">
-                                            <input data-action="@Url.Action("HouseholdApplyActivity")" value="" class="form-control activityInput" />
+                                            <input data-action="@Url.Action(" HouseholdApplyActivity")" value="" class="form-control activityInput" />
                                         </td>
                                     }
                                     <td>
-                                        <button type="submit" class="btn btn-primary btn-spinner activityButton" data-action="@Url.Action("HouseholdApplyActivity")">
+                                        <button type="submit" class="btn btn-primary btn-spinner activityButton" data-action="@Url.Action(" HouseholdApplyActivity")">
                                             <span>
                                                 @if (Model.PointTranslation.IsSingleEvent)
                                                 {
@@ -633,10 +640,10 @@
                                     <tr>
                                         <td style="padding-right:6px;">Apply</td>
                                         <td width="200px">
-                                            <input data-action="@Url.Action("HouseholdApplySecretCode")" class="form-control codeInput" />
+                                            <input data-action="@Url.Action(" HouseholdApplySecretCode")" class="form-control codeInput" />
                                         </td>
                                         <td style="padding-left:6px;">
-                                            <button type="submit" class="btn btn-primary btn-spinner codeButton" data-action="@Url.Action("HouseholdApplySecretCode")">
+                                            <button type="submit" class="btn btn-primary btn-spinner codeButton" data-action="@Url.Action(" HouseholdApplySecretCode")">
                                                 <span class="buttonText">Secret Code</span>
                                                 <span class="fa fa-spinner fa-pulse fa-lg fa-fw hidden"></span>
                                             </button>
@@ -678,248 +685,259 @@
 @section scripts
     {
     <script>
-        $(document).ready(function() {
-            $('.td-class').each(function() {
-                $(this).children('a.rowlink').height($(this).height() + 11);
-            });
+    $(document).ready(function () {
+        $('.td-class').each(function () {
+            $(this).children('a.rowlink').height($(this).height() + 11);
         });
-        $(window).resize(function() {
-            $('.td-class').each(function() {
-                $(this).children('a.rowlink').height($(this).height() + 11);
-            });
+    });
+    $(window).resize(function () {
+        $('.td-class').each(function () {
+            $(this).children('a.rowlink').height($(this).height() + 11);
         });
+    });
 
-        @if (Model.CanLogActivity) {
-        <text>
-        var submitting = false;
+    /**/
+@if (Model.CanLogActivity)
+    {
+<text>
+    /**/
+    var submitting = false;
 
-        $("#checkAll").on("change", function(e) {
-            if (e.originalEvent)
-            {
-                $(".userSelection").prop("checked", $(this).prop("checked"));
-            }
-        });
-
-        $(".userSelection").on("change", function(e) {
-            if (e.originalEvent)
-            {
-                if ($(".userSelection:not(:checked)").length)
-                {
-                    $("#checkAll").prop("checked", false);
-                }
-                else
-                {
-                    $("#checkAll").prop("checked", true);
-                }
-            }
-        });
-
-        $(".activityInput").on("keypress", function(e) {
-            var keyCode = e.keyCode || e.which;
-            if (keyCode === 13)
-            {
-                e.preventDefault();
-                if (submitting != true) {
-                    submitting = true;
-                    $("#ActivityAmount").val($(this).val());
-                    SetUserSelection();
-                    $("#form").attr("action", $(this).data("action")).submit();
-                }
-            }
-        });
-
-        $(".codeInput").on("keypress", function(e) {
-            var keyCode = e.keyCode || e.which;
-            if (keyCode === 13)
-            {
-                e.preventDefault();
-                if (submitting != true) {
-                    submitting = true;
-                    $("#SecretCode").val($(this).val());
-                    SetUserSelection();
-                    $("#form").attr("action", $(this).data("action")).submit();
-                }
-            }
-        });
-
-        $(".activityButton").on("click", function(e) {
-            e.preventDefault();
-            if (submitting != true) {
-                submitting = true;
-                $("#ActivityAmount").val($(this).parent().parent().find(".activityInput").val());
-                SetUserSelection();
-                $("#form").attr("action", $(this).data("action")).submit();
-            }
-        });
-
-        $(".codeButton").on("click", function(e) {
-            e.preventDefault();
-            if (submitting != true) {
-                submitting = true;
-                $("#SecretCode").val($(this).parent().parent().find(".codeInput").val());
-                SetUserSelection();
-                $("#form").attr("action", $(this).data("action")).submit();
-            }
-        });
-
-        function SetUserSelection() {
-            var selectionArray = [];
-            $(".userSelection:checked").each(function() {
-                selectionArray.push($(this).data("id"));
-            });
-            $("#UserSelection").val(selectionArray);
-        };
-        </text>
+    $("#checkAll").on("change", function (e) {
+        if (e.originalEvent) {
+            $(".userSelection").prop("checked", $(this).prop("checked"));
         }
+    });
 
-        @if (Model.CanEditDetails)
-        {
-        <text>
-        var userId = @Model.Id
-        var defaultSystemId = @Model.SystemId;
-        var participantsUrl = "@Url.Action("HouseholdGetParticipantsList")";
-        var branchUrl = "@Url.Action("GetBranches", "Lookup", new { Area = string.Empty })";
-        var systemId = null;
-        var branchId = null;
-        var search = "";
-        var page = 1;
-
-        function UpdateParticipantsList() {
-            $.get(participantsUrl,
-                {
-                    userId: userId,
-                    systemId: systemId,
-                    branchId: branchId,
-                    search: search,
-                    page: page
-                }, function(response) {
-                    $("#modalParticipantsList").html(response);
-                });
-        }
-
-        function UpdateBranchList(system) {
-            $.get(branchUrl,
-                {
-                    systemId: system,
-                    branchId: null,
-                    prioritize: true
-                }, function(response) {
-                    $("#branchDropdown").empty();
-                    $.each(response, function(index, item) {
-                        $("#branchDropdown").append('<li><a class="branch-selector" data-id="' + item.value + '">' + item.text+ '</a></li>');
-                    });
-                });
-        }
-
-        $('#listModal').on('show.bs.modal', function() {
-            UpdateParticipantsList();
-        })
-
-        $("#All").on("click", function() {
-            if (systemId != null) {
-                $(this).siblings().removeClass("active");
-                $(this).addClass().addClass("active");
-                $("#systemText").text("System");
-                $("#branchText").text("Branch");
-                if (systemId != defaultSystemId) {
-                    UpdateBranchList(defaultSystemId);
-                }
-                systemId = null;
-                branchId = null;
-                page = 1;
-                UpdateParticipantsList();
-            }
-        });
-
-        $(".system-selector").on("click", function(e) {
-            var thisId = $(this).data("id");
-            if (systemId != thisId || branchId != null) {
-                if (systemId == null || branchId != null) {
-                    var navPill = $(this).parent().parent().parent();
-                    navPill.siblings().removeClass("active");
-                    navPill.addClass().addClass("active");
-                    if (branchId != null) {
-                        $("#branchText").text("Branch");
-                    }
-                }
-                $("#systemText").text($(this).text());
-                if (systemId != thisId && (systemId != null || thisId != defaultSystemId)) {
-                    UpdateBranchList(thisId);
-                }
-                systemId = thisId;
-                branchId = null;
-                page = 1;
-                UpdateParticipantsList();
-            }
-        });
-
-        $(document).on("click", ".branch-selector", function(e) {
-            var thisId = $(this).data("id");
-            if (branchId != thisId) {
-                if (branchId == null) {
-                    var navPill = $(this).parent().parent().parent();
-                    navPill.siblings().removeClass("active");
-                    navPill.addClass().addClass("active");
-                    if (systemId == null) {
-                        systemId = defaultSystemId;
-                        $("#systemText").text($(".system-selector").first().text());
-                    }
-                }
-                $("#branchText").text($(this).text());
-                branchId = thisId;
-                page = 1;
-                UpdateParticipantsList();
-            }
-        });
-
-        $("#searchButton").on("click", function () {
-            search = $("#searchText").val();
-            if (search != "") {
-                $("#searchMessage").removeClass("hide");
-                $("#searchTerm").html(search);
+    $(".userSelection").on("change", function (e) {
+        if (e.originalEvent) {
+            if ($(".userSelection:not(:checked)").length) {
+                $("#checkAll").prop("checked", false);
             }
             else {
-                $("#searchMessage").addClass("hide");
+                $("#checkAll").prop("checked", true);
             }
+        }
+    });
+
+    $(".activityInput").on("keypress", function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            if (submitting != true) {
+                submitting = true;
+                $("#ActivityAmount").val($(this).val());
+                SetUserSelection();
+                $("#form").attr("action", $(this).data("action")).submit();
+            }
+        }
+    });
+
+    $(".codeInput").on("keypress", function (e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            if (submitting != true) {
+                submitting = true;
+                $("#SecretCode").val($(this).val());
+                SetUserSelection();
+                $("#form").attr("action", $(this).data("action")).submit();
+            }
+        }
+    });
+
+    $(".activityButton").on("click", function (e) {
+        e.preventDefault();
+        if (submitting != true) {
+            submitting = true;
+            $("#ActivityAmount").val($(this).parent().parent().find(".activityInput").val());
+            SetUserSelection();
+            $("#form").attr("action", $(this).data("action")).submit();
+        }
+    });
+
+    $(".codeButton").on("click", function (e) {
+        e.preventDefault();
+        if (submitting != true) {
+            submitting = true;
+            $("#SecretCode").val($(this).parent().parent().find(".codeInput").val());
+            SetUserSelection();
+            $("#form").attr("action", $(this).data("action")).submit();
+        }
+    });
+
+    function SetUserSelection() {
+        var selectionArray = [];
+        $(".userSelection:checked").each(function () {
+            selectionArray.push($(this).data("id"));
+        });
+        $("#UserSelection").val(selectionArray);
+    };
+    /**/
+</text>
+}
+    /**/
+
+    /**/
+@if (Model.CanEditDetails)
+    {
+<text>
+    /**/
+    /**/
+    var userId = @Model.Id
+/**/
+/**/
+        var defaultSystemId = @Model.SystemId;
+        /**/
+        /**/
+        var participantsUrl = "@Url.Action("HouseholdGetParticipantsList")";
+    /**/
+    /**/
+    var branchUrl = "@Url.Action("GetBranches", "Lookup", new { Area = string.Empty })";
+    /**/
+    var systemId = null;
+    var branchId = null;
+    var search = "";
+    var page = 1;
+
+    function UpdateParticipantsList() {
+        $.get(participantsUrl,
+            {
+                userId: userId,
+                systemId: systemId,
+                branchId: branchId,
+                search: search,
+                page: page
+            }, function (response) {
+                $("#modalParticipantsList").html(response);
+            });
+    }
+
+    function UpdateBranchList(system) {
+        $.get(branchUrl,
+            {
+                systemId: system,
+                branchId: null,
+                prioritize: true
+            }, function (response) {
+                $("#branchDropdown").empty();
+                $.each(response, function (index, item) {
+                    $("#branchDropdown").append('<li><a class="branch-selector" data-id="' + item.value + '">' + item.text + '</a></li>');
+                });
+            });
+    }
+
+    $('#listModal').on('show.bs.modal', function () {
+        UpdateParticipantsList();
+    })
+
+    $("#All").on("click", function () {
+        if (systemId != null) {
+            $(this).siblings().removeClass("active");
+            $(this).addClass().addClass("active");
+            $("#systemText").text("System");
+            $("#branchText").text("Branch");
+            if (systemId != defaultSystemId) {
+                UpdateBranchList(defaultSystemId);
+            }
+            systemId = null;
+            branchId = null;
             page = 1;
             UpdateParticipantsList();
-        })
-
-        $("#clearButton").on("click", function () {
-            $("#searchText").val("");
-            if (search != "") {
-                search = "";
-                $("#searchMessage").addClass("hide");
-                page = 1;
-                UpdateParticipantsList();
-            }
-        })
-
-        $(document).on("click", ".page-button", function () {
-            if (!$(this).hasClass("disabled")) {
-                page = $(this).data("page");
-                UpdateParticipantsList();
-            }
-        });
-
-        $('#promoteModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('id');
-            var name = button.data('name');
-            var modal = $(this);
-            modal.find('#modal-text').text('Are you sure you wish to promote "' + name + '" to head of the household?');
-            modal.find('#PromoteId').val(id);
-        })
-
-        $('#removeModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('id');
-            var name = button.data('name');
-            var modal = $(this);
-            modal.find('#modal-text').text('Are you sure you wish to remove "' + name + '" from the household?');
-            modal.find('#RemoveId').val(id);
-        })
-        </text>
         }
+    });
+
+    $(".system-selector").on("click", function (e) {
+        var thisId = $(this).data("id");
+        if (systemId != thisId || branchId != null) {
+            if (systemId == null || branchId != null) {
+                var navPill = $(this).parent().parent().parent();
+                navPill.siblings().removeClass("active");
+                navPill.addClass().addClass("active");
+                if (branchId != null) {
+                    $("#branchText").text("Branch");
+                }
+            }
+            $("#systemText").text($(this).text());
+            if (systemId != thisId && (systemId != null || thisId != defaultSystemId)) {
+                UpdateBranchList(thisId);
+            }
+            systemId = thisId;
+            branchId = null;
+            page = 1;
+            UpdateParticipantsList();
+        }
+    });
+
+    $(document).on("click", ".branch-selector", function (e) {
+        var thisId = $(this).data("id");
+        if (branchId != thisId) {
+            if (branchId == null) {
+                var navPill = $(this).parent().parent().parent();
+                navPill.siblings().removeClass("active");
+                navPill.addClass().addClass("active");
+                if (systemId == null) {
+                    systemId = defaultSystemId;
+                    $("#systemText").text($(".system-selector").first().text());
+                }
+            }
+            $("#branchText").text($(this).text());
+            branchId = thisId;
+            page = 1;
+            UpdateParticipantsList();
+        }
+    });
+
+    $("#searchButton").on("click", function () {
+        search = $("#searchText").val();
+        if (search != "") {
+            $("#searchMessage").removeClass("hide");
+            $("#searchTerm").html(search);
+        }
+        else {
+            $("#searchMessage").addClass("hide");
+        }
+        page = 1;
+        UpdateParticipantsList();
+    })
+
+    $("#clearButton").on("click", function () {
+        $("#searchText").val("");
+        if (search != "") {
+            search = "";
+            $("#searchMessage").addClass("hide");
+            page = 1;
+            UpdateParticipantsList();
+        }
+    })
+
+    $(document).on("click", ".page-button", function () {
+        if (!$(this).hasClass("disabled")) {
+            page = $(this).data("page");
+            UpdateParticipantsList();
+        }
+    });
+
+    $('#promoteModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var name = button.data('name');
+        var modal = $(this);
+        modal.find('#modal-text').text('Are you sure you wish to promote "' + name + '" to head of the household?');
+        modal.find('#PromoteId').val(id);
+    })
+
+    $('#removeModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var name = button.data('name');
+        var modal = $(this);
+        modal.find('#modal-text').text('Are you sure you wish to remove "' + name + '" from the household?');
+        modal.find('#RemoveId').val(id);
+    })
+/**/
+</text>
+}
+/**/
     </script>
 }

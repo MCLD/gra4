@@ -1661,7 +1661,7 @@ namespace GRA.Controllers.MissionControl
 
                 var groupInfo
                     = await _userService.GetGroupFromHouseholdHeadAsync(user.HouseholdHeadUserId ?? id);
-                
+
                 MailListViewModel viewModel = new MailListViewModel()
                 {
                     Mails = mail.Data,
@@ -1962,6 +1962,49 @@ namespace GRA.Controllers.MissionControl
 
             AlertSuccess = "Group successfully created, now you may add additional members.";
             return RedirectToAction("Household", new { id = viewModel.Id });
+        }
+
+        [HttpGet]
+        [Authorize(Policy = Policy.EditParticipants)]
+        public async Task<IActionResult> UpdateGroup(int id)
+        {
+            var groupInfo = await _userService.GetGroupFromHouseholdHeadAsync(id);
+            if (groupInfo == null)
+            {
+                AlertDanger = "Could not find group to update.";
+                return RedirectToAction("Household", new { id });
+            }
+
+            var groupTypes = await _userService.GetGroupTypeListAsync();
+
+            return View("UpdateGroup", new UpdateGroupViewModel
+            {
+                HouseholdHeadUserId = id,
+                GroupInfo = groupInfo,
+                GroupTypes = new SelectList(groupTypes.ToList(), "Id", "Name")
+            });
+        }
+
+        [HttpPost]
+        [Authorize(Policy = Policy.EditParticipants)]
+        public async Task<IActionResult> UpdateGroup(UpdateGroupViewModel viewModel)
+        {
+            var groupInfo
+                = await _userService.GetGroupFromHouseholdHeadAsync(viewModel.HouseholdHeadUserId);
+
+            if (groupInfo == null)
+            {
+                AlertDanger = "Could not find group to update.";
+                return RedirectToAction("Household", new { id = viewModel.HouseholdHeadUserId });
+            }
+
+            groupInfo.UserId = viewModel.HouseholdHeadUserId;
+            groupInfo.Name = viewModel.GroupInfo.Name;
+            groupInfo.GroupTypeId = viewModel.GroupInfo.GroupTypeId;
+
+            await _userService.UpdateGroup(GetActiveUserId(), groupInfo);
+
+            return RedirectToAction("Household", new { id = viewModel.HouseholdHeadUserId });
         }
     }
 }
