@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Logging when importing dynamic avatars
 
 ### Fixed
-- Fix editing challenge groups
+- Fix error that occurred when editing challenge groups
 
 ## [4.0.0-alpha9] 2018-01-23
 ### Added
