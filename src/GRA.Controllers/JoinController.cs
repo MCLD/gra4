@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,9 @@ namespace GRA.Controllers
     {
         private const string TempStep1 = "TempStep1";
         private const string TempStep2 = "TempStep2";
+
+        private const string DropDownTrueValue = "True";
+        private const string DropDownFalseValue = "False";
 
         private readonly ILogger<JoinController> _logger;
         private readonly AutoMapper.IMapper _mapper;
@@ -92,6 +96,12 @@ namespace GRA.Controllers
                 SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name")
             };
 
+            var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
+            if (askIfFirstTime)
+            {
+                viewModel.AskFirstTime = new SelectList(EmptyNoYes(), "Key", "Value", string.Empty);
+            }
+
             if (systemList.Count() == 1)
             {
                 var systemId = systemList.SingleOrDefault().Id;
@@ -131,6 +141,13 @@ namespace GRA.Controllers
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.PostalCode))
             {
                 ModelState.AddModelError("PostalCode", "The Zip Code field is required.");
+            }
+
+            var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
+
+            if (!askIfFirstTime)
+            {
+                ModelState.Remove(nameof(model.IsFirstTime));
             }
 
             bool askAge = false;
@@ -189,6 +206,12 @@ namespace GRA.Controllers
 
                 User user = _mapper.Map<User>(model);
                 user.SiteId = site.Id;
+                if (askIfFirstTime)
+                {
+                    user.IsFirstTime = model.IsFirstTime.Equals(DropDownTrueValue,
+                       System.StringComparison.OrdinalIgnoreCase);
+                }
+
                 try
                 {
                     await _userService.RegisterUserAsync(user, model.Password,
@@ -242,7 +265,8 @@ namespace GRA.Controllers
             var districtList = await _schoolService.GetDistrictsAsync();
             if (model.SchoolId.HasValue)
             {
-                var schoolDetails = await _schoolService.GetSchoolDetailsAsync(model.SchoolId.Value);
+                var schoolDetails =
+                    await _schoolService.GetSchoolDetailsAsync(model.SchoolId.Value);
                 var typeList = await _schoolService.GetTypesAsync(schoolDetails.SchoolDisctrictId);
                 model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name",
                     schoolDetails.SchoolDisctrictId);
@@ -494,7 +518,8 @@ namespace GRA.Controllers
             var districtList = await _schoolService.GetDistrictsAsync();
             if (model.SchoolId.HasValue)
             {
-                var schoolDetails = await _schoolService.GetSchoolDetailsAsync(model.SchoolId.Value);
+                var schoolDetails
+                    = await _schoolService.GetSchoolDetailsAsync(model.SchoolId.Value);
                 var typeList = await _schoolService.GetTypesAsync(schoolDetails.SchoolDisctrictId);
                 model.SchoolDistrictList = new SelectList(districtList.ToList(), "Id", "Name",
                     schoolDetails.SchoolDisctrictId);
@@ -537,13 +562,32 @@ namespace GRA.Controllers
 
             PageTitle = $"{site.Name} - Join Now!";
 
-            return View();
+
+            Step3ViewModel viewModel = null;
+
+            var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
+            if (askIfFirstTime)
+            {
+                viewModel = new Step3ViewModel
+                {
+                    AskFirstTime = new SelectList(EmptyNoYes(), "Key", "Value", "")
+                };
+            }
+
+            return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Step3(Step3ViewModel model)
         {
             var site = await GetCurrentSiteAsync();
+            var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
+
+            if (!askIfFirstTime)
+            {
+                ModelState.Remove(nameof(model.IsFirstTime));
+            }
+
             if (site.SinglePageSignUp)
             {
                 return RedirectToAction("Index");
@@ -562,14 +606,21 @@ namespace GRA.Controllers
                 string step1Json = (string)TempData.Peek(TempStep1);
                 string step2Json = (string)TempData.Peek(TempStep2);
 
-                var step1 = Newtonsoft.Json.JsonConvert.DeserializeObject<Step1ViewModel>(step1Json);
-                var step2 = Newtonsoft.Json.JsonConvert.DeserializeObject<Step2ViewModel>(step2Json);
+                var step1 = JsonConvert.DeserializeObject<Step1ViewModel>(step1Json);
+                var step2 = JsonConvert.DeserializeObject<Step2ViewModel>(step2Json);
 
                 User user = new User();
                 _mapper.Map<Step1ViewModel, User>(step1, user);
                 _mapper.Map<Step2ViewModel, User>(step2, user);
                 _mapper.Map<Step3ViewModel, User>(model, user);
                 user.SiteId = site.Id;
+
+                if (askIfFirstTime)
+                {
+                    user.IsFirstTime = model.IsFirstTime.Equals(DropDownTrueValue,
+                       System.StringComparison.OrdinalIgnoreCase);
+                }
+
                 try
                 {
                     await _userService.RegisterUserAsync(user, model.Password,
@@ -604,6 +655,16 @@ namespace GRA.Controllers
             PageTitle = $"{site.Name} - Join Now!";
 
             return View(model);
+        }
+
+        private Dictionary<string, string> EmptyNoYes()
+        {
+            return new Dictionary<string, string>
+            {
+                {string.Empty, string.Empty},
+                {DropDownFalseValue, "No" },
+                {DropDownTrueValue, "Yes" }
+            };
         }
     }
 }
