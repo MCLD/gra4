@@ -20,9 +20,6 @@ namespace GRA.Controllers
         private const string TempStep1 = "TempStep1";
         private const string TempStep2 = "TempStep2";
 
-        private const string DropDownTrueValue = "True";
-        private const string DropDownFalseValue = "False";
-
         private readonly ILogger<JoinController> _logger;
         private readonly AutoMapper.IMapper _mapper;
         private readonly AuthenticationService _authenticationService;
@@ -99,7 +96,7 @@ namespace GRA.Controllers
             var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
             if (askIfFirstTime)
             {
-                viewModel.AskFirstTime = new SelectList(EmptyNoYes(), "Key", "Value", string.Empty);
+                viewModel.AskFirstTime = EmptyNoYes();
             }
 
             if (systemList.Count() == 1)
@@ -570,7 +567,7 @@ namespace GRA.Controllers
             {
                 viewModel = new Step3ViewModel
                 {
-                    AskFirstTime = new SelectList(EmptyNoYes(), "Key", "Value", "")
+                    AskFirstTime = EmptyNoYes()
                 };
             }
 
@@ -655,16 +652,6 @@ namespace GRA.Controllers
             PageTitle = $"{site.Name} - Join Now!";
 
             return View(model);
-        }
-
-        private Dictionary<string, string> EmptyNoYes()
-        {
-            return new Dictionary<string, string>
-            {
-                {string.Empty, string.Empty},
-                {DropDownFalseValue, "No" },
-                {DropDownTrueValue, "Yes" }
-            };
         }
     }
 }
